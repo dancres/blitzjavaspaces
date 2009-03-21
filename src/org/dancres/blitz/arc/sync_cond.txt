@@ -1,0 +1,14 @@
+Could we schedule I/O in such a fashion as to be outside of locks involved in
+a deadlock situation?
+
+Cache lock = sync() lock in ArcCache.
+CBD lock is the individual mutex of a CBD.
+
+What are the conditions for achieving this?
+
+We must have done all cache list modifications before releasing the cache lock.
+   - This ensures another thread doesn't, for example, recover a CBD with one
+   id which, in fact, is being "renamed" to another id.
+   - We must also do this to protect the state of the various lists which
+   constitute a chunk of the cache state.  Question, is the state of a CDB's
+   content part of the cache state?

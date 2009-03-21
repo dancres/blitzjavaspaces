@@ -1,0 +1,20 @@
+<body>
+
+<P> Entry instances have certain properties which we do not wish to be
+handling in the storage engine (blitz.disk) such as loading of remote classes
+etc.  At the same time, we wish to provide the storage engine with a means
+to compare such Entry instances for purposes of matching. </P>
+
+<P> This package converts an Entry to and from an object structure which hides
+the undesirable properties of an Entry (such as the need to load it's bytecode)
+from the rest of the blitz code. </P>
+
+<P> The object structure is, in fact, MangledEntry instances of which are
+created by EntryManglers and contain a field by field representation of the
+original Entry made up of MangledFields </P>
+
+<P> MangledEntry's can be compared with the match method providing the basic
+primitive required to perform matching of templates against Entry's </P>
+
+
+</body>

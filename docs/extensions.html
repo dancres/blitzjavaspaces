@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Blitz Extensions</title>
+</head>
+<body>
+<h1>Blitz Extensions</h1>
+
+<p>Blitz provides additional features over and above what's required by the JavaSpaces specification.  These features are intended to make life easier for administrators and programmers.  They are somewhat experimental and subject to change at this stage.  If a particular feature proves popular, the Blitz project will work with Sun to create appropriate standards to facilitate wider adoption/vendor independence.</p>
+
+<p>These features are not part of the JavaSpaces specification.  In order to preserve compatibility, these additional features are made available to the programmer via separate interfaces as part of the <code>org.dancres.blitz</code> package structure.  There is <em>no requirement</em> for programs to use them and, if you choose not to use these interfaces, your code will run against any JavaSpaces implementation (including Blitz).</p>
+
+[<b>Note:</b> If you're accessing this documentation from a locally installed distribution, you'll need to have downloaded and installed the full documentation bundle or generated the Javadoc (source code build only) in order to be able to follow the Javadoc links below.]
+
+<h2>Statistics</h2>
+
+Blitz provides a <a href="javadocs/org/dancres/blitz/stats/package-summary.html">package</a> for monitoring various aspects of it's operation.  Currently these are:
+
+<ol>
+<li>Types that Blitz has become aware of via <code>Entry</code>'s read, taken or written including parent classes.</li>
+<li>Takes, reads and writes performed against <code>Entry</code> types.</li>
+<li>Blocked takes and reads.</li>
+<li>Memory used against total available.</li>
+<li>Active transactions count.</li>
+<li>Instance counts - note that lease expired entry's <em>may or may not</em> included in the total.</li>
+</ol>
+
+An example of how to access/use the statistics API (and configuration of startup defaults) can be found <a href="stats_example.html">here</a>.
+
+<h2>Embedded Support</h2>
+
+<p>See <a href="javadocs/org/dancres/blitz/remote/LocalSpace.html">LocalSpace</a> in the <a href="javadocs/org/dancres/blitz/remote/package-summary.html">remote package</a></p>
+
+<p>By default, LocalSpace supports all operations but provides no transactional support (thus the transaction argument to all methods should be <code>null</code>).  Should you wish to use LocalSpace for transactional operations, you will need to provide an appropriate <a href="javadocs/org/dancres/blitz/txn/TxnGateway.html">TxnGateway</a> implementation.  An example implementation can be found in <code>test/org/dancres/blitz/test/TxnStress.java</code> (found in the source code distribution).</p>
+
+<p>See the <a href="embedded.pdf">explanatory slides</a></p>
+<h2>Debugger</h2>
+
+<p>See <a href="javadocs/org/dancres/blitz/Debugger.html">Debugger</a> in the <a href="javadocs/org/dancres/blitz/package-summary.html">blitz package</a></p>
+
+<p>The debugger must be enabled by configuring <code>debugPort</code> in the blitz configuration file to a non-zero port number.  Once Blitz is up and running, connecting to that port (via <code>telnet</code> for example) will trigger dumping of appropriate information to the console.  Note that the port is immediately closed after connection, there is no interactive support.</p>
+
+<h2>BlitzAdmin</h2>
+
+<p>A Blitz-specific admin interface available on the admin proxy.  Currently provides:</p>
+
+<ul>
+<li>the ability to request a checkpoint remotely.</li>
+<li>the ability to request a shutdown (as opposed to destroy).</li>
+<li>the ability to request a hot backup to a specified directory.</li>
+</ul>
+
+<h2>EntrySizer</h2>
+
+<p>EntrySizer is a utility class which will compute an approximate size for an Entry as it would be stored in a Blitz instance.  This sizing information can be used for estimation of memory/disk consumption (before attempting to make an estimate, please read <a href="http://www.jroller.com/page/dancres/20040727#javaspaces_fallacies">this</a> first).  You can use EntrySizer as follows:</p>
+
+<pre>
+package org.dancres.blitz.test;
+
+import net.jini.core.entry.Entry;
+
+import org.dancres.blitz.mangler.EntrySizer;
+
+public class TestSizer {
+    public static void main(String args[]) {
+        try {
+            EntrySizer mySizer = new EntrySizer();
+
+            Entry[] myEntrys = new Entry[] {new DummyEntry("a"),
+                                            new DummyEntry("abcdefgh"),
+                                            new DummyEntry(null)};
+
+            for (int i = 0; i < myentrys.length; i++) {
+                system.out.println("size of: " + myentrys[i] + " = " +
+                                   mySizer.computeSize(myEntrys[i]));
+            }
+        } catch (Exception anE) {
+            System.err.println("Whoops, didn't work");
+            anE.printStackTrace(System.err);
+        }
+    }
+}
+</pre>
+
+<h2>FIFO Entry Ordering</h2>
+
+<p>Blitz supports configurable FIFO ordering on a per-Entry type basis.  See the JavaDoc for <code><a href="javadocs/org/dancres/blitz/config/EntryConstraint.html">org.dancres.blitz.config.EntryConstraint</a></code> and <code><a href="javadocs/org/dancres/blitz/config/Fifo.html">org.dancres.blitz.config.Fifo</a></code></p>
+
+<h2>ColocatedAgent</h2>
+
+<p><code>ColocatedAgent</code>s are configured via the blitz <code>.config</code> file.  They can be used to perform boot or initialization tasks.  See the <a href="javadocs/org/dancres/blitz/remote/user/ColocatedAgent.html">javadoc</a> for more details.  Assuming you have written a ColocatedAgent called MyAgent, add it and dependent classes to the blitz classpath and then add the following to the <code>blitz.config</code> file:</p>
+
+<pre>
+	agents = new ColocatedAgent[] {new MyAgent()};
+</pre
+
+<h2>Loopback TransactionManager</h2>
+
+<p>There are many common cases where a TransactionManager is used to perform an atomic update on a single JavaSpace.  Blitz provides an in-built TransactionManager which can be used in these cases to improve performance.  It behaves like a separate service as per Mahalo but <em>can only be used</em> against it's parent Blitz instance.  This feature is enabled by adding the following line to the <code>blitz.config</code> file:</p>
+
+<pre>
+    loopbackTxnExporter =
+        new BasicJeriExporter(TcpServerEndpoint.getInstance(0),
+             new BasicILFactory(null, null), false, true);
+</pre>
+<p><div align="center"><a href="../index.html">Back to Documentation</a></div></p>
+</body>
+</html>

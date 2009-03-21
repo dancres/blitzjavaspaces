@@ -1,0 +1,4 @@
+grant {
+    permission java.lang.RuntimePermission "createSecurityManager";
+    permission java.security.SecurityPermission "getPolicy";
+};

@@ -1,0 +1,707 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+
+  
+
+
+  
+  <title>Blitz Installation Guide</title>
+  <link rel="stylesheet" type="text/css" href="ssl.css">
+</head>
+
+
+<body>
+
+
+<h1>Blitz Installation Guide</h1>
+
+
+<h2>Table of Contents</h2>
+
+
+<ol>
+
+
+  <li><a href="#intro">Installation Choices</a></li>
+
+
+  <li><a href="#start">Getting Started</a></li>
+
+
+  <li><a href="#running">Running Blitz</a></li>
+
+
+  <li><a href="#memory">Memory Usage</a></li>
+
+
+  <li><a href="#admin">Administration</a></li>
+
+
+  <li><a href="#storagemodels">Appendix A - Storage
+Models</a></li>
+
+
+  <li><a href="#appb">Appendix B - Configuration
+Variables</a></li>
+
+
+</ol>
+
+
+<a name="intro"></a>
+<h2>Installation Choices</h2>
+
+<h3>Installer</h3>
+
+<h4>GUI Install</h4>
+
+<p>If you're a new user or just want to get something up and
+running, it's recommended that you download the installer which
+includes a simple readme and does most of the configuration work for
+you. The installer package is named <code>installer_pj_n_nn.jar</code>
+where <code>n_nn</code> is the release version number.
+Note that you'll still need to download and install the appropriate
+version of JINI - see <a href="required_packages.html">required
+packages</a>. &nbsp;To run the installer use <code>java
+-jar</code> which will display a simple GUI for gathering paths
+and port settings.</p>
+
+<h4>Headless Install</h4>
+
+<p>The installer can also be run in
+headless mode (command-line install) where one should specify the paths
+and port settings as follows:</p>
+
+
+<pre>java -jar installer.jar JDK_Home Jini_Home Install_Dir HTTP_Port</pre>
+
+
+<p>or</p>
+
+
+<pre>java -jar installer.jar Jini_Home Install_Dir HTTP_Port </pre>
+
+<h3>Manual Install</h3>
+
+<p>If you're an experienced user who needs ultimate control over
+installation layout or a developer seeking to make modifications to
+Blitz, you will wish to download either a binary or source distribution
+and read the rest of this guide which will guide you through the
+installation process.</p>
+
+
+<a name="start"></a>
+<h2>Getting Started</h2>
+
+
+<p>First, ensure that you have installed the <a href="required_packages.html">required packages</a>.</p>
+
+
+<p>Second, if you are going to run blitz on JDK 1.4 you will need to modify the configuration files (located in the <code>config</code> directory), substituting <code>backport-util-concurrent50.jar</code> with <code>backport-util-concurrent.jar</code>.</p>
+
+<p>Blitz is fully integrated with JINI 2.1 so the preferred
+method of startup is via the ServiceStarter. However, it's possible to
+run Blitz, for test purposes, in a standalone mode.
+</p>
+
+
+<p>If you've downloaded the source distribution, please read the <a href="dev_guide.html">Developer's Guide</a> and ensure
+you've compiled the Blitz <code>.jar</code>'s (once you've
+done the necessary editing of <code>build.xml</code> you
+can create the <code>.jar</code>'s with a simple <code>ant
+all</code>.
+</p>
+
+
+<h3>Assumptions</h3>
+
+
+For the purposes of the following examples, I assume that:
+<ul>
+
+
+  <li>You've unpacked the distribution in <code>/home/dan/src/jini/space</code></li>
+
+
+  <li>You've installed JINI 2.1 in <code>/home/dan/jini/jini2_1</code></li>
+
+
+  <li>You've installed Brian Murphy's starter kit in <code>/home/dan/jini/jini2_1/jini-start</code></li>
+
+
+  <li>Your machine's name is <code>yakuza</code></li>
+
+
+</ul>
+
+
+<h3>Configuration Basics</h3>
+
+
+<p>Blitz is configured via a configuration file such as the
+example <a href="../config/blitz.config">blitz.config</a>
+file. This file contains options for determining security
+configuration, remote functions and core functions such as the storage
+model (see above).
+</p>
+
+
+<p>Blitz implements a concept of Storage Models which allows the
+user to customize the level of persistence provided. The default
+setting is transient but, should you wish to change this, please read <a href="#storagemodels">Appendix A</a>.</p>
+
+
+<p>Additional configuration files are required for use with the
+ServiceStarter:</p>
+
+
+<ul>
+
+
+  <li> <a href="../config/activatable-group.config">activatable-group.config</a>
+and <a href="../config/start-act-blitz.config">start-act-blitz.config</a>
+are examples of configuration files suitable for starting an
+Activatable instance of Blitz.</li>
+
+
+  <li> <a href="../config/start-trans-blitz.config">start-trans-blitz.config</a>
+is an example configuration file suitable for starting a
+non-Activatable instance of Blitz.</li>
+
+
+</ul>
+
+
+<p>Regardless of the storage model chosen, Blitz may need to, at
+least temporarily, persist it's state so ensure that you have properly
+configured the appropriate entries in the core config file (these are
+the configuration parameters <code>persistDir</code> and <code>logDir</code>
+in the configuration file). This is also important should you wish to
+"clean up" after a Blitz instance as you must delete the contents of
+the persistence and log directories specified by the configuration
+parameters.
+</p>
+
+
+<p><b>Note: You <em>must</em> configure the
+persistence and log directories as described above. Other default
+settings can be left alone though you should probably review the <code>initialGroups</code>
+setting (particularly if you choose to not use Brian Murphy's scripts).
+You should also look at increasing the cache sizes to suit your
+hardware.</b></p>
+
+
+<hr align="center" size="3" width="70%">
+<a name="running"></a>
+<h2>Running Blitz</h2>
+
+
+<h3>Starting JINI</h3>
+
+
+Before starting Blitz, you should start up the necessary JINI services.
+We can do this using Brian Murphy's starter kit scripts as follows:
+<pre>cd /home/dan/jini/jini2_1/jini-start/example/scripts<br><br>./urun httpd<br><br>./urun jeri-transient-reggie<br><br>./urun jeri-transient-mahalo<br><br></pre>
+
+
+You may also find it useful to run the ServiceBrowser so you can check
+that things are performing as expected:
+<pre>./urun jeri-browser<br></pre>
+
+
+Now we must start a codebase server for Blitz:
+<pre>./urun httpd -port 8081 -dir /home/dan/src/jini/space/lib<br></pre>
+
+
+If you plan to deploy an Activatable Blitz instance you will also need
+to start either Phoenix or RMID. Assuming you choose to use RMID (note
+that there are various security options that RMID doesn't support):
+<pre>rmid -J-Djava.security.policy=/home/dan/src/jini/space/config/policy.all<br></pre>
+
+
+<h3>Using ServiceStarter</h3>
+
+
+<p>First, edit the configuration files as desired (you will
+almost certainly need to alter the <code>blitzCodebase</code>,
+<code>jiniRoot</code>, <code>dbLib</code>, <code>blitzRoot</code>
+variables and possibly <code>dbVersion</code>). To start
+an Activatable Blitz instance:</p>
+
+
+<pre>cd /home/dan/src/jini/space/<br><br>java -Djava.security.policy=config/policy.all -jar /home/dan/jini/jini2_1/lib/start.jar config/start-act-blitz21.config<br></pre>
+
+
+Note that the default configuration files expect to create a log for
+the shared activation group in <code>/tmp/sharedvm.log</code>
+which you will need to delete if you wish to start again from scratch,
+re-registering the Blitz instance etc.
+To start a non-activatable instance:
+<pre>cd /home/dan/src/jini/space/<br><br>java -Djava.security.policy=config/policy.all -jar /home/dan/jini/jini2_1/lib/start.jar config/start-trans-blitz21.config<br></pre>
+
+
+<hr align="center" size="3" width="70%">
+<h3>A Word on Configuration Files</h3>
+
+
+<p>Example configurations for JINI 2.1 can be found in the <code>config</code>
+directory and have a <code>21</code> subscript. Those
+configurations without the subscript are examples of scripts which
+provide backward compatibility with JINI 2.0. Note that existing Blitz
+scripts from releases prior to Blitz Pure Java 1.13 will need
+modifications in line with these examples.</p>
+
+
+<h2><a name="memory">Memory Usage</a></h2>
+
+
+<p><a name="memory">For background you should read
+these:
+</a></p>
+
+
+<ul>
+
+
+  <li><a href="http://jroller.com/page/dancres?entry=javaspaces_fallacies">JavaSpaces
+Fallacies</a></li>
+
+
+  <li><a href="http://www.jroller.com/page/dancres?entry=are_you_leaking_memory">Are
+You Sure You're Leaking Memory?</a></li>
+
+
+</ul>
+
+
+<p>Blitz uses it's cache to hold both live and dead (taken or
+lease expired) Entry's. It only clears it's cache once it is full.</p>
+
+
+<p>i.e. If you set the cache size to 100 and you have only five
+entry's with one writer and one taker, Blitz will have a cache
+containing 5 live entries and 95 dead ones after things have run for a
+while.</p>
+
+
+<p><b>Important:</b> Each type of Entry is given it's
+<em>own</em> cache (i.e. there isn't one cache shared
+across all Entry's of all types). So approximate total memory usage (to
+get an accurate figure would require estimating garbage requirements
+etc) is:</p>
+
+
+<pre>memory = 0;<br>for (X in all Entry types) {<br> memory = memory + (cache_size * size_of X)<br>}<br><br>memory = memory + Db database cache size</pre>
+
+
+<p>Where Db database cache size is specified in the configuration
+file under dbCache</p>
+
+
+<p>Thus in OutOfMemory situations, the correct approach is to
+reduce entry cache size or the db cache or increase available JVM heap
+or a combination of the three. Note that in the case of a persistent
+Blitz, you should also consider enabling log file serialization stream
+reset by setting the first boolean parameter to the Persistent class
+constructor (defined as the storageModel in the configuration file) to <code>true</code>.</p>
+
+
+<p>Note that there is a tool (EntrySizer) in the Blitz
+distribution (see Extensions in the documentation for your chosen
+version) which can be used to compute the approximate size of an Entry
+as it will be stored in Blitz's cache.</p>
+
+
+<p>Note also that you can specify individual cache sizes per
+Entry type using EntryConstraint examples of which can be found in the
+configuration files. A good basic approach to using these constraints
+would be to set <code>entryReposCacheSize</code> to
+something small like 256 or 512 and then use the EntryConstraints to
+allocate bigger caches (e.g. 1024, 4096) to specific Entry types.</p>
+
+
+<p>In cases where you are submitting Blitz to high load for
+sustained periods of time and the CPU usage is close to 100%, consider
+enabling throttling to prevent overflow of internal queues. See <code>eventQueueBound</code>
+and <code>taskQueueBound</code> in <a href="#appb">Appendix
+B - Configuration Variables</a>.</p>
+
+
+<a name="admin"></a>
+<h2>Administration</h2>
+
+
+<p>Blitz supports <code>JoinAdmin</code>, <code>DestroyAdmin</code>,
+<code>JavaSpaceAdmin</code> and two custom management
+interfaces (<code>BlitzAdmin</code> and <code>StatsAdmin</code>
+and, therefore, can be managed by a variety of browser tools.</p>
+
+
+<p>The first time a Blitz instance is started, it loads it's JINI
+configuration information such as lookup groups and locators from it's
+configuration file. These are then stored in a binary metadata file
+along with the <code>serviceID</code> and various other
+pieces of runtime information. <b>Future re-starts of the Blitz
+instance will read the configuration information from the binary
+metadata file (unless the StorageModel is Transient, in which case all
+state is lost and the configuration file will be read again)</b>.
+Thus, further configuration changes in respect of JINI state must be
+done via JoinAdmin. Other non-JINI configuration information can be
+changed in the configuration file and will take effect the next time
+the Blitz instance is restarted.</p>
+
+
+<p><code>DestroyAdmin::destroy</code> is usually
+defined to shutdown the service instance and remove all it's persistent
+state. As a convenience, Blitz provides a configuration variable, <code>compliantDestroy</code>,
+which can be used to specify whether a Blitz instance should delete or
+retain it's state when carrying out a destroy request. When <code>compliantDestroy</code>
+is <code>false</code> Blitz simply shut's down in response
+to a destroy call. If <code>compliantDestroy</code> is <code>true</code>
+Blitz will delete all state before shutting down. If <code>compliantDestroy</code>
+is not specified in the configuration file, the default is to retain
+state when <code>destroy</code> is invoked.</p>
+
+
+<p>It is my belief that, as well as destroy, there should be an
+additional standardized method to trigger a shutdown whilst retaining
+state. As there is no such standard, the <code>BlitzAdmin</code>
+interface provides such a method.
+</p>
+
+
+<hr align="center" size="3" width="70%">
+<a name="storagemodels"></a>
+<h2>Appendix A - Storage Models</h2>
+
+
+<p>As of Blitz 2.0, it is possible to configure a number of
+different persistence profiles. They are currently:</p>
+
+
+<ol>
+
+
+  <li><a href="javadocs/org/dancres/blitz/config/Persistent.html">Persistent</a>
+- In this mode, Blitz behaves like a fully persistent JavaSpace such as
+the persistent version of Outrigger.</li>
+
+
+  <li><a href="javadocs/org/dancres/blitz/config/Transient.html">Transient</a>
+- (default setting) causes Blitz to act like a disk-backed cache. In
+this mode, Blitz behaves like the transient version of Outrigger. No
+logging is performed and, when Blitz is restarted, all state (including
+Join state etc.) is lost. Memory-only transient implementations can
+halt with <code>OutOfMemoryError</code>'s if they are
+over-filled. Blitz avoids this problem by swapping to disk when the
+number of stored <code>Entry</code>'s overflows it's
+available cache space. Obviously, performance will degrade relative to
+the amount of swapping Blitz is required to perform. When the caches
+are sufficiently large, Blitz will make minimal use of disk, yielding
+maximal performance.</li>
+
+
+  <li><a href="javadocs/org/dancres/blitz/config/TimeBarrierPersistent.html">TimeBarrierPersistent</a>
+- provides a performance versus persistence QoS tradeoff. In this mode,
+changes made more than a certain number of milliseconds ago are
+guarenteed to be persistent. More recent changes are <em>not
+guarenteed</em> persistent but <em>may be</em>
+persistent. This mode provides the developer with a means of balancing
+persistence needs against performance.</li>
+
+
+</ol>
+
+
+<p>The actual model used is determined by the value of the
+configuration variable <code>storageModel</code>. The
+standard configuration file contains example settings for all three
+modes which should provide reasonable starting points for more precise
+tuning. For more details on the exact settings for each model see the
+Javadoc for <code>org.dancres.blitz.config.Persistent</code>,
+<code>org.dancres.blitz.config.Transient</code> and <code>org.dancres.blitz.config.TimeBarrierPersistent</code>.</p>
+
+
+<hr align="center" size="3" width="70%">
+<a name="appb"></a>
+<h2>Appendix B - Configuration Variables</h2>
+
+
+<h3>Basic Setup</h3>
+
+
+<ul>
+
+
+  <li><i>persistDir</i>=&lt;string&gt; - the
+directory in which blitz will keep checkpointed state.</li>
+
+
+  <li><i>logDir</i>=&lt;string&gt; - the
+directory in which blitz will keep it's log files. If all log files are
+present, Blitz can reconstitute the checkpointed state.</li>
+
+
+  <li><i>storageModel</i>=&lt;type&gt; - see
+Appendix A.</li>
+
+
+</ul>
+
+
+<h3>JINI-related options</h3>
+
+
+<ul>
+
+
+  <li><i>name</i>=&lt;string&gt; - configures
+the name of the Blitz Instance. This value is made available on the
+proxy as a Name attribute</li>
+
+
+  <li><i>loginContext</i>=&lt;LoginContext&gt;
+- sets the identity the Blitz instance will take on when it starts up.
+Many security configurations will require this to be set.</li>
+
+
+  <li><i>compliantDestroy</i>=&lt;Boolean&gt;
+- see Administration section above.</li>
+
+
+  <li><i>initialGroups</i>=&lt;String[]&gt; -
+defines the collection of LUS groups under which a Blitz instance will
+register on initial startup (after initial startup, groups are held in
+an internal database which can be reconfigured via JoinAdmin.</li>
+
+
+  <li><i>initialLocators</i>=&lt;LookupLocator[]&gt;
+- set this to configure registration with specific LUS. This value is
+only used for initial startup as initialGroups.</li>
+
+
+  <li><i>initialAttrs</i>=&lt;Entry[]&gt; -
+the Entry attributes to make available on the proxy as part of initial
+startup. Behaviour is the same as for initialGroups and initialLocators.</li>
+
+
+  <li><i>serverExporter</i>=&lt;Exporter&gt;
+-
+configures the JERI endpoint to be used by the Blitz instance. Allows
+for configuration of tcp, ssl, https etc as the transport.</li>
+
+
+  <li><i>*preparer</i>=&lt;ProxyPreparer&gt;
+- defines the proxy preparer to be used to verify various remote
+references which may be passed to a Blitz instance.</li>
+
+
+  <li><i>*recoveredPreparer</i>=&lt;ProxyPreparer&gt;
+- defines the proxy preparer to be used to verify a remote instance
+recovered from the log/checkpoint storage during a restart.</li>
+
+
+  <li><span style="font-style: italic;">loopbackTxnExporter</span>=&lt;Exporter&gt;
+- configures and enables the loopback transaction manager which can be
+used to accelerate transactions against this Blitz instance.
+&nbsp;Note
+it cannot be used to co-ordinate transactions amongst multiple
+participants nor does it yet support security options. <span style="font-weight: bold;">[BETA]</span></li>
+
+
+</ul>
+
+
+<h3>Notify Subsystem</h3>
+
+
+<ul>
+
+  <li><i>syncNotifyOnWrite</i>=&lt;boolean&gt; - when enabled forces writes to wait
+until all associated events have been processed. *IfExists is a significant performance drain and by default Blitz aggressively optimizes event delivery for those calls such that events from writes close to the resolution point may be ignored.  If you are using *IfExists and require completely deterministic behaviour, enable this option.  For those not using *IfExists leave this option disabled for better performance.</li>
+
+  <li><i>maxEventProcessors</i>=&lt;int&gt; -
+defines the maximum number of threads to be used to empty the notify
+event queue and perform matching against notify templates. Defaults to
+1.</li>
+
+
+  <li><i>eventgenSaveInterval</i>=&lt;int&gt;
+- the number of events to be generated against an event registration
+before logging to disk.</li>
+
+
+  <li><i>eventgenRestartJump</i>=&lt;int&gt;
+- the number by which to advance the sequence number of an event
+registration at recovery time. This "jump" is designed to allow an
+end-user application to detect the fact that recovery has been
+performed and that events may have been lost/never generated.</li>
+
+
+</ul>
+
+
+<h3>Lease Subsystem</h3>
+
+
+<p>Allows control of leasing operation such as assigning a
+maximum allowable lease time.</p>
+
+
+<ul>
+
+
+  <li><i>entryLeaseBound</i>=&lt;long&gt; -
+sets the maximum lease permissible for an Entry. Set this to zero to
+allow Lease.FOREVER</li>
+
+
+  <li><i>notifyLeaseBound</i>=&lt;long&gt; -
+sets the maximum lease permissible for a notify registration. Set this
+to zero to allow Lease.FOREVER</li>
+
+
+  <li><i>leaseReapInterval</i>=&lt;long&gt; -
+the time between active scans for lease expired resources. Value should
+be ms (0 disables active cleanup). Normally, Blitz uses read/take
+activity to do cleanup (passive). If memory or disk resource is scarce,
+configure this to non-zero to activate more aggressive cleaning (which,
+in turn, is more CPU aggressive). Alternatively, you can enable manual
+lease cleanup (via execution of <code>org.dancres.blitz.tools.RequestReap</code>
+by setting this to <code>org.dancres.blitz.lease.LeaseReaper.MANUAL_REAP</code></li>
+
+
+</ul>
+
+
+<h3>Advanced Setup</h3>
+
+
+<ul>
+
+
+  <li><i>loadBackoff</i>=&lt;int[]&gt; -
+configures the deadlock avoidance timings for loading entry's. Requires
+a two int array consisting of base_backoff and the random jitter to
+apply to that backoff.</li>
+
+
+  <li><i>maxOidAllocators</i>=&lt;int&gt; -
+the maximum number of allocators to use per Entry type for id
+generation. Ids are never reused thus a small number of allocators may
+run out of ids in highly concurrent take/write scenarios. More
+allocators also improves concurrency.</li>
+
+
+  <li><i>maxWriteThreads</i>=&lt;int&gt; -
+should not be changed from the default value of 1.</li>
+
+
+  <li><i>threadKeepAlive</i>=&lt;long&gt; -
+ms before a write thread will be killed rather than pooled.</li>
+
+
+  <li><i>maxTaskThreads</i>=&lt;int&gt; - the
+maximum number of threads allowed for a task pool.</li>
+
+
+  <li><i>entryReposReadahead</i>=&lt;int&gt;
+- the maximum number of Entry's to fault in should the cache provide no
+matches. Zero means readahead should be disabled. This is a global
+setting which can be overidden with individual Entry constraints - see
+the Javadoc for <code>org.dancres.blitz.config.EntryConstraint</code>.</li>
+
+  <li><i>agents</i>=&lt;ColocatedAgent[]&gt;
+- is an array of initializers to be run against the Blitz proxy before it 
+is published via a join manager to lookup services.  See the javadoc for 
+<code>org.dancres.blitz.remote.user.ColocatedAgent</code>.</li>
+
+  <li><i>updateContents</i>=&lt;boolean&gt; - Determines whether the contents methods on <code>JavaSpaceAdmin</code> and <code>JavaSpace05</code> update their working match sets with entry's written after the set was created.  Note enabling this can mean that one never reaches the end of the match set or that the match set overflows memory if it fills faster than a client empties it.</li>
+
+</ul>
+
+
+<h3>Memory Management</h3>
+
+
+<ul>
+
+
+  <li><i>desiredPendingWrites</i>=&lt;int&gt;
+- the number of writes to batch for disk update.</li>
+
+
+  <li><i>throttlePendingWrites</i>=&lt;int&gt;
+- the maximum number of writes to batch for disk update. If the queue
+fills beyond this threshold (perhaps due to slow disks) throttling is
+applied to foreground operations whilst disk catches up.</li>
+
+
+  <li><i>dbCache</i>=&lt;int&gt; - the max
+size of cache Db is allowed (bigger being better).</li>
+
+
+  <li><i>maxDbTxns</i>=&lt;int&gt; - the
+maximum number of transactions Db should support concurrently. Under
+highly concurrent loads, increase this number.</li>
+
+
+  <li><i>entryReposCacheSize</i>=&lt;int&gt;
+- the maximum number of Entry's (per type) to cache. This is a global
+setting which can be overidden with individual Entry constraints - see
+the Javadoc for <code>org.dancres.blitz.config.EntryConstraint</code>.</li>
+
+
+  <li><i>eventQueueBound</i>=&lt;int&gt; -
+limits the maximum size of the notify event queue - once full, writing
+threads will be throttled down to prevent overflow. Defaults to
+0(disabled)</li>
+
+
+  <li><i>taskQueueBound</i>=&lt;int&gt; -
+limits the maximum size of the task queue (used for processing new
+writes against blocked takes or reads) - once full, writing threads
+will be throttled down to prevent overflow. Defaults to 0(disabled)</li>
+
+
+</ul>
+
+
+<h3>Debug Options</h3>
+
+
+<ul>
+
+
+  <li><i>ignoreLogConfig</i>=&lt;Boolean&gt;
+- when true, causes Blitz to ignore any logger <code>Level</code>
+entrys in it's configuration file. This allows a developer to use the
+standard logger configuration approach when appropriate.</li>
+
+
+  <li><i>logCkpts</i>=&lt;Boolean&gt; - if
+true, causes Blitz to generate a log message at each checkpoint</li>
+
+
+  <li><i>statsDump</i>=&lt;long&gt; - pause in milliseconds which determines how often the stats are dumped to console. Setting this to zero disables stats dumping.</li>
+
+
+  <li><i>stats</i>=&lt;Switch[]&gt; - Defines
+the default
+settings for stats gathering. See the Javadoc for <code>org.dancres.blitz.stats</code>.
+This information is processed by Dashboard.</li>
+
+
+</ul>
+
+
+<p></p>
+
+
+<div align="center"><a href="../index.html">Back
+to Documentation</a></div>
+
+
+</body>
+</html>

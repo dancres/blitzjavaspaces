@@ -1,0 +1,20 @@
+<body>
+
+<P> This package implements the remote layer.  As well as the more obvious
+space-related methods, these classes must handle the dispatching of lease
+renewal, admin requests and transaction management.
+</P>
+
+<p> This package is also responsible for handling shutdown and the various
+security aspects </p>
+
+<p> Note that all stubs are wrapped in proxies to prevent direct access to
+the stub which, of course, implements all interfaces.  Someone that requires
+the TransactionParticipant remote reference shouldn't be able to "see"
+JoinAdmin, for example. </p>
+
+<p> This package is intended to be used via the JINI ServiceStarter package but can be run via a test skeleton</p>
+
+@see org.dancres.blitz.remote.BlitzServiceImpl
+
+</body>

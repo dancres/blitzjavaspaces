@@ -1,0 +1,22 @@
+grant {
+    permission java.security.AllPermission "", "";
+
+  permission com.sun.rmi.rmid.ExecOptionPermission 
+    "-Djava.rmi.server.codebase=*";
+
+  permission com.sun.rmi.rmid.ExecPermission
+      "/usr/local/java/bin/java";
+
+  permission com.sun.rmi.rmid.ExecPermission
+      "/usr/local/java/bin/java_g";
+
+  permission com.sun.rmi.rmid.ExecPermission
+      "/usr/local/java/jre/bin/java";
+
+  permission com.sun.rmi.rmid.ExecPermission
+      "/usr/local/java/jre/bin/java_g";
+
+  permission com.sun.rmi.rmid.ExecOptionPermission
+      "*";
+
+};

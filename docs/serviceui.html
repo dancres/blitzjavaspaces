@@ -1,0 +1,96 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>ServiceUI Support</title>
+<link rel="stylesheet" type="text/css" href="ssl.css" />
+</head>
+<body>
+<h1>ServiceUI Support</h1>
+
+<h3>JINI 2.0 vs JINI 2.1</h3>
+
+<p>
+All the command line examples below are designed for use with JINI 2.1.  To make these command-lines work with JINI 2.0 substitute <code>jsk-platform.jar</code> for <code>jsk-lib.jar</code>
+</p>
+<h2>Getting Started</h2>
+
+<p>Before you can configure and use the support for ServiceUI, you must download the ServiceUI v1.1 binaries (and source if you desire) from <a href="http://www.artima.com/jini/serviceui/CodeAccess.html">here</a> (note that you'll need a JINI.org login account).</p>
+
+<p>To use the example config files provided in the Blitz distribution, unpack the ServiceUI distribution and copy the serviceui-1.1.jar to &lt;blitz_root&gt;/thirdpartylib where &lt;blitz_root&gt; is the root directory in which you've installed the Blitz distribution.</p>
+
+<h2>Dashboard</h2>
+
+<h3>Configuration Changes</h3>
+
+<p>To use Dashboard as a ServiceUI, we must make additions to classpath and codebase, after which we must modify the initial attributes for the Blitz proxy.</p>
+
+<p>First we change the codebase in the start <code>.config</code> to add the Blitz ServiceUI <code>.jar</code>:</p>
+
+<pre>
+        private static codebase = ConfigUtil.concat(new Object[] {
+            "http://", ConfigUtil.getHostName(), ":", codebasePort, "/",
+            "blitz-dl.jar"});
+</pre>
+
+<p>to:</p>
+
+<pre>
+        private static codebase = ConfigUtil.concat(new Object[] {
+            "http://", ConfigUtil.getHostName(), ":", codebasePort, "/",
+            "blitz-dl.jar", " ",
+            "http://", ConfigUtil.getHostName(), ":", codebasePort, "/",
+            "blitzui.jar", " ",
+            "http://", ConfigUtil.getHostName(), ":", codebasePort, "/",
+            "backport-util-concurrent50.jar" // Or the JDK 1.4 version (remove the "50")
+            });
+</pre>
+
+<b>NOTE:</b> You will need to ensure the backport <code>.jar</code> is in the directory your codebase server distributes <code>.jar</code>s from.
+
+<p>Then we modify the classpath to add both the Blitz ServiceUI .jar and the ServiceUI library .jar:</p>
+
+<pre>
+        static classpath = ConfigUtil.concat(new Object[] {
+            jiniRoot, "jsk-lib.jar",
+            separator, jiniRoot, "sun-util.jar", separator, dbLib,
+            separator, blitzLib, "blitz.jar"});
+
+</pre>
+
+<p>to:</p>
+
+<pre>
+        static classpath = ConfigUtil.concat(new Object[] {
+            jiniRoot, "jsk-lib.jar",
+            separator, jiniRoot, "sun-util.jar", separator, dbLib,
+            separator, blitzLib, "blitz.jar",
+            separator, blitzLib, "blitzui.jar",
+            separator, otherLib, "serviceui-1.1.jar"});
+</pre>
+
+<p>The initial registration attributes are set using the <code>initalAttrs</code> configuration variable in the <code>blitz.config</code> file - we must add some imports:</p>
+
+<pre>
+import net.jini.core.entry.Entry;
+import org.dancres.blitz.serviceui.DashboardUI;
+</pre>
+
+<p>and the appropriate variable setting:</p>
+
+<pre>
+    initialAttrs = new Entry[]
+            {org.dancres.blitz.serviceui.DashboardUI.getUIDescriptor()};
+</pre>
+
+<h3>Configuration Examples</h3>
+
+<ul>
+<li>Example start <a href="../config/serviceui-start21.config">config</a>.</li>
+<li>Example blitz <a href="../config/blitz-ui.config">config</a>.</li>
+</ul>
+
+<h3>Note!</h3>
+
+<p>For these changes to take effect, you must shutdown the Blitz instance if it's currently running, delete any log and state files (as specified by the <code>logDir</code> and <code>persistDir</code> variables) and then restart Blitz with the changes made as above.</p>
+</body>
+</html>

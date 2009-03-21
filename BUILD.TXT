@@ -1,0 +1,21 @@
+Before attempting to compile, ensure that there is a link from the current berkeley Db Java binary (found in dbjava) to dbjava/je.jar.
+
+On Windows systems, simply copy the current Berkeley DB/Java binary in dbjava to je.jar
+
+The build of the original installer is not included and currently disabled as it will be replaced with the new installer shortly.
+
+See docs/dev-guide.html for additional information on building blitz but once the steps above have been performed a build can be done with:
+
+ant clean
+ant compile
+
+A basic release can be built with:
+
+ant clean
+ant release
+
+A working set of jars can build with:
+
+ant clean
+ant jars
+

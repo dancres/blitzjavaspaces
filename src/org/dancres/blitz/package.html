@@ -1,0 +1,18 @@
+<body>
+
+<P> This package contains the core space implementation.  It is only dimly
+aware of remoteness which is implemented in package org.dancres.blitz.remote.
+</P>
+
+<p> This all got started one day after I'd been reading an article in Login
+magazine (a publication of Usenix) - "One up on LRU" which presented a new
+caching algorithm out of IBM research.  The properties of this algorithm were,
+I thought, well suited to the potential variations in access patterns
+JavaSpaces implementations can encounter "in the field".  How could I make this
+work fit into a JavaSpace implementation?  My solution was to adopt an
+approach similar to that used in operating systems - virtual memory/paging.
+Thus the code-writing began....</p>
+
+@see org.dancres.blitz.SpaceImpl
+
+</body>

@@ -1,0 +1,186 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+  <title>Tools Guide</title>
+
+
+  <meta http-equiv="Content-type" content="text/html; charset=iso-8859-1">
+
+  <link rel="stylesheet" type="text/css" href="ssl.css">
+
+</head>
+
+<body style="background-color: rgb(255, 255, 255);">
+
+<a name="tools"></a>
+<h1>Tools Guide</h1>
+
+<h3>Dashboard</h3>
+
+Used to monitor a Blitz JavaSpaces instance as it runs. You can
+graphically access statistics such as memory usage, instance counts and
+number of active transactions. Graphing options are also provided,
+where appropriate.
+Dashboard supports lookup of a Blitz JavaSpaces instance via multicast
+discovery (just specify the space name) or unicast discovery (specify
+the lookup service host and the space name):
+<pre>cd /home/dan/src/jini/space<br>java -Djava.security.policy=config/policy.all<br> -classpath /home/dan/jini/jini2_1/lib/jsk-lib.jar:lib/dashboard.jar:lib/stats.jar:/home/dan/jini/jini2_1/lib/jsk-platform.jar:/home/dan/jini/jini2_1/lib/sun-util.jar<br> org.dancres.blitz.tools.dash.StartDashBoard dancres<br></pre>
+
+or
+<pre>cd /home/dan/src/jini/space<br>java -Djava.security.policy=config/policy.all<br> -classpath lib/dashboard.jar:lib/stats.jar:/home/dan/jini/jini2_1/lib/jsk-lib.jar:/home/dan/jini/jini2_1/lib/jsk-platform.jar:/home/dan/jini/jini2_1/lib/sun-util.jar<br> org.dancres.blitz.tools.dash.StartDashBoard rogue:4160 dancres<br></pre>
+
+<p><b>NOTE:</b> The provision of stats can be
+controlled programmatically or via the configuration file. Currently,
+for Dashboard to provide full information, you must have enabled
+appropriate options in the configuration file - e.g.:</p>
+
+<pre>import org.dancres.blitz.stats.Switch;<br>import org.dancres.blitz.stats.OpSwitch;<br>import org.dancres.blitz.stats.InstanceSwitch;<br><br>org.dancres.blitz {<br> stats = new Switch[] {new OpSwitch(OpSwitch.ALL_TYPES,<br> OpSwitch.TAKE_OPS, true),<br> new OpSwitch(OpSwitch.ALL_TYPES, OpSwitch.READ_OPS, true),<br> new OpSwitch(OpSwitch.ALL_TYPES, OpSwitch.WRITE_OPS, true),<br> new InstanceSwitch(InstanceSwitch.ALL_TYPES, true)};<br>}<br></pre>
+
+<hr align="center" size="3" width="70%">
+<h3>SyncAndShutdown</h3>
+
+Used to shutdown a Blitz instance and sync all it's state to disk. This
+tool works with all <code>StorageModel</code>s including <code>Transient</code>.
+<code>SyncAndShutdown</code> supports lookup of a Blitz
+JavaSpaces instance via multicast discovery (just specify the space
+name) or unicast discovery (specify the lookup service host and the
+space name):
+<pre>cd /home/dan/src/jini/space<br>java -Djava.security.policy=config/policy.all<br> -classpath /home/dan/jini/jini2_1/lib/jsk-lib.jar:lib/blitz.jar:/home/dan/jini/jini2_1/lib/jsk-platform.jar:/home/dan/jini/jini2_1/lib/sun-util.jar<br> org.dancres.blitz.tools.SyncAndShutdown dancres<br></pre>
+
+or
+<pre>cd /home/dan/src/jini/space<br>java -Djava.security.policy=config/policy.all<br> -classpath /home/dan/jini/jini2_1/lib/jsk-lib.jar:lib/blitz.jar:/home/dan/jini/jini2_1/lib/jsk-platform.jar:/home/dan/jini/jini2_1/lib/sun-util.jar<br> org.dancres.blitz.tools.SyncAndShutdown rogue:4160 dancres<br></pre>
+
+<p><b>NOTE:</b>The shutdown of a Blitz instance may
+result in the loss of state associated with transactions active (not
+commited) at the time of shutdown. Typically, entries written under
+such transactions will be lost and any takes performed will not have
+been completed such that the <code>Entry</code>s will
+remain in the databases. All <code>Entry</code>s untouched
+by transactions are <em>guarenteed</em> to be undamaged.</p>
+
+<hr align="center" size="3" width="70%">
+<h3>DumpEntries</h3>
+
+Used to dump the contents of a Blitz instance's databases after it's
+been shutdown with <code>SyncAndShutdown</code>. This tool
+will work in combination with <code>SyncAndShutdown</code>
+against even a transient Blitz instance.
+<p>Basic usage of <code>DumpEntries</code> requires
+that you specify the blitz configuration file of the Blitz instance
+whose contents you wish to display.</p>
+
+<pre>cd /home/dan/src/jini/space<br>java -Djava.security.policy=config/policy.all<br> -classpath /home/dan/jini/jini2_1/lib/jsk-lib.jar:dbjava/je.jar:lib/blitz.jar:/home/dan/jini/jini2_1/lib/jsk-platform.jar:/home/dan/jini/jini2_1/lib/sun-util.jar<br> org.dancres.blitz.tools.DumpEntries config/blitz.config<br></pre>
+
+<p><code>DumpEntries</code> will display not only
+Blitz internal information but will also attempt to unpack the Entry
+instance and display it using the relevant codebase. To disable this
+feature (perhaps because the codebase is not available) run <code>DumpEntries</code>
+as follows:</p>
+
+<pre>cd /home/dan/src/jini/space<br>java -Djava.security.policy=config/policy.all -Dnounpack=true<br> -classpath /home/dan/jini/jini2_1/lib/jsk-lib.jar:dbjava/je.jar:lib/blitz.jar:/home/dan/jini/jini2_1/lib/jsk-platform.jar:/home/dan/jini/jini2_1/lib/sun-util.jar<br> org.dancres.blitz.tools.DumpEntries config/blitz.config<br></pre>
+
+<p><b>NOTE:</b> Dumping the contents of a Blitz
+instance should <em>only</em> be done after it's been
+shutdown using <code>SyncAndShutdown</code>. <code>DumpEntries</code>
+is strictly read-only and, therefore, cannot damage the contents of the
+databases.</p>
+
+<hr align="center" size="3" width="70%">
+<h3>HotBackup (experimental)</h3>
+
+Used to make a hot backup of a blitz instance. Arguments are a
+directory to backup to and either a space name or an LUS host URL and
+spacename. Note that the specified directory must be available to the
+machine on which the Blitz instance is running.
+<pre>cd /home/dan/src/jini/space<br>java -Djava.security.policy=config/policy.all<br> -classpath /home/dan/jini/jini2_1/lib/jsk-lib.jar:lib/blitz.jar:/home/dan/jini/jini2_1/lib/jsk-platform.jar:/home/dan/jini/jini2_1/lib/sun-util.jar<br> org.dancres.blitz.tools.HotBackup /home/dan/src/jini/space/backups dancres<br></pre>
+
+or
+<pre>cd /home/dan/src/jini/space<br>java -Djava.security.policy=config/policy.all<br> -classpath /home/dan/jini/jini2_1/lib/jsk-lib.jar:lib/blitz.jar:/home/dan/jini/jini2_1/lib/jsk-platform.jar:/home/dan/jini/jini2_1/lib/sun-util.jar<br> org.dancres.blitz.tools.HotBackup /home/dan/src/jini/space/backups rogue:4160 dancres<br></pre>
+
+<p><b>Note:</b> the specified directory should be
+empty otherwise the backup will be refused.</p>
+
+<hr align="center" size="3" width="70%">
+<h3>Entry Cleaning (experimental)</h3>
+
+<p>The <code>Cleanup</code> tool remotely connects
+to a specified Blitz instance causing it to clean out all old Entry's.
+The process performs the following steps:</p>
+
+<ol>
+
+  <li>Kill all outstanding blocking matches</li>
+
+  <li>Abort all outstanding transactions</li>
+
+  <li>Delete all Entry's</li>
+
+  <li>Checkpoint (to ensure all deletes are commited to disk)</li>
+
+  <li>Delete all repositories</li>
+
+</ol>
+
+<p><code>Cleanup</code> supports lookup of a Blitz
+JavaSpaces instance via multicast discovery (just specify the space
+name) or unicast discovery (specify the lookup service host and the
+space name):</p>
+
+<pre>cd /home/dan/src/jini/space<br>java -Djava.security.policy=config/policy.all<br> -classpath /home/dan/jini/jini2_1/lib/jsk-lib.jar:lib/blitz.jar:/home/dan/jini/jini2_1/lib/jsk-platform.jar:/home/dan/jini/jini2_1/lib/sun-util.jar<br> org.dancres.blitz.tools.Cleanup dancres<br></pre>
+
+or
+<pre>cd /home/dan/src/jini/space<br>java -Djava.security.policy=config/policy.all<br> -classpath /home/dan/jini/jini2_1/lib/jsk-lib.jar:lib/blitz.jar:/home/dan/jini/jini2_1/lib/jsk-platform.jar:/home/dan/jini/jini2_1/lib/sun-util.jar<br> org.dancres.blitz.tools.Cleanup rogue:4160 dancres<br></pre>
+
+<hr align="center" size="3" width="70%">
+<h3>Manual Lease Reaping</h3>
+
+Used to cause Blitz to perform a single lease-reaping pass clearing out
+all dead Entrys. Ensure that <code>leaseReapInterval</code>
+is set to <code>LeaseReaper.MANUAL_REAP</code>. Failure to
+set this option will cause manual lease cleanup to fail.
+This tool works with all <code>StorageModel</code>s
+including <code>Transient</code>. <code>RequestReap</code>
+supports lookup of a Blitz JavaSpaces instance via multicast discovery
+(just specify the space name) or unicast discovery (specify the lookup
+service host and the space name):
+<pre>cd /home/dan/src/jini/space<br>java -Djava.security.policy=config/policy.all<br> -classpath /home/dan/jini/jini2_1/lib/jsk-lib.jar:lib/blitz.jar:/home/dan/jini/jini2_1/lib/jsk-platform.jar:/home/dan/jini/jini2_1/lib/sun-util.jar<br> org.dancres.blitz.tools.RequestReap dancres<br></pre>
+
+or
+<pre>cd /home/dan/src/jini/space<br>java -Djava.security.policy=config/policy.all<br> -classpath /home/dan/jini/jini2_1/lib/jsk-lib.jar:lib/blitz.jar:/home/dan/jini/jini2_1/lib/jsk-platform.jar:/home/dan/jini/jini2_1/lib/sun-util.jar<br> org.dancres.blitz.tools.RequestReap rogue:4160 dancres<br></pre>
+
+<hr align="center" size="3" width="70%">
+<h3>Log Dumping</h3>
+
+<p>This tool can be used offline in a similar fashion to
+DumpEntries, to examine Blitz's activity logs allowing the user to form
+a picture of exactly what operations were performed during a particular
+run. Log Dumping can only be used for persistent instances and includes
+details of lease renewals, notification registrations, transactions and
+read/write/take.</p>
+
+<p>The tool requires a single argument which is the directory
+specified in the <code>logDir</code> variable of the
+relevant <code>.config</code>. Here's an example:</p>
+
+<pre>java -Djava.security.policy=config/policy.all<br> -classpath /Users/dan/jini/jini2_1/lib/jsk-lib.jar:/Users/dan/jini/jini2_1/lib/jsk-platform.jar:lib/blitz.jar<br> org.prevayler.implementation.SnapshotPrevaylerImpl<br> /Users/dan/blitz-install/logs/<br></pre>
+
+<p>Note that normally, only successful operations are logged but
+it can sometimes be useful to also see failed reads and takes. By
+default Blitz does not log these but you can enable it by adding <code>logSearches
+= new Boolean(true);</code> to your blitz configuration file.
+&nbsp;You may also wish to enable logging of instance counts by
+adding <code>logCounts = new Boolean(true);</code> to your blitz configuration file.</p>
+
+<hr align="center" size="3" width="70%">
+<h3>Lookup Settings Import</h3>
+
+<p>In accordance with the Jini specifications, Blitz will only read the <code>initial</code>* lookup parameters from it's configuration file on first boot (in transient mode this means the parameters are re-read every boot, whilst persistent modes will deem first boot to occur when there's no previous log or database state present).</p>
+
+<p>Under various circumstances it can be desirable to reset Blitz's internal lookup settings from a configuration file post first-boot.  This <code>ReconfigLookup</code> tool is used to perform this task providing support to selectively import settings from a specified configuration file.</p>
+ 
+<p><code>ReconfigLookup</code> accepts a path to a configuration file followed by one or more flags indicating which lookup settings to import.  These flags are <code>-groups</code>, <code>-attrs</code>, <code>-locators</code>.  An example usage of this tool appears below:</p>
+
+<pre>java -Djava.security.policy=config/policy.all<br> -classpath /Users/dan/jini/jini2_1/lib/jsk-lib.jar:/Users/dan/jini/jini2_1/lib/jsk-platform.jar:lib/blitz.jar:dbjava/je.jar<br> org.dancres.blitz.tools.ReconfigLookup <br> /Users/dan/blitz/config/blitz.config <br> -groups -attrs -locators<br></pre>
+
+</body>
+</html>

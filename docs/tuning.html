@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Tuning Blitz</title>
+</head>
+<body>
+<h1>Blitz Tuning Guide</h1>
+
+<h2>Principle of Locality (POL)</h2>
+
+<p>Many JavaSpace applications follow the same 'principle of locality' (referred to as POL throughout the rest of this text) as their single-process, non-remote brethren.  The POL essentially amounts to a rule of thumb - 'a program will access 10% of a program 90% of the time'.  This same principle also applies to data access, though not quite as strongly.  What does this mean for JavaSpace applications?
+</p>
+<ol>
+<li>Recently written entry's might well be taken soon.</li>
+<li>Recently written entry's might well be read soon.</li>
+<li>Certain entry's will be 'favourites' accessed many times for some reason or another.</li>
+<li>Some applications may be entirely random access.  These are difficult to tune for and usually respond best to brute force methods such as more memory, larger caches, faster disks etc.</li>
+</ol>
+
+<p>Clearly, not all entry's written to a space fall into any of the above categories.  Those that <em>do</em> form the <em>working set</em>.</p>
+
+<h2>Taking Advantage</h2>
+
+<p>Microprocessors and operating systems exploit the POL to boost performance using caching.  In any given situation, the perfect cache is one that:</p>
+
+<ol>
+<li>Can be indexed in a fashion well suited to the information it contains.</li>
+<li>Is big enough to contain the whole working wet.</li>
+</ol>
+
+<p>So, for Blitz to perform at it's best, we'd like the entire working set of entry's to be held in cache.  Clearly, in cases where the working set is large, we may not be able to fit it all in cache.  When this happens, we rely on the <em>cache replacement policy</em> to make best use of the cache.
+</p>
+<h2>Blitz Architecture</h2>
+
+<p>Blitz stores segments Entry's by type storing them in separate repositories.  Each respository contains two kinds of cache:
+
+<ul>
+<li>Entry Cache - which maintains copies of the most commonly accessed entry's.</li>
+<li>Write Buffer - which maintains dirty entry's recently flushed from the Entry cache.</li>
+</ul>
+
+<p>The Entry Cache is designed to accelerate repeated access to Entry's such as queue heads/tails or tokens.  Write Buffer is designed to take advantage of the fact that many JavaSpace applications use flow-type models which results in many recently written Entry's being taken almost immediately afterward.  It caches recently written entry's anticipating that they will be almost immediately taken/deleted.  Everytime this happens, Write Buffer saves us disk accesses.</p>
+
+<p>Blitz provides various storage models offering different tradeoffs between level of persistence and performance - see <a href="#appendixa">Appendix A</a> for more details.</p>
+
+<h2>Basic Tuning</h2>
+
+Tuning starts with the creation of a "work profile" for the application followed by adjustments in Blitz's configuration:
+
+<ol>
+<li>Determine, via observation (using static analysis, program instrumentation and Blitz statistics), what the approximate working set of entry's will be for your application and configure the entry cache size to be at least that big, if possible.  In cases, where it isn't possible, the cache replacement policy will handle the "swapping" that will occur.  In many cases, a cache size which is 25% of the size of the working set gives reasonable performance.  <i>For high throughput systems</i> (especially if <code>take</code> is commonly used), size the cache as <code>size_of_working_set + (25% of size_of_working_set)</code>.  The Write Queue should then be configured to at least <code>2 * entry_cache_size</code>.</li>
+<li>Use the Berkeley DB cache statistics to size the Berkeley DB cache (Blitz can be configured to display these statistics at each checkpoint interval).</li>
+<li>Determine the persistence needs of your application and configure the appropriate storage model.</li>
+</ol>
+
+<h2>Other Recommendations</h2>
+
+<p>If at all possible, leave lease reaping turned off (lease reaping is the term we use for the process of actively trawling through all entries in a Blitz instance deleting those that have expired).
+</p>
+<p>If your application requires significant <code>RemoteEvent</code> throughput (as the result of using <code>notify</code>) or needs to handle dispatching of a large number of blocking queries (as the result of a large number of clients waiting for entry's using <code>read*</code> or <code>take*</code> with non-zero timeouts), increase the number of task threads.</p>
+
+<h2>Optimizing Logging</h2>
+
+<p>Both persistent and time-barrier persistent storage models make use of a log to provide their persistence guarentees.  In the case of persistent, once all the above steps have been taken, Blitz's performance will most likely be determined by the speed with which it can log sequentially to disk.  This aspect of the persistent model should be tuned as follows:</p>
+
+<ol>
+<li>Determine the time required for a single operation to be forced to disk (unlike many other situations, any writes that Blitz puts in the log must be flushed immediately to disk in order to ensure the ACID properties) and set the batch write window size to that time plus a little more (say 5-10ms).  This will slow down benchmarks which use a single thread to do, for example, a simple loop performing <code>write</code>s and <code>take*</code>s (if you wish to tune for these situations set the window to zero) but will provide a performance boost at any reasonable concurrent load.</li>
+<li>If you have a multi-channel disk controller with multiple disks, consider putting the Blitz logs on one disk and the persistent storage directory on another.</li>
+<li>Use some kind of disk array or buy faster disks.  Once you've done all the other tweaking, this is the last and most expensive resort.  You <em>may</em> need to add more processing power but remember that disk performance in most systems is considerably less than that of even the cheapest of desktop processors.  The same can be said of memory so, when buying additional hardware for your system, ensure you've done some profiling to correctly determine which components need upgrading.</li>
+<li>Enable concurrent batching of log writes.</li>
+<li>Size the log buffer such that all writes within a batch are held in memory before being written to disk as one big chunk.</li>
+<li>Determine, via observation, the expected throughput of transactions within the application and set the checkpointing interval accordingly.  Note that <code>take*</code>s, <code>read*</code>s or <code>write</code>s performed with a <code>null</code> transaction are treated as transactions containing a single operation.  Adjusting this value changes the balance between speed of recovery versus overall throughput.
+</li>
+</ol>
+
+<p>The time-barrier persistent storage model doesn't support concurrent batching (this is achieved naturally by the design) but usually requires a much larger log buffer than the default persistent storage model because it will tend towards writing larger numbers of log records in batches.
+</p>
+
+<a NAME="appendixa"><h2>Appendix A - Storage Models</h2>
+
+<p>As of Blitz 2.0, it is possible to configure a number of different persistence profiles.  They are currently:</p>
+
+<ol>
+<li><a href="javadocs/org/dancres/blitz/config/Persistent.html">Persistent</a> - the default setting.  In this mode, Blitz behaves like a fully persistent JavaSpace such as the persistent version of Outrigger.</li>
+<li><a href="javadocs/org/dancres/blitz/config/Transient.html">Transient</a> - causes Blitz to act like a disk-backed cache.  In this mode, Blitz behaves like the transient version of Outrigger.  No logging is performed and, when Blitz is restarted, all state (including Join state etc.) is lost.  Memory-only transient implementations can halt with <code>OutOfMemoryError</code>'s if they are over-filled. Blitz avoids this problem by swapping to disk when the number of stored <code>Entry</code>'s overflows it's available cache space. Obviously, performance will degrade relative to the amount of swapping Blitz is required to perform. When the caches are sufficiently large, Blitz will make minimal use of disk, yielding maximal performance.</li>
+<li><a href="javadocs/org/dancres/blitz/config/TimeBarrierPersistent.html">TimeBarrierPersistent</a> - provides a performance versus persistence QoS tradeoff.  In this mode, changes made more than a certain number of milliseconds ago are guarenteed to be persistent.  More recent changes are <em>not guarenteed</em> persistent but <em>may be</em> persistent.  This mode provides the developer with a means of balancing persistence needs against performance.</li>
+</ol>
+
+<p>The actual model used is determined by the value of the configuration variable <code>storageModel</code>.  The standard configuration file contains example settings for all three modes which should provide reasonable starting points for more precise tuning.  For more details on the exact settings for each model, including tuning options, see the Javadoc for <code>org.dancres.blitz.config.Persistent</code>, <code>org.dancres.blitz.config.Transient</code> and <code>org.dancres.blitz.config.TimeBarrierPersistent</code>.</p>
+
+<h2>Appendix B - Global Configuration Options related to Performance</h2>
+
+<ul>
+<li><code>persistDir</code> - location for persistent storage.  Contains entry's, entry meta data, indexes etc.</li>
+<li><code>logDir</code> - location for log files.</li>
+<li><code>dbCache</code> - the size (in bytes) of the Berkeley DB cache.</li>
+<li><code>entryReposCacheSize</code> - the size of the entry cache - each entry type has it's own cache.</li>
+<li><code>leaseReapInterval</code> - not a performance option as such - determines how often Blitz actively searches for and delete's lease expired entry's.</li>
+<li><code>maxTaskThreads</code> - the maximum number of threads to use to dispatch blocked takes or reads or deliver RemoteEvents.</li>
+</ul>
+
+<h2>Appendix C - Statistics Gathering Options for Performance Analysis</h2>
+
+<ul>
+<li><code>dumpDbStats</code> - enable dumping of Berkeley Db cache stats.  Fewer misses means better performance.</li>
+<li><code>dumpWQStats</code> - enable dumping of write queue statistics.  Used to monitor disk I/O (only truly useful to a Blitz system engineer).</li>
+<li><code>logCkpts</code> - enable dumping of checkpointing stats.</li>
+<li><code>stats</code> - sets defaults for statistics available via the statistics API (see <a href="extensions.html">Blitz Extensions</a>).</li>
+</ul>
+
+<p><div align="center"><a href="../index.html">Back to Documentation</a></div></p>
+</body>
+</html>

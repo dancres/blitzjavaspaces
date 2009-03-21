@@ -1,0 +1,376 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+
+
+  
+  <title>Blitz Overview</title>
+</head>
+
+
+<body>
+
+
+
+
+<h1>Blitz - Javaspaces Made Simple</h1>
+
+
+ 
+<p>The <a href="http://www.dancres.org/blitz/index.html">Blitz</a> JavaSpaces<sup>TM</sup>
+implementation aims to provide a rich set of features to make the
+development &amp; deployment of JavaSpaces technology easier, more
+efficient and more fun to experiment with.
+</p>
+
+
+<p>The Blitz Project is the first <a href="http://www.jini.org/">Jini<sup>TM</sup></a> 2.x compliant JavaSpace to be made available under an <a href="http://www.opensource.org/">OpenSource</a> <a href="LICENSE.TXT">license</a>.</p>
+
+
+
+<h2>Key features</h2>
+
+
+
+<ul>
+
+
+  <li>Ease of installation.</li>
+
+
+
+  <li>Jini 2.x enabled.</li>
+
+
+
+  <li>Use of established VM principles.</li>
+
+
+
+  <li>Smart indexing.</li>
+
+
+
+  <li>Tuneable persistence.</li>
+
+
+
+  <li>Tools.</li>
+
+
+
+  <li>Entry Browsing.</li>
+
+
+
+  <li>Embeddable Space support.</li>
+
+
+
+  <li>Active/Passive/Manual lease cleanup.</li>
+
+
+
+  <li>Built for experimentation and expansion.</li>
+
+
+
+  <li>Easy integration with the Inca X IDE &amp; Runtime Environment.</li>
+
+
+</ul>
+
+
+ 
+
+<h3>Ease of installation</h3>
+
+Blitz aims to make installation simpler by not relying on other visible
+services such as RDBMS products (which tend to require significant
+admininistration knowledge of both the RDBMS and the OS) and providing
+default configurations which make it useful out of the box.
+
+<h3>JINI 2.x Enabled</h3>
+
+
+
+First-class support for a variety of security configurations and deployment environments.
+
+<h3>Use of established VM Principles</h3>
+
+
+
+<p>Blitz's central abstraction for Entry storage is based on the
+classic Virtual Memory (VM) concept such that a set of Entry's are
+cached in memory at any one time and then paged, as required, according
+to an algorithm which typically bases it's decisions on usage patterns.
+&nbsp;In addition, readahead can be supported such that we can fault in
+a collection of potentially matching Entry's when the cache has
+provided no suitable candidates.
+</p>
+
+
+
+<p>This re-use of an OS concept allows Blitz to take advantage of a
+huge body of existing research with respect to effective caching in the
+face of varying application behaviour (some will have hotspots, some
+will be random, some will reference things strictly in order).</p>
+
+
+
+<p>Different JavaSpace applications will have common sets of behaviour
+from a cache usage perspective. Blitz architecture makes it possible to
+support several different cache management strategies and allow an
+astute user to pick the one most suited to their application behaviour.
+</p>
+
+
+
+<h3>Smart Indexing</h3>
+
+
+
+<p>Blitz uses on disk and in-memory Entry storage, which is fully indexed automatically and keeps search times to a minimum.
+</p>
+
+
+
+<h3>Tunable persistence</h3>
+
+
+
+<p>Disk space is now cheap &amp; efficient both in speed and
+reliability which reduces the motivation for developing a memory-only
+JavaSpace. The basic performance limit for a persistent space is
+related to guarenteeing consistency which is determined by the speed
+with which a system can force log entries to disk. Blitz tackles these
+problems by providing a range of profiles (Storage Models) giving
+different tradeoffs between data-integrity and speed.</p>
+
+
+
+<ul>
+
+
+  <li>VM-style caching with full consistent logging to ensure all changes are durable - full persistence.</li>
+
+
+
+  <li>VM-style caching with periodic flushing (after x seconds) - ensuring all changes x seconds ago are persistent.</li>
+
+
+
+  <li>VM-style caching with no logging - if your cache is big enough to
+hold the working-set of Entry's for your application, no paging occurs
+so all work is performed in memory with no disk access required -
+transient.</li>
+
+
+</ul>
+
+
+
+<h3>Tools</h3>
+
+
+
+A selection of tools are provided to assist developers and administrators:
+
+<ol>
+
+
+  <li>Dashboard - GUI tool which displays useful information such as
+the number of instances of each type, number of currently active
+transactions, operation totals and memory consumption.</li>
+
+
+  <li>SyncAndShutdown - Flushes all updates to disk and shuts down a Blitz JavaSpaces instance.</li>
+
+
+  <li>DumpEntries - Displays the current contents of a Blitz JavaSpaces instance optionally unpacking and displaying each Entry.</li>
+
+
+  <li>Cleanup - Clears all Entry's from the Blitz JavaSpaces instance
+and removes all schema information allowing for re-definition of Entry
+structure with no restart required.</li>
+
+
+  <li>EntrySizer - assists in calculating Blitz JVM memory footprint</li>
+
+
+</ol>
+
+
+
+<h3>Entry Browsing</h3>
+
+
+
+<p>Blitz JavaSpaces supports <code>com.sun.jini.outrigger.JavaSpaceAdmin</code> allowing appropriate Service Browsers (e.g. Inca X's community browser) to view and manipulate the Entry's within an instance.</p>
+
+
+
+<h3>Embeddable Space support</h3>
+
+Certain multi-threaded applications, running in a single JVM, can
+benefit from the use of JavaSpaces. In these situations, having the
+JavaSpace available as a remote service is undesirable. This feature
+allows an application to run Blitz locally, within it's own JVM,
+providing a performance boost.
+
+<h3>Active/Passive lease cleanup</h3>
+
+
+
+<p>In high-performance applications, the cost of tracking lease expiry
+and clearing expired entries from disk may affect throughput
+sufficiently that it is more economical to accept that some disk-space
+will be lost to expired entries. Conversely, in environments where
+disk-space is at a premium, it may be more appropriate to expend
+processor and disk time doing full cleanup of expired entries.</p>
+
+
+
+<p>Blitz provides three options for handling lease expiry processing:</p>
+
+
+<ol>
+
+
+  <li>When an expired entry is loaded into cache-memory, it will be
+marked for deletion at the next cache flush. This has the effect of
+cleaning up entries which are slowing down the speed of searches.
+(passive cleanup)</li>
+
+
+  <li>Occasional background scans of disk storage to find and remove
+expired entry's that never get into cache. This has the effect of
+conserving disk space. (active cleanup)</li>
+
+
+  <li>User requested background scans of disk storage to find and remove expired entry's. (manual cleanup)</li>
+
+
+</ol>
+
+
+
+<p><b>Note</b>: the active cleanup code by default, is turned <em>off</em>.  It can be turned on by setting the <code>leaseReapInterval</code> variable in the configuration file to a non-zero value.</p>
+
+
+
+<p><b>Note</b>: the manual cleanup code by default, is turned <em>off</em>.  It can be turned on by setting the <code>leaseReapInterval</code> variable in the configuration file to <code>org.dancres.blitz.lease.LeaseReaper.MANUAL_REAP</code>.</p>
+
+
+
+<h3>Built for experimentation and expansion</h3>
+
+Because Blitz is open-source, should the need arise, you can make
+whatever changes you desire. The design is based on a small number of
+generic abstractions making it easy (hopefully) to get to grips with
+the code.
+
+<h3>Easy integration with the Inca X IDE &amp; Runtime Environment</h3>
+
+
+
+The <a href="http://www.incax.com/">Inca X</a> team have been testing
+Blitz and have built an installer to integrate it into all versions of
+their IDE &amp; Runtime Environment.
+
+<h2>Maturing with further development</h2>
+
+
+
+<p>Looking at RDBMS technology, one can see that it has reached
+maturity - these are some of the defining characteristics of such a
+market:
+</p>
+
+
+ 
+<ul>
+
+
+  <li>A few dominant vendors.</li>
+
+
+
+  <li>A large body of technical research.</li>
+
+
+
+  <li>Established benchmarks.</li>
+
+
+
+  <li>Large number of common features between vendors.</li>
+
+
+
+  <li>A large body of knowledge with respect to application development and how to get appropriate performance.</li>
+
+
+
+</ul>
+
+
+ 
+<p>The maturity of the RDBMS market is in marked contrast to the
+JavaSpaces technology where there's still a substantial amount of work
+to be done.
+</p>
+
+
+ 
+<p>Blitz is intended to be a vehicle for furthering the development of
+JavaSpaces technology covering issues as diverse as internal
+implementation, application development (usage patterns, frameworks
+etc) and administration/deployment.
+</p>
+
+ 
+
+<h2>About Blitz</h2>
+
+
+
+The Blitz project was started by Dan Creswell.
+
+<h3>Credits</h3>
+
+
+
+Blitz uses:
+
+<ol>
+
+
+	<li><a href="http://gee.cs.oswego.edu/dl/classes/EDU/oswego/cs/dl/util/concurrent/intro.html">Doug Lea's util.concurrent package</a></li>
+
+
+	<li><a href="http://teatrove.sourceforge.net/trove.html">TeaTrove</a></li>
+
+
+	<li><a href="http://www.prevayler.org/">Prevayler</a></li>
+
+
+	<li><a href="http://www.sleepycat.com/">Berkeley Db and Berkeley Db Java Edition</a></li>
+
+
+</ol>
+
+
+
+<p></p>
+
+<div align="center"><a href="../index.html">Back to Documentation</a></div>
+
+
+
+<p><i>Java and all Java-based marks are trademarks or registered trademarks of Sun Microsystems, Inc. in the U. S. and other countries</i></p>
+
+
+
+</body>
+</html>

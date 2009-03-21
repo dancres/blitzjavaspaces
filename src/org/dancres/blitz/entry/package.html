@@ -1,0 +1,39 @@
+<body>
+
+<P> The blitz storage engine lives in this package and is responsible for
+storage and indexing of MangledEntry instances. It is built around the concept
+of virtual memory with EntrySleeves being the equivalent of pages which can
+be cached or written to Storage instances. </P>
+
+<P> EntrySleeves contain a certain amount of transient information 
+(SleeveState) which is used to manage them whilst they are cached in
+memory </P>
+
+<P> EntrySleeves may be pinned in memory using the PINNED flag.  This
+prevents any state changes made from being reflected to disk (this is most
+often used to prevent writes getting to disk until the containing
+transaction has commited). Other flags identify dirty, deleted or never
+written EntrySleeves which determines what should be done when EntrySleeve
+state is sync'd back to disk. </P>
+
+<P> Recently written entries are not immediately written to disk (though they
+are logged) on the assumption that these Entries might well be immediately
+taken which has the potential to save us a disk write/delete cycle. </P>
+
+<P> Note: flushing in this context means removal from the cache and can only
+occur after sync'ing which is the copying of appropriate state to disk. Of
+course, if the state of an EntrySleeve hasn't changed disk needn't be updated.
+</P>
+
+<p> Storage management is mostly done in EntryStorage which delegates a lot
+of responsibility to WriteScheduler (manages PINNED Sleeves).
+WriteScheduler delegates handling of updates to WriteBuffer which
+asynchronously updates disk via WriteDaemon.  We use asynchronous writing
+because it allows the upper layers to avoid waiting for disks to perform an
+operation.</p>
+
+@see org.dancres.blitz.entry.SleeveState
+@see org.dancres.blitz.entry.WriteScheduler
+@see org.dancres.blitz.entry.WriteBuffer
+@see org.dancres.blitz.disk.WriteDaemon
+</body>

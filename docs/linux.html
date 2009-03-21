@@ -1,0 +1,79 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Linux Notes</title>
+</head>
+<body>
+<h1>Linux Notes</h1>
+
+<h2>Get the right JDK</h2>
+
+<p>Various recent distributions, notably Redhat 9 and Fedora Core 1, come with a new thread library, <a href="http://people.redhat.com/drepper/nptl-design.pdf">NPTL</a> which will not work with JDK 1.4.0 or less.  If you use one of these distributions, ensure you've installed JDK 1.4.1 or better for best results.
+</p>
+<h2>Configuring the Linux Kernel</h2>
+
+<p>The development series 2.5 (currently 2.6-testX) introduced a number of new disk I/O schedulers.  The default has been changed to be the anticipatory scheduler.  Whilst the performance of this scheduler is generally good, there may be occasions where it affects Blitz's performance.  Thus, for performance testing purposes it's worth comparing performance of the default scheduler with that of the deadline scheduler.</p>
+
+<p>The desired scheduler can be selected adding a kernel boot parameter as follows:
+</p>
+<pre>
+elevator=deadline
+</pre>
+
+<p>It's worth noting that most RDBMS tend to run best with the deadline scheduler.</p>
+
+<h2>Configuring Multicast</h2>
+
+<p>Various Linux distributions do not have multicast enabled by default.  Before attempting to run JINI, ensure that your network interface supports multicast and that the appropriate routes are configured.
+</p>
+<p><b>To check your network interface supports multicast:</b>
+</p>
+<pre>
+$ ifconfig -a 
+eth0      Link encap:Ethernet  HWaddr 00:90:F5:0E:22:B2
+          inet addr:192.168.123.169  Bcast:192.168.123.255  Mask:255.255.255.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:53660 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:27334 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:72230735 (68.8 Mb)  TX bytes:1944680 (1.8 Mb)
+          Interrupt:9 Base address:0x2800
+
+lo        Link encap:Local Loopback
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          UP LOOPBACK RUNNING  MTU:16436  Metric:1
+          RX packets:244325 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:244325 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:73688746 (70.2 Mb)  TX bytes:73688746 (70.2 Mb)
+</pre>
+
+<p>Note the <code>MULTICAST</code> attribute in the third line of the eth0 properties.  If this is not present, it's possible that your kernel has not been compiled with multicast support.  <em>But</em> before re-compiling the kernel try enabling multicast on your network interface (<code>eth0</code> in this case) via <code>ifconfig</code>:</p>
+
+<pre>
+ifconfig etho multicast
+</pre>
+
+<p><b>To check that multicast routing is configured:</b></p>
+
+<pre>
+$ route -n
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+192.168.123.0   0.0.0.0         255.255.255.0   U     0      0        0 eth0
+127.0.0.0       0.0.0.0         255.0.0.0       U     0      0        0 lo
+224.0.0.0       0.0.0.0         240.0.0.0       U     0      0        0 eth0
+0.0.0.0         192.168.123.254 0.0.0.0         UG    0      0        0 eth0
+</pre>
+
+<p>If the destination <code>224.0.0.0</code> entry is not present you will need to enable multicast routing.  To enable multicast routing, run the following command as root:</p>
+
+<pre>
+# route add -net 224.0.0.0 netmask 240.0.0.0 dev eth0
+</pre>
+
+<p>On Redhat systems, one can often configure this route statically via the network setup configuration tools.  Alternatively, try executing this line as part of a startup script in <code>/etc/rc.d/*</code>.</p>
+
+<p><div align="center"><a href="../index.html">Back to Documentation</a></div></p>
+</body>
+</html>

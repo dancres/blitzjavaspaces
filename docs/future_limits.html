@@ -1,0 +1,23 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Future Work and Limitations</title>
+</head>
+<body>
+<h1>Future Work and Limitations</h1>
+
+<h2>Memory-only Storage Option</h2>
+
+Currently, Blitz always requires the presence of Db, it's backend database (even though, in certain configurations, it will only be using it to store join settings and service id).  A future release will provide support for an entirely memory-based configuration with no requirement for a backend database of any description.
+
+<h2>Various Transaction Logging Optimizations</h2>
+
+<p>Blitz sometimes generates logging output that isn't strictly necessary.  A future release will remove this extra output yielding a performance increase.</p>
+
+<h2>Automated Tuning Tools</h2>
+
+<p>Given the available stats (and a few additional ones), Blitz should be able to recommend appropriate tuning options which can then be set in the configuration file.  It might even be possible to have Blitz automatically tune these settings on the fly.</p>
+
+<p><div align="center"><a href="../index.html">Back to Documentation</a></div></p>
+</body>
+</html>

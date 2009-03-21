@@ -1,0 +1,76 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Blitz HelloWorld Example</title>
+<link rel="stylesheet" type="text/css" href="ssl.css" />
+</head>
+<body>
+<h1>Blitz HelloWorld Example</h1>
+
+<h2>Introduction</h2>
+
+<p>This example provides a simple demonstration of how to use a JavaSpace (it is not Blitz specific).  
+</p>
+
+<h2>Compiling</h2>
+
+The example consists of four classes:
+
+<ol>
+<li><a href="../examples/helloworld/Lookup.java">Lookup</a> which handles service lookup.</li>
+<li><a href="../examples/helloworld/Writer.java">Writer</a> which generates Entry's.</li>
+<li><a href="../examples/helloworld/Taker.java">Taker</a> which takes Entry's.</li>
+<li><a href="../examples/helloworld/TestEntry.java">TestEntry</a> which is the Entry class.</li>
+</ol>
+
+In order to compile these classes you will require the following <code>.jar</code>'s:
+
+<ul>
+<li><code>jsk-lib.jar, jsk-platform.jar from the JINI 2.x distribution.</li>
+</ul>
+
+Assuming that your JINI 2.1 distribution is in <code>/jini2_1</code> and your Blitz distribution is in <code>/blitz</code>, you can compile the example as follows:
+
+<pre>
+cd /blitz/examples/helloworld
+
+javac -classpath /jini2_1/lib/jsk-lib.jar:/jini2_1/lib/jsk-platform.jar *.java
+</pre>
+
+<h2>Running</h2>
+
+<p>Before starting the example, ensure that you have a Blitz instance running in a public lookup group - see the <a href="install_guide.html">Installation Guide</a>.  This is necessary because the <code>Lookup</code> class does a single lookup and discover step - it does not register with discovered lookup services.  Thus, if a Blitz instance isn't registered beforehand, it will not be found (I'll fix this in a future release!).</p>
+
+<p>We are now ready to run the example.  First, we'll start the taker - open a new terminal window and then:
+</p>
+
+<pre>
+cd /blitz
+
+java -Djava.security.policy=config/policy.all -classpath /jini2_1/lib/jsk-lib.jar:/jini2_1/lib/jsk-platform.jar:/blitz/examples/ helloworld.Taker
+</pre>
+
+Now we'll run the Writer - open a new terminal window and then:
+
+<pre>
+cd /blitz
+
+java -Djava.security.policy=config/policy.all -classpath /jini2_1/lib/jsk-lib.jar:/jini2_1/lib/jsk-platform.jar:/blitz/examples/ helloworld.Writer
+</pre>
+
+<p>The Taker will exit automatically when it hasn't taken an Entry in the last 60 seconds.</p>
+
+<h2>More Material</h2>
+
+<p>For more examples see:</p>
+
+<ol>
+<li><a href="http://www.incax.com/examples.htm#jsip">JavaSpaces in Practice Examples</a></li>
+<li><a href="https://bodega.dev.java.net/">Bodega Project</a></li>
+</ol>
+
+<p>For JavaSpaces resources see <a href="http://www.dancres.org/cottage/javaspaces.html">here</a></p>
+
+<p><div align="center"><a href="../index.html">Back to Documentation</a></div></p>
+</body>
+</html>

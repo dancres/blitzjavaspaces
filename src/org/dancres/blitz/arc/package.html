@@ -1,0 +1,20 @@
+<body>
+
+<p>Generic ARC caching implementation.  This package makes a few assumptions
+as modelled in the interfaces:
+
+<ol>
+<li> It caches the contents of a BackingStore implementation which may be
+disk-based, network-based or whatever.</li>
+<li> Each entity implements the Identifiable interface indicating that it
+has the property of being uniquely-identifiable. </li>
+<li> Each entity is identified by an instance of the opaque type, Identifier.
+</li>
+</ol>
+
+@see org.dancres.blitz.arc.ArcCache
+@see org.dancres.blitz.arc.Identifier
+@see org.dancres.blitz.arc.Identifiable
+@see org.dancres.blitz.arc.BackingStore
+
+</body>

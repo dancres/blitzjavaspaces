@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<!DOCTYPE opstring SYSTEM "java://com/sun/rio/dtd/rio_opstring.dtd" [
+    <!ENTITY Local.IP SYSTEM "java://java.net.InetAddress.getLocalHost().getHostAddress()" >
+    <!ENTITY Local.Port "9000" >
+    <!ENTITY CodeServerURL "http://&Local.IP;:&Local.Port;/" >
+]>
+
+<!--
+This opstring requires Rio 3.0.1 and Blitz Pure Java Edition.
+This opstring is largely based on the outrigger opstring from the Rio distribution.
+
+The easiest way to get things going is to put this file in the "xml" folder of your Rio install dir.
+Also put blitz.jar, blitz-dl.jar, blitzui.jar, stats.jar and je.jar in the "lib" dir.
+
+Don't forget to change configures below.  Note the group name is set in two places.  Add config parameters if you need.
+I just included the minimal to get Blitz running.
+
+Please contact me at mingfang@mac.com comments/errors/suggestions.
+Updated by jeje@jini.org for ServiceUI and Dashboard support.
+ -->
+
+<opstring>
+    <OperationalString Name="Blitz">
+
+        <ServiceBean Name="Blitz" MatchOnName="yes">
+            <Codebase>&CodeServerURL;</Codebase>
+            <Interfaces>
+                <Interface>net.jini.space.JavaSpace</Interface>
+                <Resources>
+                    <JAR>blitz-dl.jar</JAR>
+		    <JAR>blitzui.jar</JAR>
+                    <JAR>rio-dl.jar</JAR>
+                </Resources>
+            </Interfaces>
+
+            <ImplementationClass>org.dancres.blitz.remote.BlitzServiceImpl
+                <Resources>
+                    <JAR>blitz.jar</JAR>
+		    <JAR>blitzui.jar</JAR>
+                    <JAR>je.jar</JAR>
+		    <JAR>stats.jar</JAR>
+                    <JAR>jsk-lib.jar</JAR>
+                    <JAR>sun-util.jar</JAR>
+		    <JAR>serviceui-1.1.jar</JAR>
+		    <JAR>backport-util-concurrent50.jar</JAR>
+                </Resources>
+            </ImplementationClass>
+
+            <Configuration>
+                <Component Name="org.dancres.blitz">
+		    <Parameter Name="name" Value="&quot;dancres&quot;"/>
+                    <Parameter Name="persistDir" Value="&quot;blitz_db&quot;"/>
+                    <Parameter Name="storageModel" Value="new org.dancres.blitz.config.Persistent(false, false, 20, true, 10000, 8192)"/>
+                    <Parameter Name="initialGroups" Value="new java.lang.String[]{&quot;rio&quot;}"/>
+                    <Parameter Name="logDir" Value="&quot;blitz_log&quot;"/>
+
+		    <Parameter Name="initialAttrs" Value="new net.jini.core.entry.Entry[] {org.dancres.blitz.serviceui.DashboardUI.getUIDescriptor()}"/>
+		    <Parameter Name="stats" Value="new org.dancres.blitz.stats.Switch[] {new org.dancres.blitz.stats.OpSwitch(org.dancres.blitz.stats.OpSwitch.ALL_TYPES, org.dancres.blitz.stats.OpSwitch.TAKE_OPS, true), new org.dancres.blitz.stats.OpSwitch(org.dancres.blitz.stats.OpSwitch.ALL_TYPES, org.dancres.blitz.stats.OpSwitch.READ_OPS, true), new org.dancres.blitz.stats.OpSwitch(org.dancres.blitz.stats.OpSwitch.ALL_TYPES, org.dancres.blitz.stats.OpSwitch.WRITE_OPS, true), new org.dancres.blitz.stats.InstanceSwitch(org.dancres.blitz.stats.InstanceSwitch.ALL_TYPES, true)}"/>
+                </Component>
+            </Configuration>
+
+
+            <ServiceLevelAgreements>
+                <SystemRequirements>
+                    <Utilization ID="System" High=".7"/>
+                    <Utilization ID="CPU" High=".8"/>
+                </SystemRequirements>
+            </ServiceLevelAgreements>
+
+            <Groups>
+                <Group>rio</Group>
+            </Groups>
+
+            <Maintain>1</Maintain>
+
+            <MaxPerMachine>1</MaxPerMachine>
+
+            <Comment>Blitz JavaSpace</Comment>
+
+        </ServiceBean>
+
+        <Include>infrastructure.xml</Include>
+
+    </OperationalString>
+</opstring>
