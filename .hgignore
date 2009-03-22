@@ -1,0 +1,8 @@
+build/
+docs/javadocs/
+examples/.*\.class
+lib/
+
+# Eclipse-specific ignores
+.classpath
+.project
