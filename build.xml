@@ -23,6 +23,7 @@
   <property name="release" location="release"/>
   <property name="config" location="config"/>
   <property name="examples" location="examples"/>
+  <property name="reports.tests" location="reports/tests"/>
 
   <taskdef name="classdepandjar" 
     classname="org.jini.project.example.jade.tools.ClassDepAndJarTask"
@@ -72,6 +73,7 @@
         <pathelement location="${otherlib}/slf4j-api-1.2.jar"/>
         <pathelement location="${otherlib}/slf4j-jdk14-1.2.jar"/>
         <pathelement location="${otherlib}/serviceui-1.1.jar"/>
+    	<pathelement location="${otherlib}/junit-4.5.jar"/>
         <pathelement location="${bdb}"/>
     </path>
 
@@ -102,6 +104,19 @@
       <fileset dir="${src}/org/dancres/blitz/tools/dash/images">
       </fileset>
     </copy>
+  </target>
+
+  <target name="test" depends="compile">
+  	<junit printsummary="on" haltonfailure="off" showoutput="true" filtertrace="off">
+  	  <classpath refid="allclasses"/>
+  	  <batchtest fork="yes" todir="${reports.tests}">
+  	  	<formatter type="plain" usefile="true">
+  	    </formatter>
+  	    <fileset dir="${testsrc}">
+  	      <include name="**/junit/**/*Test*.java"/>
+  	    </fileset>
+  	  </batchtest>
+  	</junit>
   </target>
 
   <target name="installer" depends="jars">
@@ -721,16 +736,6 @@
       classpathref="allclasses">
       <arg value="200"/>
       <arg value="400"/>
-    </java>
-  </target>
-
-  <target name="thrash" depends="compile"
-      description="Thrash the space some and see if it breaks">
-    <java classname="org.dancres.blitz.test.ThrashTest"
-      classpathref="allclasses">
-      <arg value="5"/>
-      <arg value="4000"/>
-      <arg value="100"/>
     </java>
   </target>
 
