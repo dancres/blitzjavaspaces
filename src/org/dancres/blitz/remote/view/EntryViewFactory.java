@@ -122,6 +122,9 @@ public class EntryViewFactory implements Reapable {
         }
     }
 
+    /**
+       @todo Fix up the missing synchronization inside the loop (should be around the get and expire test)
+     */
     public void reap(ReapFilter aFilter) {
         /*
           No reap filters will be configured so we can ignore those - see

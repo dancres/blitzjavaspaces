@@ -15,6 +15,12 @@ import org.dancres.blitz.mangler.EntryMangler;
 
 import org.dancres.blitz.remote.view.EntryViewUID;
 
+/**
+ * @todo Consider making this thread safe, even though multi-threading against a MatchSet makes little sense in most cases
+ * (like multi-thread JS transactions).
+ * 
+ * @author dan
+ */
 public class MatchSetImpl implements MatchSet {
     static final int CHUNK_SIZE = 50;
     
