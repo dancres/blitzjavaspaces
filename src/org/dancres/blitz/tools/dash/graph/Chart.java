@@ -325,7 +325,7 @@ public class Chart extends JPanel
                             g.drawLine(xoff-3,(int)y,xoff+wid,(int)y);  
                         }
                 
-                        y+=(hi/(nLabels-1));
+                        y+=(hi/(nLabels-1.0));
                 
                     }
             

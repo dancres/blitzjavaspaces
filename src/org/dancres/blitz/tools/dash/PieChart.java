@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+
 import javax.swing.JPanel;
 
 public class PieChart extends JPanel {
@@ -50,7 +51,7 @@ public class PieChart extends JPanel {
                 max = values[i];
             }
             maxLabelWidth = Math.max(fontMetrics
-                                     .stringWidth((String) (labels[i])),
+                                     .stringWidth((labels[i])),
                                      maxLabelWidth);
         }
         float multiFactor = 100 / totalValue;
@@ -93,8 +94,8 @@ public class PieChart extends JPanel {
         int incSweepAngle = 0;
         int incLabelAngle = (int) (angle[0] / 2);
         for (int i = 0; i < columns; i++) {
-            sweepAngle = (int) Math.round(angle[i]);
-            g.setColor((Color) colors[i]);
+            sweepAngle = Math.round(angle[i]);
+            g.setColor(colors[i]);
             if (i == (columns - 1)) {
                 sweepAngle = 360 - incSweepAngle;
                 g.fillArc(x, y, width, height, initAngle, (-sweepAngle));
@@ -106,10 +107,10 @@ public class PieChart extends JPanel {
                     ly = (int) (cy + (radius * Math
                                       .sin((incLabelAngle * 3.14f / 180) - 3.14f / 2)));
                     adjustLabel(i);
-                    g.drawString((String) labels[i], lx, ly);
+                    g.drawString(labels[i], lx, ly);
                 }
                 if (showPercent) {
-                    px = (int) (cx + ((radius * 2 / 3) * Math
+                    px = (int) (cx + ((radius * 2.0f / 3) * Math
                                       .cos((incLabelAngle * 3.14f / 180) - 3.14f / 2)));
                     py = (int) (cy + ((radius * 2 / 3) * Math
                                       .sin((incLabelAngle * 3.14f / 180) - 3.14f / 2)));
@@ -133,7 +134,7 @@ public class PieChart extends JPanel {
                 ly = (int) (cy + (radius * Math
                                   .sin((incLabelAngle * 3.14f / 180) - 3.14f / 2)));
                 adjustLabel(i);
-                g.drawString((String) labels[i], lx, ly);
+                g.drawString(labels[i], lx, ly);
             }
             if (showPercent) {
                 px = (int) (cx + ((radius * 2 / 3) * Math
