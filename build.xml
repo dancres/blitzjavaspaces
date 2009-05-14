@@ -2,6 +2,10 @@
     <description>
         Main build file for Blitz space implementation running on Db-Java
     </description>
+    
+  <property file="${basedir}/user.properties" />
+  <property file="${basedir}/build.properties" />
+
   <!-- set global properties for this build -->
   <property name="src" location="src"/>
   <property name="testsrc" location="test"/>
@@ -10,8 +14,8 @@
   <property name="installer_build" location="installer_build"/>
   <property name="db_root" location="dbjava/je-3.2.68/"/>
   <property name="bdb" location="dbjava/je.jar"/>
-  <property name="jini_root" location="/Users/dan/jini/jini2_1"/>
-  <property name="jdk_root" location="/usr/local/java"/>
+  <property name="jini_root" location="${JINI_HOME}"/>
+  <property name="jdk_root" location="${JDK_HOME}"/>
   <property name="stats" location="examples/statsclient"/>
   <property name="statsbuild" location="examples/statsclient"/>
   <property name="hello" location="examples/helloworld"/>
