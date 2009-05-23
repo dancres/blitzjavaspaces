@@ -3,7 +3,11 @@ package org.dancres.blitz.mangler;
 import java.io.*;
 
 import com.sun.jini.proxy.MarshalledWrapper;
+import java.util.Collection;
+import java.util.Iterator;
 import net.jini.entry.AbstractEntry;
+import net.jini.io.ObjectStreamContext;
+import net.jini.io.context.IntegrityEnforcement;
 
 /**
    <p>Represents a packaged up Entry ready for unpacking or passing to the
@@ -31,7 +35,7 @@ public class MangledEntry implements Externalizable, net.jini.core.entry.Entry {
     private boolean isSnapshot;
 
     /**
-     * Set to <code>true</code> in <code>readObject</code> method
+     * Set to <code>true</code> in <code>readExternal</code> method
      * (called when we're deserialized).  When we unpack the contents using
      * EntryMangler, we check this flag and perform integrity checks if
      * required.
@@ -47,6 +51,21 @@ public class MangledEntry implements Externalizable, net.jini.core.entry.Entry {
     public static final MangledEntry NULL_TEMPLATE =
         new MangledEntry("java.lang.Object", null, new MangledField[0],
             new String[0], true);
+
+    static boolean integrityEnforced(ObjectInput aStream) {
+        if (aStream instanceof ObjectStreamContext) {
+            Collection ctx =
+                    ((ObjectStreamContext) aStream).getObjectStreamContext();
+            for (Iterator i = ctx.iterator(); i.hasNext();) {
+                Object obj = i.next();
+                if (obj instanceof IntegrityEnforcement) {
+                    return ((IntegrityEnforcement) obj).integrityEnforced();
+                }
+            }
+        }
+
+        return false;
+    }
 
     public MangledEntry() {
 
@@ -91,6 +110,7 @@ public class MangledEntry implements Externalizable, net.jini.core.entry.Entry {
     public void readExternal(ObjectInput objectInput) throws IOException,
         ClassNotFoundException {
 
+        checkIntegrity = integrityEnforced(objectInput);
         theParents = (String[]) objectInput.readObject();
         theFields = new MangledField[objectInput.readInt()];
 
@@ -197,7 +217,7 @@ public class MangledEntry implements Externalizable, net.jini.core.entry.Entry {
         int myHash = 0;
 
         for (int i = 0; i < theFields.length; i++) {
-            myHash ^= theFields.hashCode();
+            myHash ^= theFields[i].hashCode();
         }
 
         return myHash;
