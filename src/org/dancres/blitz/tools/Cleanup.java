@@ -5,21 +5,9 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.RMISecurityManager;
 
-import net.jini.discovery.*;
-
-import net.jini.lookup.*;
-import net.jini.lookup.entry.Name;
-
-import net.jini.core.lookup.ServiceItem;
-import net.jini.core.lookup.ServiceTemplate;
-
-import net.jini.core.entry.Entry;
-
 import net.jini.admin.Administrable;
 
 import net.jini.space.JavaSpace;
-
-import net.jini.core.transaction.TransactionException;
 
 import org.dancres.blitz.remote.BlitzAdmin;
 
@@ -54,8 +42,6 @@ public class Cleanup {
                     System.err.println("Wrong number of arguments - should be <spacename> or <LUS host> <spacename>");
                     System.exit(-1);
                 }
-
-                String myDir = args[0];
 
                 if (myProxy != null) {
                     System.err.println("Found space: " + myProxy);
