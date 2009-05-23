@@ -6,7 +6,6 @@ import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.HashMap;
 
 import java.util.logging.Level;
 
@@ -109,8 +108,6 @@ class EventGeneratorFactory implements Syncable {
 
     Iterator getGenerators() throws IOException {
         loadBarrier();
-
-        EventGenerator[] myGenerators = new EventGenerator[theIDMap.size()];
 
         return theIDMap.values().iterator();
     }

@@ -2,7 +2,6 @@ package org.dancres.blitz.entry;
 
 import org.dancres.blitz.cache.CacheListener;
 import org.dancres.blitz.cache.Identifiable;
-import org.dancres.blitz.entry.EntrySleeve;
 import org.dancres.blitz.entry.ci.CacheIndexer;
 
 /**
@@ -19,8 +18,6 @@ public class CacheListenerImpl implements CacheListener {
     }
 
     public void loaded(Identifiable anIdentifiable) {
-        EntrySleeve mySleeve = (EntrySleeve) anIdentifiable;
-
         _indexer.loaded(anIdentifiable);
     }
 

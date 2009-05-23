@@ -43,8 +43,7 @@ class MetaIteratorImpl implements MetaIterator {
         }
 
         try {
-            Serializable myObject = (Serializable)
-                ObjectTransformer.toObject(myData.getData());
+            Serializable myObject = ObjectTransformer.toObject(myData.getData());
 
             return new MetaEntryImpl(myKey.getData(), myObject);
 
