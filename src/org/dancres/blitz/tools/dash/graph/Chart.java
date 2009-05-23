@@ -2,9 +2,7 @@ package org.dancres.blitz.tools.dash.graph;
 
 import org.dancres.blitz.tools.dash.ColorScheme;
 
-import java.lang.*;
 import java.awt.*;
-import java.awt.event.*;
 import java.text.*;
 import javax.swing.*;
 
@@ -61,6 +59,7 @@ public class Chart extends JPanel
     private Rectangle chartRect= new Rectangle();
     private Rectangle zoomRect;
     private boolean  isShown=false; //at least one dataset visiable
+
     //public methods
     public Chart()
     {
@@ -70,12 +69,14 @@ public class Chart extends JPanel
         
         
     }
+
     synchronized public void addData(final String name,final double [] data,
                                      final String [] tags)
         throws ChartException
     {
         addData(name,data,tags,null);
     }
+
     synchronized public void addData(final String name,final double [] data,
                                      final String [] tags,final int [] dates)
         throws ChartException
@@ -85,6 +86,7 @@ public class Chart extends JPanel
         
         setDataAt(dsCounter++,name,data,tags,dates);
     }
+
     public void setDataAt(int index,final String name,final double [] data,
                           final String [] tags,final int [] dates)
         throws ChartException
@@ -110,11 +112,14 @@ public class Chart extends JPanel
         dataSet[ index ]=d;
     }
     public void setLabelEvery(int every) {labelEvery=every;}
+
     public static int getMaxSupportedDataSets() {return MAX_DATA_SETS;}
+
     public Dimension getMinimumSize()
     {
         return minSize;
     }
+
     public Dimension getPreferredSize()
     {
         if(currentSize==null)
@@ -122,6 +127,7 @@ public class Chart extends JPanel
         
         return currentSize;
     }
+
     public void setSize(Dimension d)
     {
         super.setSize(d);
@@ -135,6 +141,7 @@ public class Chart extends JPanel
         super.print(g);
         yOffset=ty;
     }
+
     public void enableData(final String name,final boolean yesno)
     {
         for( int i=0;i<dsCounter;i++)
@@ -148,13 +155,12 @@ public class Chart extends JPanel
                     }
             }
     }
+
     public void paint(Graphics g)
     {
         Dimension dim=getSize();
         g.setColor(Color.white);
         g.fillRect(0,0,dim.width,dim.height);
-        
-        boolean isPrinting=g instanceof PrintGraphics;
         
         if(dirtyCache)
             {
@@ -204,6 +210,7 @@ public class Chart extends JPanel
                         legx+=strWidth+12;
                     }
             }
+
         //now calc the drawable area for the chart
         // draw zoomable area
         yoff=legy+15;
@@ -214,11 +221,14 @@ public class Chart extends JPanel
                 g.setColor(Color.lightGray);
                 g.fillRect(zoomRect.x,yoff,zoomRect.width,hi);
             }
+
         //border
         g.setColor(axisColor);
         g.drawRect(xoff,yoff,wid,hi);
+
         //cache for zooming
         chartRect.setBounds(xoff,yoff,wid,hi);
+
         //draw the points
         for(int i=0;i<ns;i++)
             {
@@ -249,14 +259,14 @@ public class Chart extends JPanel
                                 if(xpos>(prevx+25))
                                     {
                                         g.setColor(gridColor);
-                                        g.drawLine((int)xpos,(int)yoff,
-                                                   (int)xpos,(int)yoff+hi+2);
+                                        g.drawLine((int) xpos,yoff,
+                                                   (int) xpos,yoff+hi+2);
                                         g.setColor(axisColor);
                                         if(labelCounter%labelEvery==0 &&
                                            xpos>(lastLabelPos+labelWidth+10))
                                             {
                                                 xTagPosition[j]=(int)xpos-5;
-                                                g.drawString(dataSet[i].getTag(j),xTagPosition[j],(int)yoff+hi+20);
+                                                g.drawString(dataSet[i].getTag(j),xTagPosition[j],yoff+hi+20);
                                                 lastLabelPos=xpos;
                                             }
                                         else
@@ -400,6 +410,7 @@ public class Chart extends JPanel
         minValue=adjustMin(minValue);
     
     }
+
     private double adjustMax(double d)
     {
         double x=d;
@@ -410,12 +421,14 @@ public class Chart extends JPanel
         
         return Math.rint(x*10)/10;
     }
+
     private double adjustMin(double d)
     {
         double x=d;
         x-=0.05;
         return Math.rint(x*10)/10;
     }
+
     //private impl classes internal double-dispatch
     private interface IdDrawer
     {
@@ -439,6 +452,7 @@ public class Chart extends JPanel
                 g.drawRect(xpos,ypos,4,4);
         }
     }
+
     private class RoundRectDrawer
         implements IdDrawer
     {
@@ -456,6 +470,7 @@ public class Chart extends JPanel
                 g.drawRoundRect(xpos+1,ypos,4,4,4,4);
         }
     }
+
     private class XDrawer
         implements IdDrawer
     {
@@ -470,94 +485,5 @@ public class Chart extends JPanel
             g.drawLine(xpos+2+os,ypos-2+os,xpos-2+os,ypos+2+os);
         }
     }
-    //zoomer
-    private int dragStartXPos;
-    private int dragStartYPos;
-    private int lastXPos;
-    //private int lastYPos;
-    private boolean isDragging=false;
-    
-    private void setZoomEndPos(int xend)
-    {
-        Dimension d=getSize();
-        int s=dragStartXPos;
-        int e=xend;
-        if(s>e) //right to lseft highlight
-            {
-                s=xend;
-                e=dragStartXPos;
-            }
-        int oldstart=startAt;
-        int oldend=endAt;
-        calcNewStartAndEnd(s,e);
-        if(startAt<endAt)
-            {
-                calcFactors(); //recalculate the factors
-            }
-        else
-            {
-                startAt=oldstart;
-                endAt=oldend;
-            }
-        //
-        /*
-          double startFactor=(double)s/(double)d.width;
-          double endFactor=(double)e/(double)d.width;
-          int oldstart=startAt;
-          int oldend=endAt;
-          startAt+=(int)(endAt*startFactor);
-          endAt=(int)(endAt*endFactor);
-          if(startAt<endAt)
-          {
-          calcFactors(); //recalculate the factors
-          }
-          else
-          {
-          startAt=oldstart;
-          endAt=oldend;
-          }
-        */
-        repaint();
-    }
-    //calculate startAt, endAt based xTagPositions[]
-    private void calcNewStartAndEnd(int xStart,int xEnd)
-    {
-        //TEST
-        //System.out.println("xStart="+xStart+" End="+xEnd);
-        
-        int lowerBound=0;
-        int upperBound=0;
-        int xLower=0;
-        int xHigher=0;
-        int lowestXBound=Integer.MAX_VALUE;
-        int highestXBound=Integer.MAX_VALUE;
-        
-        int size=xTagPosition.length;
-        for(int i=0;i<size;i++)
-            {
-                if(xTagPosition[i]!=-1)
-                    {
-                
-                        xLower=xStart-xTagPosition[i];
-                        xLower=Math.abs(xLower);
-                        if(xLower<lowestXBound)
-                            {
-                                lowestXBound=xLower;
-                                lowerBound=i;
-                            }
-                        xHigher=xEnd-xTagPosition[i];
-                        xHigher=Math.abs(xHigher);
-                        if(xHigher<highestXBound)
-                            {
-                                highestXBound=xHigher;
-                                upperBound=i;
-                            }
-                    }
-            }
-        startAt=lowerBound;
-        endAt=upperBound;
-        
-    }
-    
 }
 

@@ -1,12 +1,9 @@
 package org.dancres.blitz.tools.dash;
 
 import java.awt.BorderLayout;
-import java.awt.FlowLayout;
 import java.awt.Dimension;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.HashMap;
-import java.util.Map;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -15,10 +12,8 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.plaf.metal.MetalLookAndFeel;
-import javax.swing.SwingUtilities;
 import javax.swing.ImageIcon;
 
 import org.dancres.blitz.remote.StatsAdmin;
@@ -32,10 +27,8 @@ public class DashBoardFrame extends JFrame
 
     private StatsAdmin _admin; 
     private DashBoard _dashBoard;
-    private JLabel _status;
     private Thread _updater;
     private boolean _exitOnClose;
-    private StatsTableModel _allStats=new StatsTableModel();
     
     public DashBoardFrame(String title,StatsAdmin admin,boolean exitOnClose){
         super(title);
@@ -105,20 +98,12 @@ public class DashBoardFrame extends JFrame
         return _dashBoard; 
     
     }
-    private JComponent createStatusBar(){
-        _status=new JLabel();
-        JPanel p=new JPanel();
-        p.setLayout( new FlowLayout(FlowLayout.LEFT));
-        p.add(_status);
-        p.setPreferredSize(new Dimension(740, 140));
-        return p;
-    }
+
     public void run(){
         while(!_updater.isInterrupted()){
             try{
                 //need to be configurable
                 Thread.sleep(1500);
-                Map lookup=new HashMap();
                 
                 Stat[] stats = _admin.getStats();
                 _dashBoard.update(stats);
