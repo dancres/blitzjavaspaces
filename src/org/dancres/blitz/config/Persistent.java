@@ -9,7 +9,8 @@ package org.dancres.blitz.config;
 public class Persistent extends PersistentBase {
 
     private boolean useConcurrentBatcher;
-    private int theBatchWriteWindowSize;
+    private long theBatchWriteWindowSizeMs;
+    private int theBatchWriteWindowSizeNs;
 
     /**
        @param shouldReset specifies whether to reset the ObjectOutputStream
@@ -44,14 +45,28 @@ public class Persistent extends PersistentBase {
 
         super(shouldReset, shouldClean, aLogBufferSize, aMaxLogsBeforeSync);
         useConcurrentBatcher = useConcurrent;
-        theBatchWriteWindowSize = aBatchWriteWindowSize;
+        theBatchWriteWindowSizeMs = aBatchWriteWindowSize;
     }
 
     public boolean useConcurrentWriteBatcher() {
         return useConcurrentBatcher;
     }
 
-    public int getBatchWriteWindowSize() {
-        return theBatchWriteWindowSize;
+    public long getBatchWriteWindowSizeMs() {
+        return theBatchWriteWindowSizeMs;
+    }
+
+    public int getBatchWriteWindowSizeNs() {
+        return theBatchWriteWindowSizeNs;
+    }
+
+    public Persistent(boolean shouldReset, boolean shouldClean,
+                      long aBatchWindowSizeMs, int aBatchWindowSizeNs, boolean useConcurrent,
+                      int aMaxLogsBeforeSync, int aLogBufferSize) {
+
+        super(shouldReset, shouldClean, aLogBufferSize, aMaxLogsBeforeSync);
+        useConcurrentBatcher = useConcurrent;
+        theBatchWriteWindowSizeMs = aBatchWindowSizeMs;
+        theBatchWriteWindowSizeNs = aBatchWindowSizeNs;
     }
 }
