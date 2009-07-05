@@ -2,6 +2,7 @@ build/
 docs/javadocs/
 examples/.*\.class
 lib/
+dbfiles*/.*
 
 # Eclipse-specific ignores
 .classpath
