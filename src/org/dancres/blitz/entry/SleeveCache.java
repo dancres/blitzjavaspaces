@@ -32,6 +32,7 @@ import org.dancres.blitz.config.Fifo;
 import org.dancres.blitz.config.EntryConstraints;
 
 import edu.emory.mathcs.backport.java.util.concurrent.atomic.AtomicLong;
+import org.dancres.blitz.config.ConfigurationFactory;
 
 /**
    The organization of the space implementation can be viewed as being
@@ -54,7 +55,21 @@ class SleeveCache implements StatGenerator {
     static Logger theLogger =
         Logging.newLogger("org.dancres.blitz.disk.SleeveCache");
 
-    private static final int DESIRED_ENTRIES_PER_PARTITION = 128;
+    private static int DESIRED_ENTRIES_PER_PARTITION = 0;
+
+    static {
+        try {
+            DESIRED_ENTRIES_PER_PARTITION =
+                    ((Integer) ConfigurationFactory.getEntry("cacheEntriesPerPartition", int.class,
+                    new Integer(128))).intValue();
+
+            theLogger.log(Level.SEVERE, "Loaded config: " + ((Integer) ConfigurationFactory.getEntry("cacheEntriesPerPartition", int.class,
+                    new Integer(128))).intValue());
+            
+        } catch (ConfigurationException aCE) {
+            theLogger.log(Level.SEVERE, "Failed to source partition setup", aCE);
+        }
+    }
 
     private final ArcCache[] theStoreCaches;
     private final int theNumPartitions;
