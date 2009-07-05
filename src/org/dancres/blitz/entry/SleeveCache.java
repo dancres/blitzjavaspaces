@@ -54,7 +54,11 @@ class SleeveCache implements StatGenerator {
     static Logger theLogger =
         Logging.newLogger("org.dancres.blitz.disk.SleeveCache");
 
-    private ArcCache theStoreCache;
+    private static final int DESIRED_ENTRIES_PER_PARTITION = 128;
+
+    private final ArcCache[] theStoreCaches;
+    private final int theNumPartitions;
+    private final int thePartitionsMask;
 
     private Storage theStore;
 
@@ -112,6 +116,9 @@ class SleeveCache implements StatGenerator {
             theConstraints =
                 EntryConstraints.getConstraints(theStore.getType());
         } catch (ConfigurationException aCE) {
+            thePartitionsMask = 0;
+            theNumPartitions = 0;
+            theStoreCaches = new ArcCache[0];
             theLogger.log(Level.SEVERE,
                 "Couldn't load constraints for type " +
                     theStore.getType(), aCE);
@@ -121,17 +128,36 @@ class SleeveCache implements StatGenerator {
             myIOE.initCause(aCE);
             throw myIOE;
         }
-
+        
         CacheSize myCacheSize = (CacheSize) theConstraints.get(CacheSize.class);
 
+        int myNumPartitions;
+
+        if (DESIRED_ENTRIES_PER_PARTITION == -1)
+            myNumPartitions = 1;
+        else
+            myNumPartitions = (myCacheSize.getSize() / DESIRED_ENTRIES_PER_PARTITION);
+
+        // Find nearest power of 2 > or =
+        //
+        int myPower;
+        for (myPower = 1; myPower < myNumPartitions; myPower = myPower << 1);
+        theNumPartitions = myPower;
+
+        thePartitionsMask = theNumPartitions - 1;
+        
         theLogger.log(Level.INFO, aStore.getType() + " cache size = "
-                      + myCacheSize.getSize());
+                      + myCacheSize.getSize() + " partitions = " + theNumPartitions + " mask = " + Integer.toHexString(thePartitionsMask));
 
-        theStoreCache = new ArcCache(aStore, myCacheSize.getSize());
+        theStoreCaches = new ArcCache[theNumPartitions];
 
-        theIndexer = CacheIndexer.getIndexer(theStore.getType());
+        for (int i = 0; i < theNumPartitions; i++) {
+            theStoreCaches[i] = new ArcCache(aStore, theNumPartitions);
 
-        theStoreCache.add(new CacheListenerImpl(theIndexer));
+            theIndexer = CacheIndexer.getIndexer(theStore.getType());
+
+            theStoreCaches[i].add(new CacheListenerImpl(theIndexer));
+        }
 
         try {
             theCounters = new CountersImpl(theStore.getType(),
@@ -171,25 +197,39 @@ class SleeveCache implements StatGenerator {
             myMisses, myDeld);
     }
 
+    private int getPartition(CacheBlockDescriptor aCBD) {
+        OID myOID = (OID) aCBD.getId();
+
+        return getPartition(myOID);
+    }
+
+    private int getPartition(OID anOID) {
+        return anOID.hashCode() & thePartitionsMask;
+    }
+
+    private int getPartition(EntrySleeveImpl aSleeve) {
+        return getPartition(aSleeve.getOID());
+    }
+
     void forceSync(CacheBlockDescriptor aCBD) throws IOException {
-        theStoreCache.forceSync(aCBD);
+        theStoreCaches[getPartition(aCBD)].forceSync(aCBD);
     }
 
     CacheBlockDescriptor load(OID aOID) throws IOException {
-        return theStoreCache.find(aOID);
+        return theStoreCaches[getPartition(aOID)].find(aOID);
     }
 
     CacheBlockDescriptor add(EntrySleeveImpl aSleeve) throws IOException {
-        return theStoreCache.insert(aSleeve);
+        return theStoreCaches[getPartition(aSleeve)].insert(aSleeve);
     }
 
     RecoverySummary recover(EntrySleeveImpl aSleeve)
         throws IOException {
-        return theStoreCache.recover(aSleeve);
+        return theStoreCaches[getPartition(aSleeve)].recover(aSleeve);
     }
 
     boolean renew(OID aOID, long anExpiry) throws IOException {
-        CacheBlockDescriptor myCBD = theStoreCache.find(aOID);
+        CacheBlockDescriptor myCBD = theStoreCaches[getPartition(aOID)].find(aOID);
 
         if (myCBD == null) {
             return false;
@@ -227,7 +267,9 @@ class SleeveCache implements StatGenerator {
     }
 
     void sync() throws IOException {
-        theStoreCache.sync();
+        for (int i = 0; i < theNumPartitions; i++) {
+            theStoreCaches[i].sync();
+        }
     }
 
     Counters getCounters() {
@@ -261,7 +303,7 @@ class SleeveCache implements StatGenerator {
             return;
 
         // Now make it visible
-        CacheBlockDescriptor myCBD = theStoreCache.insert(mySleeve);
+        CacheBlockDescriptor myCBD = theStoreCaches[getPartition(mySleeve)].insert(mySleeve);
         myCBD.release();
 
         if (theLogger.isLoggable(Level.FINE))
@@ -385,7 +427,7 @@ class SleeveCache implements StatGenerator {
 
     LongtermOffer getOffer(OID anOID) throws IOException {
 
-        CacheBlockDescriptor myCBD = theStoreCache.find(anOID);
+        CacheBlockDescriptor myCBD = theStoreCaches[getPartition(anOID)].find(anOID);
 
         if (myCBD != null) {
             return new LongtermOfferImpl(myCBD);
@@ -396,7 +438,7 @@ class SleeveCache implements StatGenerator {
     boolean find(SearchVisitor aVisitor, OID aOID, MangledEntry aPreload)
         throws IOException {
 
-        CacheBlockDescriptor myCBD = theStoreCache.find(aOID);
+        CacheBlockDescriptor myCBD = theStoreCaches[getPartition(aOID)].find(aOID);
 
         long myStartTime = System.currentTimeMillis();
 
@@ -516,7 +558,7 @@ class SleeveCache implements StatGenerator {
 
             myId = aLocator.getOID();
 
-            CacheBlockDescriptor myCBD = theStoreCache.find(myId);
+            CacheBlockDescriptor myCBD = theStoreCaches[getPartition(myId)].find(myId);
 
             if (myCBD != null) {
                 mySleeve = (EntrySleeveImpl) myCBD.getContent();
@@ -624,7 +666,7 @@ class SleeveCache implements StatGenerator {
 
                 OID myId = aLocator.getOID();
 
-                CacheBlockDescriptor myCBD = theStoreCache.find(myId);
+                CacheBlockDescriptor myCBD = theStoreCaches[getPartition(myId)].find(myId);
 
                 OpInfo myInfo = null;
 
