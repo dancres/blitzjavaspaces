@@ -7,11 +7,11 @@ import java.util.ArrayList;
 
 import java.util.logging.Level;
 
-import org.prevayler.Prevayler;
 import org.prevayler.PrevalentSystem;
 import org.prevayler.Command;
 
 import org.prevayler.implementation.SnapshotPrevayler;
+import org.prevayler.implementation.PrevaylerCore;
 import org.prevayler.implementation.Snapshotter;
 
 /**
@@ -32,7 +32,7 @@ import org.prevayler.implementation.Snapshotter;
    bunch is being written.</p>
  */
 public class ConcurrentWriteBatcher implements SnapshotPrevayler {
-    private SnapshotPrevayler thePrevayler;
+    private PrevaylerCore thePrevayler;
 
     private boolean amFirst = true;
 
@@ -40,13 +40,16 @@ public class ConcurrentWriteBatcher implements SnapshotPrevayler {
 
     // Might be able to buff up to 60ms which gives average of 30 but
     // we'll see.
-    private long theWindowTime = 20;
+    private long theWindowTimeMs = 20;
+    private int theWindowTimeNs = 0;
 
-    public ConcurrentWriteBatcher(SnapshotPrevayler aPrevayler,
-        long aWindowTime) {
+
+    public ConcurrentWriteBatcher(PrevaylerCore aPrevayler,
+        long aWindowTimeMs, int aWindowTimeNs) {
         
         thePrevayler = aPrevayler;
-        theWindowTime = aWindowTime;
+        theWindowTimeMs = aWindowTimeMs;
+        theWindowTimeNs = aWindowTimeNs;
     }
 
     /**
@@ -66,7 +69,7 @@ public class ConcurrentWriteBatcher implements SnapshotPrevayler {
     }
 
     private Serializable write(Command aComm) throws Exception {
-        WriteRequest myReq = new WriteRequest(aComm);
+        WriteRequest myReq = new WriteRequest(aComm, system());
 
         boolean wasFirst = false;
 
@@ -79,7 +82,7 @@ public class ConcurrentWriteBatcher implements SnapshotPrevayler {
                 wasFirst = true;
 
                 try {
-                    wait(theWindowTime);
+                    wait(theWindowTimeMs, theWindowTimeNs);
                 } catch (InterruptedException anIE) {
                 }
 
@@ -101,7 +104,7 @@ public class ConcurrentWriteBatcher implements SnapshotPrevayler {
         return myReq.getResult();
     }
 
-	public Snapshotter takeSnapshot() throws IOException {
+    public Snapshotter takeSnapshot() throws IOException {
         return thePrevayler.takeSnapshot();
     }
 
@@ -122,20 +125,21 @@ public class ConcurrentWriteBatcher implements SnapshotPrevayler {
     }
 
     private static class WriteRequest {
+        private PrevalentSystem theSystem;
         private Command theCommand;
 
         private Exception theException;
-        private Serializable theResult;
 
         private boolean isDone;
 
-        WriteRequest(Command aCommand) {
+        WriteRequest(Command aCommand, PrevalentSystem aSystem) {
             theCommand = aCommand;
+            theSystem = aSystem;
         }
 
-        void execute(Prevayler aPrev, boolean doSync) {
+        void execute(PrevaylerCore aPrev, boolean doSync) {
             try {
-                theResult = aPrev.executeCommand(theCommand, doSync);
+                aPrev.logCommand(theCommand, doSync);
             } catch (Exception anE) {
                 theException = anE;
             } finally {
@@ -154,11 +158,13 @@ public class ConcurrentWriteBatcher implements SnapshotPrevayler {
                     } catch (InterruptedException anIE) {
                     }
                 }
+            }
 
-                if (theException != null)
-                    throw theException;
-                else
-                    return theResult;
+            if (theException != null)
+                throw theException;
+            else {
+                Serializable myResult = theCommand.execute(theSystem);
+                return myResult;
             }
         }
     }

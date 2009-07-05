@@ -16,6 +16,7 @@ import org.prevayler.implementation.SnapshotPrevayler;
 import org.prevayler.implementation.Snapshotter;
 
 import org.dancres.blitz.Logging;
+import org.prevayler.implementation.PrevaylerCore;
 
 /**
    <p>Batches commands issued in the same time period together in an attempt
@@ -34,7 +35,7 @@ public class WriteBatcher implements SnapshotPrevayler {
     static Logger theLogger =
         Logging.newLogger("org.dancres.blitz.txn.LogBatcher");
 
-    private SnapshotPrevayler thePrevayler;
+    private PrevaylerCore thePrevayler;
 
     private boolean amFirst = true;
 
@@ -42,11 +43,13 @@ public class WriteBatcher implements SnapshotPrevayler {
 
     // Might be able to buff up to 60ms which gives average of 30 but
     // we'll see.
-    private long theWindowTime = 20;
+    private long theWindowTimeMs = 0;
+    private int theWindowTimeNs = 0;
 
-    public WriteBatcher(SnapshotPrevayler aPrevayler, long aWindowTime) {
+    public WriteBatcher(PrevaylerCore aPrevayler, long aWindowTimeMs, int aWindowTimeNs) {
         thePrevayler = aPrevayler;
-        theWindowTime = aWindowTime;
+        theWindowTimeMs = aWindowTimeMs;
+        theWindowTimeNs = aWindowTimeNs;
     }
 
     /**
@@ -66,7 +69,7 @@ public class WriteBatcher implements SnapshotPrevayler {
     }
 
     private Serializable write(Command aComm) throws Exception {
-        WriteRequest myReq = new WriteRequest(aComm);
+        WriteRequest myReq = new WriteRequest(system(), aComm);
 
         synchronized(this) {
             if (amFirst) {
@@ -74,7 +77,7 @@ public class WriteBatcher implements SnapshotPrevayler {
                 amFirst = false;
 
                 try {
-                    wait(theWindowTime);
+                    wait(theWindowTimeMs, theWindowTimeNs);
                 } catch (InterruptedException anIE) {
                 }
 
@@ -113,19 +116,20 @@ public class WriteBatcher implements SnapshotPrevayler {
 
     private static class WriteRequest {
         private Command theCommand;
+        private PrevalentSystem theSystem;
 
         private Exception theException;
-        private Serializable theResult;
 
         private boolean isDone;
 
-        WriteRequest(Command aCommand) {
+        WriteRequest(PrevalentSystem aSystem, Command aCommand) {
             theCommand = aCommand;
+            theSystem = aSystem;
         }
 
-        void execute(Prevayler aPrev, boolean doSync) {
+        void execute(PrevaylerCore aPrev, boolean doSync) {
             try {
-                theResult = aPrev.executeCommand(theCommand, doSync);
+                aPrev.logCommand(theCommand, doSync);
             } catch (Exception anE) {
                 theException = anE;
             } finally {
@@ -148,7 +152,7 @@ public class WriteBatcher implements SnapshotPrevayler {
                 if (theException != null)
                     throw theException;
                 else
-                    return theResult;
+                    return theCommand.execute(theSystem);
             }
         }
     }

@@ -129,7 +129,8 @@ public class TxnManager {
         thePrevayler = myPersonality.getPrevayler(new TxnManagerState());
 
         theLogger.log(Level.INFO, "Log Recovery complete...");
-
+        theLogger.log(Level.INFO, "Using prevayler: " + thePrevayler.getClass());
+        
         theManagerState = (TxnManagerState) thePrevayler.system();
 
         theCheckpointTrigger =
@@ -483,7 +484,7 @@ public class TxnManager {
             // System.err.println("Bypass");
             return aCommand.execute(theManagerState);
         } else {
-            // System.err.println("Full log");
+            // System.err.println("Full log: " + thePrevayler.getClass());
             return thePrevayler.executeCommand(aCommand);
         }
     }

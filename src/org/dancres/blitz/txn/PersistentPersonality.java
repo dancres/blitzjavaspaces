@@ -3,7 +3,7 @@ package org.dancres.blitz.txn;
 import java.util.logging.Level;
 
 import org.prevayler.implementation.SnapshotPrevayler;
-import org.prevayler.implementation.SnapshotPrevaylerImpl;
+import org.prevayler.implementation.PrevaylerCore;
 
 import org.prevayler.PrevalentSystem;
 
@@ -32,11 +32,11 @@ class PersistentPersonality implements StoragePersonality {
         TxnManager.theLogger.log(Level.INFO, "Reset log stream: " +
                           theModel.shouldResetLogStream());
         TxnManager.theLogger.log(Level.INFO, "Write barrier window: " +
-                          theModel.getBatchWriteWindowSize());
+                          theModel.getBatchWriteWindowSizeMs() + ", " + theModel.getBatchWriteWindowSizeNs());
 
         if (theModel.useConcurrentWriteBatcher())
                 TxnManager.theLogger.log(Level.INFO,
-                                         "*** Using concurrent batcher ***");
+                                         "*** Concurrent batching enabled ***");
 
         if (theModel.shouldCleanLogs()) {
             TxnManager.theLogger.log(Level.WARNING,
@@ -58,26 +58,25 @@ class PersistentPersonality implements StoragePersonality {
         PersistentReboot myReboot = new PersistentReboot(theModel);
         myReboot.execute();
 
-        SnapshotPrevayler myPrevayler =
-            new SnapshotPrevaylerImpl(aSystem,
+        PrevaylerCore myPrevayler =
+            new PrevaylerCore(aSystem,
                                       theLogDir,
                                       theModel.shouldResetLogStream(),
                                       theModel.shouldCleanLogs(),
                                       theModel.getLogBufferSize());
 
-        if (theModel.getBatchWriteWindowSize() != 0) {
-            int myWindowSize = theModel.getBatchWriteWindowSize();
+        if ((theModel.getBatchWriteWindowSizeMs() != 0) ||
+            (theModel.getBatchWriteWindowSizeNs() != 0)) {
+            long myWindowSizeMs = theModel.getBatchWriteWindowSizeMs();
+            int myWindowSizeNs = theModel.getBatchWriteWindowSizeNs();
 
             if (theModel.useConcurrentWriteBatcher()) {
-                myPrevayler =
-                    new ConcurrentWriteBatcher(myPrevayler, myWindowSize);
+                return new ConcurrentWriteBatcher(myPrevayler, myWindowSizeMs, myWindowSizeNs);
             } else {
-                myPrevayler =
-                    new WriteBatcher(myPrevayler, myWindowSize);
+                return new WriteBatcher(myPrevayler, myWindowSizeMs, myWindowSizeNs);
             }
-        }
-
-        return myPrevayler;
+        } else
+            return new NullBatcher(myPrevayler);
     }
 
     public void destroy() {

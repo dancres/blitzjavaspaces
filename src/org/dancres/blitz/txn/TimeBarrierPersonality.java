@@ -4,7 +4,6 @@ import java.util.logging.Level;
 
 import org.prevayler.implementation.SnapshotPrevayler;
 import org.prevayler.implementation.BufferingPrevaylerImpl;
-import org.prevayler.implementation.SnapshotPrevaylerImpl;
 
 import org.prevayler.PrevalentSystem;
 
