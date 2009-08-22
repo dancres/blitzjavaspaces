@@ -63,8 +63,9 @@ class SleeveCache implements StatGenerator {
                     ((Integer) ConfigurationFactory.getEntry("cacheEntriesPerPartition", int.class,
                     new Integer(128))).intValue();
 
-            theLogger.log(Level.SEVERE, "Loaded config: " + ((Integer) ConfigurationFactory.getEntry("cacheEntriesPerPartition", int.class,
-                    new Integer(128))).intValue());
+            theLogger.log(Level.SEVERE, "Loaded config: " +
+                    ((Integer) ConfigurationFactory.getEntry("cacheEntriesPerPartition", int.class,
+                    new Integer(32))).intValue());
             
         } catch (ConfigurationException aCE) {
             theLogger.log(Level.SEVERE, "Failed to source partition setup", aCE);
@@ -147,11 +148,15 @@ class SleeveCache implements StatGenerator {
         CacheSize myCacheSize = (CacheSize) theConstraints.get(CacheSize.class);
 
         int myNumPartitions;
+        int myEntriesPerCache;
 
-        if (DESIRED_ENTRIES_PER_PARTITION == -1)
+        if (DESIRED_ENTRIES_PER_PARTITION == -1) {
             myNumPartitions = 1;
-        else
+            myEntriesPerCache = myCacheSize.getSize();
+        } else {
             myNumPartitions = (myCacheSize.getSize() / DESIRED_ENTRIES_PER_PARTITION);
+            myEntriesPerCache = DESIRED_ENTRIES_PER_PARTITION;
+        }
 
         // Find nearest power of 2 > or =
         //
@@ -162,12 +167,13 @@ class SleeveCache implements StatGenerator {
         thePartitionsMask = theNumPartitions - 1;
         
         theLogger.log(Level.INFO, aStore.getType() + " cache size = "
-                      + myCacheSize.getSize() + " partitions = " + theNumPartitions + " mask = " + Integer.toHexString(thePartitionsMask));
+                      + myCacheSize.getSize() + " partitions = " + theNumPartitions + 
+                      " mask = " + Integer.toHexString(thePartitionsMask) + " partition size = " + myEntriesPerCache);
 
         theStoreCaches = new ArcCache[theNumPartitions];
 
         for (int i = 0; i < theNumPartitions; i++) {
-            theStoreCaches[i] = new ArcCache(aStore, theNumPartitions);
+            theStoreCaches[i] = new ArcCache(aStore, myEntriesPerCache);
 
             theIndexer = CacheIndexer.getIndexer(theStore.getType());
 
