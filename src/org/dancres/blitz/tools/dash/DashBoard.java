@@ -49,6 +49,7 @@ public class DashBoard extends javax.swing.JPanel {
         spaceOpButton = new javax.swing.JButton();
         instancesButton = new javax.swing.JButton();
         memoryButton = new javax.swing.JButton();
+        rawButton = new javax.swing.JButton();
         takeCount = new javax.swing.JLabel();
         writeCount = new javax.swing.JLabel();
         readCount = new javax.swing.JLabel();
@@ -148,6 +149,17 @@ public class DashBoard extends javax.swing.JPanel {
         add(memoryButton);
         memoryButton.setBounds(580, 10, 140, 26);
 
+        rawButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("images/steak.gif")));
+        rawButton.setText("Raw");
+        rawButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rawButtonActionPerformed(evt);
+            }
+        });
+
+        add(rawButton);
+        rawButton.setBounds(720, 10, 140, 26);
+
         takeCount.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         takeCount.setText("0");
         add(takeCount);
@@ -188,6 +200,13 @@ public class DashBoard extends javax.swing.JPanel {
         statsFrame.setBounds(getNextWinBounds());
         statsFrame.setVisible(true);
     }//GEN-LAST:event_memoryButtonActionPerformed
+
+    private void rawButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_memoryButtonActionPerformed
+        StatsFrame statsFrame=new StatsFrame(parent,"Raw",StatsFrame.RAW);
+        _openWindows.add(statsFrame);
+        statsFrame.setBounds(getNextWinBounds());
+        statsFrame.setVisible(true);
+    }
 
     private void memoryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_memoryButtonActionPerformed
         // Add your handling code here:
@@ -232,6 +251,7 @@ public class DashBoard extends javax.swing.JPanel {
     private javax.swing.JButton blockingOpButton;
     private javax.swing.JLabel instanceCount;
     private javax.swing.JButton instancesButton;
+    private javax.swing.JButton rawButton;
     private javax.swing.JProgressBar memoryBar;
     private javax.swing.JButton memoryButton;
     private javax.swing.JLabel memoryCount;

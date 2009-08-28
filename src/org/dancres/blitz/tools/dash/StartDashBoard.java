@@ -21,7 +21,7 @@ public class StartDashBoard{
 
     private static final long MAX_DISCOVER_TIME = 15 * 1000;
     //changed to public as this is accessed by the ServiceUI
-    public static final String VER="Blitz dashboard: v1.2";
+    public static final String VER="Blitz dashboard: v1.3";
 
     public static void main(String [] args){
         try{

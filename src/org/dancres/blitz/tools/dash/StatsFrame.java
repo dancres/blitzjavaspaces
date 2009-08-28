@@ -24,6 +24,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.JTree;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
@@ -52,12 +53,14 @@ public class StatsFrame extends JDialog implements UpdateableView {
     //add for Outrigger views
     private Object _adminProxy;
     private JFrame _frame;
+    private JTextArea _textArea = new JTextArea();
     
     public static final int OPSTATS = 0;
     public static final int INSTANCES = 1;
     public static final int MEMORY = 2;
     public static final int TXNS = 3;
     public static final int BLOCKERS = 4;
+    public static final int RAW = 5;
     
     public StatsFrame(JFrame parent,String title, int mode,Object adminProxy) {
         super(parent,title,false);
@@ -124,6 +127,10 @@ public class StatsFrame extends JDialog implements UpdateableView {
             
         } else if (_mode == MEMORY || _mode == TXNS || _mode == BLOCKERS) {
             tp.add("History", _chart);
+        } else if (_mode == RAW) {
+            _textArea.setLineWrap(true);
+            _textArea.setWrapStyleWord(true);
+            tp.add("Raw", new JScrollPane(_textArea));
         }
         return tp;
     }
@@ -150,7 +157,11 @@ public class StatsFrame extends JDialog implements UpdateableView {
             long txnCounter = 0;
             long blockingReads = 0;
             long blockingTakes = 0;
+
+            StringBuffer myRaw = new StringBuffer();
+
             for (int i = 0; i < stats.length; i++) {
+                myRaw.append(stats[i].toString() +"\n");
                 if (stats[i] instanceof MemoryStat) {
                     MemoryStat ms = (MemoryStat) stats[i];
                     double max = ms.getMaxMemory();
@@ -233,6 +244,8 @@ public class StatsFrame extends JDialog implements UpdateableView {
                 _chart.update(new String[]{"read", "take"},
                 new long[]{blockingReads, blockingTakes});
             }
+            _textArea.setText(myRaw.toString());
+            _textArea.revalidate();
         } catch (Exception ex) {
             closeWin();
             DashBoardFrame.theLogger.log(Level.SEVERE, "Problem in update", ex);

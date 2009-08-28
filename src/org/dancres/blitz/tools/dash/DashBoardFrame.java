@@ -56,7 +56,7 @@ public class DashBoardFrame extends JFrame
             }
         }
         
-        setSize(740,140);
+        setSize(880,140);
 
         //add listener to intterupt thread on close
         addWindowListener( new WindowAdapter(){
