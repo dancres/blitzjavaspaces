@@ -62,6 +62,16 @@ public class ArcCache implements Cache {
         return theCacheSize;
     }
 
+    public int getActiveSize() {
+        int mySize;
+
+        synchronized(this) {
+            mySize = theBlockIndex.size();
+        }
+
+        return mySize >> 1;
+    }
+
     /**
        For recovery purposes, we wish to be able to ensure that something
        has made it to disk and, if it hasn't, re-insert it to the cache.

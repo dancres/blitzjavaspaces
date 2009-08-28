@@ -14,7 +14,7 @@ import org.dancres.blitz.mangler.MangledEntry;
 import org.dancres.blitz.Logging;
 import org.dancres.blitz.stats.StatGenerator;
 import org.dancres.blitz.stats.Stat;
-import org.dancres.blitz.stats.SearchStat;
+import org.dancres.blitz.stats.StoreStat;
 import org.dancres.blitz.stats.StatsBoard;
 
 import org.dancres.blitz.oid.OID;
@@ -73,15 +73,13 @@ class SleeveCache implements StatGenerator {
     }
 
     private final ArcCache[] theStoreCaches;
+    private final CacheSize theCacheSize;
     private final int theNumPartitions;
     private final int thePartitionsMask;
 
     private Storage theStore;
-
     private CountersImpl theCounters;
-
     private EntryConstraints theConstraints;
-
     private CacheIndexer theIndexer;
 
     private long theId = StatGenerator.UNSET_ID;
@@ -145,16 +143,16 @@ class SleeveCache implements StatGenerator {
             throw myIOE;
         }
         
-        CacheSize myCacheSize = (CacheSize) theConstraints.get(CacheSize.class);
+        theCacheSize = (CacheSize) theConstraints.get(CacheSize.class);
 
         int myNumPartitions;
         int myEntriesPerCache;
 
         if (DESIRED_ENTRIES_PER_PARTITION == -1) {
             myNumPartitions = 1;
-            myEntriesPerCache = myCacheSize.getSize();
+            myEntriesPerCache = theCacheSize.getSize();
         } else {
-            myNumPartitions = (myCacheSize.getSize() / DESIRED_ENTRIES_PER_PARTITION);
+            myNumPartitions = (theCacheSize.getSize() / DESIRED_ENTRIES_PER_PARTITION);
             myEntriesPerCache = DESIRED_ENTRIES_PER_PARTITION;
         }
 
@@ -167,7 +165,7 @@ class SleeveCache implements StatGenerator {
         thePartitionsMask = theNumPartitions - 1;
         
         theLogger.log(Level.INFO, aStore.getType() + " cache size = "
-                      + myCacheSize.getSize() + " partitions = " + theNumPartitions + 
+                      + theCacheSize.getSize() + " partitions = " + theNumPartitions +
                       " mask = " + Integer.toHexString(thePartitionsMask) + " partition size = " + myEntriesPerCache);
 
         theStoreCaches = new ArcCache[theNumPartitions];
@@ -214,8 +212,13 @@ class SleeveCache implements StatGenerator {
             myDeld[i] = theTrackers[i].getDeld();
         }
 
-        return new SearchStat(theId, theStore.getType(), myTitles,
-            myMisses, myDeld);
+        int myActiveCache = 0;
+
+        for (int i = 0; i < theStoreCaches.length; i++)
+            myActiveCache += theStoreCaches[i].getActiveSize();
+
+        return new StoreStat(theId, theStore.getType(), myTitles,
+            myMisses, myDeld, myActiveCache, theCacheSize.getSize());
     }
 
     private int getPartition(CacheBlockDescriptor aCBD) {
