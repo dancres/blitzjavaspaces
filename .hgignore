@@ -4,7 +4,10 @@ examples/.*\.class
 lib/
 dbfiles*/.*
 .*.jdb
-
+scripts/
+release/
+installer/
+.idea
 # Eclipse-specific ignores
 .classpath
 .project
