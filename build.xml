@@ -12,7 +12,7 @@
   <property name="installer_base" location="installer"/>
   <property name="build" location="build"/>
   <property name="installer_build" location="installer_build"/>
-  <property name="db_root" location="dbjava/je-3.2.68/"/>
+  <property name="db_root" location="dbjava/je-3.2.93/"/>
   <property name="bdb" location="dbjava/je.jar"/>
   <property name="jini_root" location="${JINI_HOME}"/>
   <property name="jdk_root" location="${JDK_HOME}"/>
@@ -85,8 +85,6 @@
         description="compile the source " >
     <!-- Compile the java code from ${src} into ${build} -->
     <javac destdir="${build}" debug="true"
-      source="1.4"
-      target="1.4"
       debuglevel="lines,vars,source"
       classpathref="allclasses">
         <src path="${src}"/>
@@ -124,13 +122,9 @@
   </target>
 
   <target name="installer" depends="jars">
-	<!-- Installer rule, not ready yet - sorting out source code
-	
     <delete dir="${installer_build}"/>
     <mkdir dir="${installer_build}"/>
     <javac srcdir="${installer_base}/com/incax/install/blitz" destdir="${installer_build}" debug="true"
-      source="1.4"
-      target="1.4"
       debuglevel="lines,vars,source"
       classpathref="allclasses"/>
     <copy todir="${installer_build}/resources">
@@ -153,9 +147,6 @@
     </copy>
     <jar destfile="installer.jar" basedir="${installer_build}"
       manifest="${installer_base}/META-INF/MANIFEST.MF"/>
-
- 	-->
-
   </target>
 
   <target name="release" 
@@ -172,7 +163,11 @@
     <copy todir="${release}" file="installer.jar"/>
 
 	-->
-	
+	<copy todir="${release}">
+		<fileset dir="${basedir}">
+			<include name="installer.jar"/>
+		</fileset>
+	</copy>
     <copy todir="${release}/blitz_user/docs">
       <fileset dir="docs">
         <exclude name="javadocs/**"/>
@@ -420,7 +415,7 @@
 	   maxmemory="256m"
        destdir="docs/javadocs"
        private="true"
-       packagenames="org.*">
+       packagenames="org.*,EDU.*">
        <tag name="todo" scope="all" description="todo:"/> </javadoc>
 
   </target>
@@ -646,6 +641,23 @@
       classpathref="allclasses"/>
   </target>
 
+  <target name="txnstress" depends="compile">
+    <nbprofiledirect interactive="true" jvmargsproperty="my.agent.property">
+        <classpath>
+            <pathelement path="${allclasses}"/>
+            <pathelement path="${java.class.path}"/>
+        </classpath>
+    </nbprofiledirect>
+
+    <java classname="org.dancres.blitz.test.TxnStress" jvm="${profiler.info.jvm}"
+      classpathref="allclasses">
+      <jvmarg value="${my.agent.property}"/>
+      <arg value="8"/>
+      <arg value="200"/>
+      <arg value="0"/>
+    </java>
+  </target>
+	
   <target name="testwritespeed" depends="compile"
       description="test write speed">
     <java classname="org.dancres.blitz.WriteSpeedTest"
