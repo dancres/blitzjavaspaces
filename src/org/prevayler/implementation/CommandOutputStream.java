@@ -88,6 +88,11 @@ class CommandOutputStream {
         }
 	}
 
+    public void flush() throws IOException {
+        ObjectOutputStream oos = logStream();
+        oos.flush();
+    }
+
     public void writeCommand(Command command, boolean doSync)
         throws IOException{
 

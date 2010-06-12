@@ -8,7 +8,7 @@ package org.dancres.blitz.config;
  */
 public class Persistent extends PersistentBase {
 
-    private boolean useConcurrentBatcher;
+    private boolean dontUseExpLog;
     private long theBatchWriteWindowSizeMs;
     private int theBatchWriteWindowSizeNs;
 
@@ -28,8 +28,8 @@ public class Persistent extends PersistentBase {
        entering the barrier are now blocked until the first entrant commits all
        writes to log.
 
-       @param useConcurrent should increase log throughput by allowing the
-       next batch to form whilst the current batch is being written to log.
+       @param noUseExpLog avoid using optimistic logger which should increase log throughput
+       by allowing an optimistic flushing strategy but may still contain bugs
 
        @param aMaxLogsBeforeSync is the maximum number of log entries before
        a checkpoint is forced.
@@ -40,16 +40,16 @@ public class Persistent extends PersistentBase {
        small update which isn't good for throughput!
      */
     public Persistent(boolean shouldReset, boolean shouldClean,
-                      int aBatchWriteWindowSize, boolean useConcurrent,
+                      int aBatchWriteWindowSize, boolean noUseExpLog,
                       int aMaxLogsBeforeSync, int aLogBufferSize) {
 
         super(shouldReset, shouldClean, aLogBufferSize, aMaxLogsBeforeSync);
-        useConcurrentBatcher = useConcurrent;
+        dontUseExpLog = noUseExpLog;
         theBatchWriteWindowSizeMs = aBatchWriteWindowSize;
     }
 
-    public boolean useConcurrentWriteBatcher() {
-        return useConcurrentBatcher;
+    public boolean dontUseExperimentalBatcher() {
+        return dontUseExpLog;
     }
 
     public long getBatchWriteWindowSizeMs() {
@@ -61,11 +61,11 @@ public class Persistent extends PersistentBase {
     }
 
     public Persistent(boolean shouldReset, boolean shouldClean,
-                      long aBatchWindowSizeMs, int aBatchWindowSizeNs, boolean useConcurrent,
+                      long aBatchWindowSizeMs, int aBatchWindowSizeNs, boolean noUseExpLog,
                       int aMaxLogsBeforeSync, int aLogBufferSize) {
 
         super(shouldReset, shouldClean, aLogBufferSize, aMaxLogsBeforeSync);
-        useConcurrentBatcher = useConcurrent;
+        dontUseExpLog = noUseExpLog;
         theBatchWriteWindowSizeMs = aBatchWindowSizeMs;
         theBatchWriteWindowSizeNs = aBatchWindowSizeNs;
     }

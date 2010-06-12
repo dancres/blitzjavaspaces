@@ -34,9 +34,9 @@ class PersistentPersonality implements StoragePersonality {
         TxnManager.theLogger.log(Level.INFO, "Write barrier window: " +
                           theModel.getBatchWriteWindowSizeMs() + ", " + theModel.getBatchWriteWindowSizeNs());
 
-        if (theModel.useConcurrentWriteBatcher())
+        if (!theModel.dontUseExperimentalBatcher())
                 TxnManager.theLogger.log(Level.INFO,
-                                         "*** Concurrent batching enabled ***");
+                                         "*** Experimental batcher enabled ***");
 
         if (theModel.shouldCleanLogs()) {
             TxnManager.theLogger.log(Level.WARNING,
@@ -70,10 +70,10 @@ class PersistentPersonality implements StoragePersonality {
             long myWindowSizeMs = theModel.getBatchWriteWindowSizeMs();
             int myWindowSizeNs = theModel.getBatchWriteWindowSizeNs();
 
-            if (theModel.useConcurrentWriteBatcher()) {
+            if (theModel.dontUseExperimentalBatcher()) {
                 return new ConcurrentWriteBatcher(myPrevayler, myWindowSizeMs, myWindowSizeNs);
             } else {
-                return new WriteBatcher(myPrevayler, myWindowSizeMs, myWindowSizeNs);
+                return new OptimisticBatcher(myPrevayler);
             }
         } else
             return new NullBatcher(myPrevayler);

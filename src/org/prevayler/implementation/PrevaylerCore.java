@@ -148,6 +148,12 @@ public class PrevaylerCore {
         }
     }
 
+    public void flush() throws IOException {
+        synchronized(this) {
+            output.flush();
+        }
+    }
+
     /**
      * This method prepares a snapshot of the system and returns it in a
      * Snapshotter instance which can be used to save the snapshot to disk
