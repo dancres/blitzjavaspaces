@@ -155,6 +155,10 @@ public abstract class CacheIndexerImpl extends CacheIndexer {
             int myChoicesSize = 0;
             int myChoicesOffset = 0;
 
+            if ((anEntry.getType().equals(theType)) &&
+                    (anEntry.getFields().length != theCacheLines.length))
+                    theLogger.log(Level.WARNING, "Possible schema change detected - matching may fail" + theType);
+            
             // Find the smallest index available
             for (int i = 0; i < anEntry.getFields().length; i++) {
                 MangledField myField = anEntry.getField(i);
