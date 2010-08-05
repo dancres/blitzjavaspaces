@@ -33,6 +33,10 @@ public class ThreadStat implements Stat, StatGenerator {
         return new ThreadStat(theId, myActiveCount);
     }
 
+    public int getThreadCount() {
+        return theThreadCount;
+    }
+
     public String toString() {
         return "Thread count: " + theThreadCount;
     }

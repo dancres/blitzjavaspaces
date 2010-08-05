@@ -1,34 +1,16 @@
 package org.dancres.blitz.tools;
 
 import java.io.IOException;
-
-import java.rmi.RemoteException;
 import java.rmi.RMISecurityManager;
-
-import net.jini.discovery.*;
-
-import net.jini.lookup.*;
-import net.jini.lookup.entry.Name;
-
-import net.jini.core.lookup.ServiceItem;
-import net.jini.core.lookup.ServiceTemplate;
-
-import net.jini.core.entry.Entry;
+import java.rmi.RemoteException;
 
 import net.jini.admin.Administrable;
-
 import net.jini.space.JavaSpace;
 
-import net.jini.core.transaction.TransactionException;
-
-import org.dancres.blitz.remote.BlitzAdmin;
-
+import org.dancres.blitz.remote.StatsAdmin;
+import org.dancres.blitz.stats.Stat;
 import org.dancres.jini.util.DiscoveryUtil;
 import org.dancres.jini.util.ServiceLocator;
-
-import org.dancres.blitz.stats.*;
-
-import org.dancres.blitz.remote.StatsAdmin;
 
 /**
    <p>MonitorStats accepts a spacename as an argument and a loop time.  It then
@@ -50,6 +32,10 @@ public class MonitorStats {
     private static final long MAX_DISCOVER_TIME = 15 * 1000;
 
     public static void main(String args[]) {
+        new MonitorStats().startup(args);
+    }
+
+    void startup(String args[]) {
         if (System.getSecurityManager() == null)
             System.setSecurityManager(new RMISecurityManager());
 
@@ -93,20 +79,7 @@ public class MonitorStats {
                             StatsAdmin myStatsAdmin = 
                                 (StatsAdmin) myAdminProxy;
 
-                            if (myTimeout == 0) {
-                                Stat[] myStats = myStatsAdmin.getStats();
-
-                                System.out.println("Snapshot: " +
-                                    System.currentTimeMillis());
-                                for (int i = 0; i < myStats.length; i++) {
-                                    System.out.println(myStats[i]);
-                                }
-
-                                System.out.println();
-
-                            } else {
-                                new Watcher(myStatsAdmin, myTimeout).start();
-                            }
+                            getWatcher(myStatsAdmin, myTimeout).run();
                         } else {
                             System.err.println("No BlitzAdmin interface found - can't be Blitz");
                         }
@@ -129,7 +102,11 @@ public class MonitorStats {
         }
     }
 
-    static class Watcher extends Thread {
+    Runnable getWatcher(StatsAdmin anAdmin, long aTimeout) {
+        return new Watcher(anAdmin, aTimeout);
+    }
+
+    static class Watcher implements Runnable {
         private StatsAdmin theAdmin;
         private long theTimeout;
 
@@ -139,7 +116,7 @@ public class MonitorStats {
         }
 
         public void run() {
-            while (true) {
+            do {
                 try {
                     Stat[] myStats = theAdmin.getStats();
 
@@ -155,7 +132,7 @@ public class MonitorStats {
                 } catch (Exception anE) {
                     System.err.println(anE);
                 }
-            }
+            } while (theTimeout > 0);  // if timeout == 0, only run once
         }
     }
 }

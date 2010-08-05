@@ -46,6 +46,10 @@ public class IOStat implements Stat {
         return theQueueSize;
     }
 
+    public int getThrottleCount() {
+        return theThrottleCount;
+    }
+
     public String toString() {
         return "IO TPI: " + theTimePerIn + " TPO: " + theTimePerOut + " IOR: " +
             theInOutRatio + " QSZ: " + theQueueSize + " THROTTLE: " +
