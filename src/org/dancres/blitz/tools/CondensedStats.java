@@ -29,7 +29,7 @@ import org.dancres.blitz.stats.TxnStat;
 
    <pre>
    java -Xmx256m -Djava.security.policy=config/policy.all
-     -classpath /home/dan/jini/jini2_0/lib/jsk-platform.jar:/home/dan/src/jini/space/build:/home/dan/jini/jini2_0/lib/jini-ext.jar:/home/dan/jini/jini2_0/lib/sun-util.jar
+     -classpath /home/dan/jini/jini2_1/lib/jsk-platform.jar:/home/dan/src/jini/space/lib/blitz.jar:/home/dan/jini/jini2_1/lib/jsk-lib.jar:/home/dan/jini/jini2_0/lib/sun-util.jar
      org.dancres.blitz.tools.CondensedStats dancres 20
    </pre>
    
