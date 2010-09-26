@@ -29,9 +29,6 @@
   <li><a href="#start">Getting Started</a></li>
 
 
-  <li><a href="#running">Running Blitz</a></li>
-
-
   <li><a href="#memory">Memory Usage</a></li>
 
 
@@ -56,9 +53,11 @@ Variables</a></li>
 
 <h4>GUI Install</h4>
 
+<p><b>Update:</b> Try the newer <a href="https://sourceforge.net/projects/blitzjavaspaces/files/Beta%20Installer/0.7%20-%20Blitz%202.1.1/">SWT-based installer</a> which contains all necessary dependencies including Jini.</p>
+
 <p>If you're a new user or just want to get something up and
 running, it's recommended that you download the installer which
-includes a simple readme and does most of the configuration work for
+includes a simple <code>readme</code> and does most of the configuration work for
 you. The installer package is named <code>installer_pj_n_nn.jar</code>
 where <code>n_nn</code> is the release version number.
 Note that you'll still need to download and install the appropriate
@@ -82,15 +81,6 @@ and port settings as follows:</p>
 
 <pre>java -jar installer.jar Jini_Home Install_Dir HTTP_Port </pre>
 
-<h3>Manual Install</h3>
-
-<p>If you're an experienced user who needs ultimate control over
-installation layout or a developer seeking to make modifications to
-Blitz, you will wish to download either a binary or source distribution
-and read the rest of this guide which will guide you through the
-installation process.</p>
-
-
 <a name="start"></a>
 <h2>Getting Started</h2>
 
@@ -98,43 +88,12 @@ installation process.</p>
 <p>First, ensure that you have installed the <a href="required_packages.html">required packages</a>.</p>
 
 
-<p>Second, if you are going to run blitz on JDK 1.4 you will need to modify the configuration files (located in the <code>config</code> directory), substituting <code>backport-util-concurrent50.jar</code> with <code>backport-util-concurrent.jar</code>.</p>
+<p>Second, make sure that you have selected the appropriate backport-util for your chosen JDK. This should only be necessary if you chose not to use the SWT-based installer above. You will need to modify the configuration files (located in the <code>config</code> directory), substituting <code>backport-util-concurrent50.jar</code> with <code>backport-util-concurrent.jar</code> or <code>backport-util-concurrent60.jar</code>.</p>
 
 <p>Blitz is fully integrated with JINI 2.1 so the preferred
 method of startup is via the ServiceStarter. However, it's possible to
 run Blitz, for test purposes, in a standalone mode.
 </p>
-
-
-<p>If you've downloaded the source distribution, please read the <a href="dev_guide.html">Developer's Guide</a> and ensure
-you've compiled the Blitz <code>.jar</code>'s (once you've
-done the necessary editing of <code>build.xml</code> you
-can create the <code>.jar</code>'s with a simple <code>ant
-all</code>.
-</p>
-
-
-<h3>Assumptions</h3>
-
-
-For the purposes of the following examples, I assume that:
-<ul>
-
-
-  <li>You've unpacked the distribution in <code>/home/dan/src/jini/space</code></li>
-
-
-  <li>You've installed JINI 2.1 in <code>/home/dan/jini/jini2_1</code></li>
-
-
-  <li>You've installed Brian Murphy's starter kit in <code>/home/dan/jini/jini2_1/jini-start</code></li>
-
-
-  <li>Your machine's name is <code>yakuza</code></li>
-
-
-</ul>
-
 
 <h3>Configuration Basics</h3>
 
@@ -193,65 +152,6 @@ hardware.</b></p>
 
 
 <hr align="center" size="3" width="70%">
-<a name="running"></a>
-<h2>Running Blitz</h2>
-
-
-<h3>Starting JINI</h3>
-
-
-Before starting Blitz, you should start up the necessary JINI services.
-We can do this using Brian Murphy's starter kit scripts as follows:
-<pre>cd /home/dan/jini/jini2_1/jini-start/example/scripts<br><br>./urun httpd<br><br>./urun jeri-transient-reggie<br><br>./urun jeri-transient-mahalo<br><br></pre>
-
-
-You may also find it useful to run the ServiceBrowser so you can check
-that things are performing as expected:
-<pre>./urun jeri-browser<br></pre>
-
-
-Now we must start a codebase server for Blitz:
-<pre>./urun httpd -port 8081 -dir /home/dan/src/jini/space/lib<br></pre>
-
-
-If you plan to deploy an Activatable Blitz instance you will also need
-to start either Phoenix or RMID. Assuming you choose to use RMID (note
-that there are various security options that RMID doesn't support):
-<pre>rmid -J-Djava.security.policy=/home/dan/src/jini/space/config/policy.all<br></pre>
-
-
-<h3>Using ServiceStarter</h3>
-
-
-<p>First, edit the configuration files as desired (you will
-almost certainly need to alter the <code>blitzCodebase</code>,
-<code>jiniRoot</code>, <code>dbLib</code>, <code>blitzRoot</code>
-variables and possibly <code>dbVersion</code>). To start
-an Activatable Blitz instance:</p>
-
-
-<pre>cd /home/dan/src/jini/space/<br><br>java -Djava.security.policy=config/policy.all -jar /home/dan/jini/jini2_1/lib/start.jar config/start-act-blitz21.config<br></pre>
-
-
-Note that the default configuration files expect to create a log for
-the shared activation group in <code>/tmp/sharedvm.log</code>
-which you will need to delete if you wish to start again from scratch,
-re-registering the Blitz instance etc.
-To start a non-activatable instance:
-<pre>cd /home/dan/src/jini/space/<br><br>java -Djava.security.policy=config/policy.all -jar /home/dan/jini/jini2_1/lib/start.jar config/start-trans-blitz21.config<br></pre>
-
-
-<hr align="center" size="3" width="70%">
-<h3>A Word on Configuration Files</h3>
-
-
-<p>Example configurations for JINI 2.1 can be found in the <code>config</code>
-directory and have a <code>21</code> subscript. Those
-configurations without the subscript are examples of scripts which
-provide backward compatibility with JINI 2.0. Note that existing Blitz
-scripts from releases prior to Blitz Pure Java 1.13 will need
-modifications in line with these examples.</p>
-
 
 <h2><a name="memory">Memory Usage</a></h2>
 
@@ -652,7 +552,8 @@ highly concurrent loads, increase this number.</li>
 setting which can be overidden with individual Entry constraints - see
 the Javadoc for <code>org.dancres.blitz.config.EntryConstraint</code>.</li>
 
-
+  <li><i>cacheEntriesPerPartition</i>=&lt;int&gt; - the maximum number of entries to place in each partition of the entry cache. In order to improve concurrent performance, each entry cache is broken up into a number of pieces that are separately locked. This entry determines the maximum size of each piece.</li>
+  
   <li><i>eventQueueBound</i>=&lt;int&gt; -
 limits the maximum size of the notify event queue - once full, writing
 threads will be throttled down to prevent overflow. Defaults to

@@ -13,86 +13,39 @@ The build process for Blitz is automated via Ant build scripts.  First, ensure t
 
 <h2>Configuration</h2>
 
-Edit the following properties in the build.xml file:
+Edit the following properties in <code>build.xml</code>:
 
 <ul>
 <li> db_root and bdb - should be configured to point to the location of your Berkeley Db installation and the je.jar respectively.</li>
+</ul>
+
+Edit these properties in <code>build.properties</code>:
+
+<ul>
 <li> jini_root - should be configured to point to the location of the root of your JINI 2.0 installation</li>
 <li> jdk_root - should be configured to point to the root of your JDK 1.4.x installation</li>
 </ul>
 
 <h2>Basic build</h2>
 
-<p>For the purposes of this section, I assume you've unpacked the distribution in <code>/home/dan/src/jini/space</code>. First let's compile Blitz: </p>
-
 <pre>
-cd /home/dan/src/jini/space
-
 ant clean compile
 </pre>
 
-You can generate javadoc using:
+Javadoc:
 
 <pre>
 ant javadoc
 </pre>
 
-Which will place the javadoc in <code>docs/javadocs</code>
+Which generates javadoc in <code>docs/javadocs</code>
 
 <h2>Creating a distribution</h2>
 
-<p>The final steps in producing a Blitz distribution are to create the <code>blitz.jar</code>, <code>blitz-dl.jar</code> and <code>stats.jar</code> files.  By convention, building <code>blitz-dl.jar</code> entails including all classes the Blitz proxy code is dependent upon including various classes of the JINI starter kit.</p>
-
-<p>Fortunately, there is an Ant addon task which makes the work of generating the dependencies and building a .jar trivial.  The necessary .jar is included in <code>ant_addon</code> and automatically used by the <code>build.xml</code> file (there's no need to install the addon in the Ant lib directory).</p>
-
-<p>Now we can build the download jar, <code>blitz-dl.jar</code> as follows:
+<p>The final steps in producing a Blitz distribution are to create the <code>blitz.jar</code>, <code>blitz-dl.jar</code> and <code>stats.jar</code> files.</p>
 
 <pre>
-cd /home/dan/src/jini/space/
-
-ant dljar
-</pre>
-
-<p>Next up, we create </code>stats.jar</code> which is required to be on the classpath of any client wishing to make use of the <code>StatsAdmin</code> interface.
-
-<pre>
-cd /home/dan/src/jini/space/
-
-ant statsjar
-</pre>
-
-<p>Next we create the <code>dashboard.jar</code></p>
-
-<pre>
-cd /home/dan/src/jini/space/
-
-ant dashjar
-</pre>
-
-<p>The final step is to create <code>blitz.jar</code> itself:</p>
-
-<pre>
-cd /home/dan/src/jini/space
-
-ant serverjar
+ant jars
 </pre>
 
 All the generated <code>.jar</code>'s will be placed in the <code>lib</code> directory.
-
-<h2>Reducing the risk of RSI</h2>
-
-You can do all the above with one command:
-
-<pre>
-cd /home/dan/src/jini/space/
-
-ant all
-</pre>
-
-<h2>Tools</h2>
-
-There are several tools available which may prove useful in debugging 'space applications or Blitz itself - see the Tools Section in the <a href="install_guide.html#tools">Install Guide</a>
-
-<p><div align="center"><a href="../index.html">Back to Documentation</a></div></p>
-</body>
-</html>
