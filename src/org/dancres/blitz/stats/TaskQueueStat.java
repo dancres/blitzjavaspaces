@@ -17,6 +17,14 @@ public class TaskQueueStat implements Stat {
         return _id;
     }
 
+    public String getQueueName() {
+        return _queueName;
+    }
+
+    public int getQueueSize() {
+        return _size;
+    }
+
     public String toString() {
         return "Queue: " + _queueName + " size: " + _size; 
     }

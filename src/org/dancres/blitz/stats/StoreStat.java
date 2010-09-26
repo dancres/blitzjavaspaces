@@ -3,8 +3,6 @@ package org.dancres.blitz.stats;
 /**
  */
 public class StoreStat implements Stat {
-    private static final long _minimalFree;
-
     private long _id;
     private String _type;
     private String[] _titles;
@@ -16,11 +14,8 @@ public class StoreStat implements Stat {
     private int _totalCache;
     private long _free;
     private long _max;
-
-    static {
-        _minimalFree = Runtime.getRuntime().maxMemory() / 5;
-    }
-
+	private long _minFree;
+	
     public StoreStat(long anId, String aType,
                       String[] aTitles,
                       long[] aMisses, long[] aDeld, int anActiveCacheSize, int aCacheSize) {
@@ -33,10 +28,11 @@ public class StoreStat implements Stat {
         _activeCache = anActiveCacheSize;
         _totalCache = aCacheSize;
         _free = Runtime.getRuntime().freeMemory();
-        _max = Runtime.getRuntime().maxMemory();
+        _max = Runtime.getRuntime().totalMemory();
+		_minFree = Runtime.getRuntime().totalMemory() / 10;
 
         _safe = (anActiveCacheSize == aCacheSize) &&
-                (Runtime.getRuntime().freeMemory() >= _minimalFree);
+                (Runtime.getRuntime().freeMemory() >= _minFree);
     }
     
     public long getId() {
@@ -57,7 +53,7 @@ public class StoreStat implements Stat {
 
         myBuffer.append(" sustainable: ");
         myBuffer.append(_safe);
-        myBuffer.append(" (" + _activeCache + ", " + _totalCache + ", " + _free + ", " + _max + ")");
+        myBuffer.append(" (" + _activeCache + ", " + _totalCache + ", " + _free + ", " + _max + ", " + _minFree + ")");
 
         return myBuffer.toString();
     }

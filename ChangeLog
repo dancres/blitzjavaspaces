@@ -1,3 +1,13 @@
+2010-09-26  Dan Creswell <dan@dancres.org>
+
+	* LocalSpace now supports restarts within a single JVM.
+	
+	* Revise store cache health statistic
+	
+	* Minor cleanup of CondensedStats
+	
+	* Merge CondensedStats vmstat-style tool from Dominic Cleal
+	
 2010-06-12  Dan Creswell <dan@dancres.org>
 
     * Blitz Pure Java Version 2.1.1
