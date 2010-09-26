@@ -1,5 +1,7 @@
 2010-09-26  Dan Creswell <dan@dancres.org>
 
+	* Blitz Pure Java Version 2.1.2
+	
 	* LocalSpace now supports restarts within a single JVM.
 	
 	* Revise store cache health statistic
@@ -10,7 +12,7 @@
 	
 2010-06-12  Dan Creswell <dan@dancres.org>
 
-    * Blitz Pure Java Version 2.1.1
+	* Blitz Pure Java Version 2.1.1
 
 	* Add an optimistic log file batcher - disabled by default
 		- To enable change: storageModel = new Persistent(true, true, 1, true, 10000, 32768);
