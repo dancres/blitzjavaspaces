@@ -13,13 +13,27 @@ import edu.emory.mathcs.backport.java.util.concurrent.atomic.AtomicLong;
  * Tracks the number ouf outstanding blocked operations (take and read)
  */
 class SearchTasks {
-    private static SearchTasks theTasks = new SearchTasks();
+    private static class LifecycleImpl implements Lifecycle {
+        public void init() {
+            theTasks = new SearchTasks();
+        }
+
+        public void deinit() {
+            theTasks = null;
+        }
+    }
+
+    static {
+        LifecycleRegistry.add(new LifecycleImpl());
+    }
+
+    private static SearchTasks theTasks;
 
     private AtomicInteger theTakeCount = new AtomicInteger();
     private AtomicInteger theReadCount = new AtomicInteger();
     private AtomicLong theMissedTakes = new AtomicLong();
     private AtomicLong theMissedReads = new AtomicLong();
-    
+
     public static SearchTasks get() {
         return theTasks;
     }

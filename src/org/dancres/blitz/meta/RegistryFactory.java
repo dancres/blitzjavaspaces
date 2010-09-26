@@ -6,9 +6,26 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.HashMap;
 
+import org.dancres.blitz.Lifecycle;
+import org.dancres.blitz.LifecycleRegistry;
 import org.dancres.blitz.disk.Disk;
 
 public class RegistryFactory {
+    private static class LifecycleImpl implements Lifecycle {
+        public void init() {
+        }
+
+        public void deinit() {
+            synchronized(theMetas) {
+                theMetas.clear();
+            }
+        }
+    }
+
+    static {
+        LifecycleRegistry.add(new LifecycleImpl());
+    }
+
     private static Map theMetas = new HashMap();
 
     /**

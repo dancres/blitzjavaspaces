@@ -431,5 +431,8 @@ class EventGeneratorFactory implements Syncable {
             return;
 
         theStore.close();
+
+        theStore = null;
+        theIDMap.clear();
     }
 }

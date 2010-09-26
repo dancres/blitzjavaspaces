@@ -16,6 +16,8 @@ import net.jini.core.transaction.TransactionException;
 
 import net.jini.config.ConfigurationException;
 
+import org.dancres.blitz.Lifecycle;
+import org.dancres.blitz.LifecycleRegistry;
 import org.dancres.blitz.entry.OpInfo;
 
 import org.dancres.blitz.config.ConfigurationFactory;
@@ -46,6 +48,20 @@ public final class TxnId implements Serializable {
                                        aCE);
         }
     }
+
+    static class LifecycleImpl implements Lifecycle {
+        public void init() {
+        }
+
+        public void deinit() {
+            theMarshalledTxnMgrCache.clear();
+        }
+    }
+
+    static {
+        LifecycleRegistry.add(new LifecycleImpl());
+    }
+
 
     private MarshalledObject theMarshalledMgr;
     private long theId;

@@ -6,6 +6,8 @@ import java.util.logging.Level;
 
 import net.jini.config.ConfigurationException;
 
+import org.dancres.blitz.Lifecycle;
+import org.dancres.blitz.LifecycleRegistry;
 import org.dancres.blitz.config.*;
 
 /**
@@ -43,6 +45,20 @@ public class EntryConstraints {
         } catch (ConfigurationException aCE) {
         }
     }
+
+    static class LifecycleImpl implements Lifecycle {
+        public void init() {
+        }
+
+        public void deinit() {
+            theAllConstraints.clear();
+        }
+    }
+
+    static {
+        LifecycleRegistry.add(new LifecycleImpl());
+    }
+
 
     private static HashMap theAllConstraints = new HashMap();
 

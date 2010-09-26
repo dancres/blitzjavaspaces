@@ -1,8 +1,6 @@
 package org.dancres.blitz.entry;
 
-import org.dancres.blitz.ActiveObject;
-import org.dancres.blitz.ActiveObjectRegistry;
-import org.dancres.blitz.Logging;
+import org.dancres.blitz.*;
 import org.dancres.blitz.mangler.MangledEntry;
 
 import java.util.HashSet;
@@ -19,7 +17,21 @@ public class Readahead implements ActiveObject {
     private static Logger theLogger =
         Logging.newLogger("org.dancres.blitz.entry.Readahead");
 
-    private static Readahead theReadahead = new Readahead();
+    static class LifecycleImpl implements Lifecycle {
+        public void init() {
+            theReadahead = new Readahead();
+        }
+
+        public void deinit() {
+            theReadahead = null;
+        }
+    }
+
+    static {
+        LifecycleRegistry.add(new LifecycleImpl());
+    }
+    
+    private static Readahead theReadahead;
 
     private QueuedExecutor theExecutor;
 

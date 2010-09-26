@@ -5,6 +5,8 @@ import java.util.Iterator;
 
 import java.util.logging.Logger;
 
+import org.dancres.blitz.Lifecycle;
+import org.dancres.blitz.LifecycleRegistry;
 import org.dancres.blitz.Logging;
 
 /**
@@ -26,6 +28,19 @@ public class StatsBoard {
         add(new ThreadStat());
     }
 
+    private static class LifecycleImpl implements Lifecycle {
+        public void init() {
+        }
+
+        public void deinit() {
+            theBoard.theStatGenerators.clear();
+        }
+    }
+
+    static {
+        LifecycleRegistry.add(new LifecycleImpl());
+    }
+    
     public static StatsBoard get() {
         return theBoard;
     }

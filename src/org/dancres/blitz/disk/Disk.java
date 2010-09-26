@@ -37,7 +37,7 @@ import org.dancres.util.NumUtil;
    This class is responsible for managing the underlying BerkeleyDB
    infrastructure.  Anyone using this class to create/manipulate databases
    should likely be registered as a Syncable instance so that it is aware
-   of requests for synchronization and closure of databases.   
+   of requests for synchronization and closure of databases.
  */
 public class Disk {
     private static Environment theEnv;
@@ -194,6 +194,8 @@ public class Disk {
             theLogger.log(Level.INFO, "Database recovery complete");
 
             theDbs = theEnv.getDatabaseNames();
+
+            WriteDaemon.init();
 
         } catch (UnsatisfiedLinkError aULE) {
             theLogger.log(Level.SEVERE, "Warning, didn't load library for db cleanly - are you using Inca X?", aULE);

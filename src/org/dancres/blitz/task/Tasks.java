@@ -104,6 +104,8 @@ public class Tasks implements ActiveObject {
                 PooledExecutor myExec = (PooledExecutor) myExecs.next();
                 myExec.shutdownNow();
             }
+
+            theExecutors.clear();
         }
     }
 
@@ -119,7 +121,7 @@ public class Tasks implements ActiveObject {
 
                 if (TASK_QUEUE_BOUND == 0) {
                     theLogger.log(Level.INFO,
-                                  "Creating task pool with no bounds");
+                                  "Creating task pool with no bounds [ " + aName + " ]");
 
 
                     myQueue = new BoundedLinkedQueue(Integer.MAX_VALUE);

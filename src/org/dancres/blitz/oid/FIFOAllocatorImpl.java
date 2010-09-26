@@ -153,6 +153,10 @@ class FIFOAllocatorImpl implements AllocatorAdmin, Syncable {
 
         RegistryFactory.delete(getDbNameFor(theName));
 
+        discard();
+    }
+
+    public void discard() {
         Disk.remove(this);
     }
 

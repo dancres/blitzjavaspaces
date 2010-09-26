@@ -10,9 +10,7 @@ import java.util.Iterator;
 import net.jini.config.ConfigurationException;
 import net.jini.core.event.RemoteEventListener;
 
-import org.dancres.blitz.ActiveObject;
-import org.dancres.blitz.ActiveObjectRegistry;
-import org.dancres.blitz.Logging;
+import org.dancres.blitz.*;
 import org.dancres.blitz.config.ConfigurationFactory;
 import org.dancres.blitz.mangler.MangledEntry;
 import org.dancres.blitz.oid.OID;
@@ -35,7 +33,22 @@ public class EventQueue implements ActiveObject {
     static Logger theLogger =
         Logging.newLogger("org.dancres.blitz.notify.EventQueue");
 
-    private static final EventQueue theEventQueue = new EventQueue();
+    private static class LifecycleImpl implements Lifecycle {
+
+        public void init() {
+            theEventQueue = new EventQueue();
+        }
+
+        public void deinit() {
+            theEventQueue = null;
+        }
+    }
+
+    static {
+        LifecycleRegistry.add(new LifecycleImpl());
+    }
+
+    private static EventQueue theEventQueue;
 
     public static EventQueue get() {
         return theEventQueue;

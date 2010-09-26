@@ -95,11 +95,11 @@ public class TxnManager {
 
     private CheckpointTrigger theCheckpointTrigger;
 
-    private long theCheckpointCount = 0;
+    private long theCheckpointCount;
 
     private TxnGateway theGateway;
 
-    private boolean isRecovery = true;
+    private boolean isRecovery;
 
     public static synchronized void init(TxnGateway aGateway)
         throws Exception {
@@ -112,6 +112,10 @@ public class TxnManager {
         }
     }
 
+    public static synchronized void halt() {
+        theManager = null;
+    }
+    
     public static synchronized TxnManager get() {
         return theManager;
     }
@@ -121,6 +125,9 @@ public class TxnManager {
     }
 
     private void recover() throws Exception {
+        theCheckpointCount = 0;
+        isRecovery = true;
+
         StoragePersonality myPersonality = 
             StoragePersonalityFactory.getPersonality();
 

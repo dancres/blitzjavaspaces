@@ -15,6 +15,8 @@ import net.jini.config.ConfigurationFile;
 import net.jini.config.Configuration;
 import net.jini.config.ConfigurationException;
 
+import org.dancres.blitz.Lifecycle;
+import org.dancres.blitz.LifecycleRegistry;
 import org.dancres.blitz.disk.Disk;
 import org.dancres.blitz.disk.Syncable;
 
@@ -36,15 +38,29 @@ public class EntryRepositoryFactory implements Syncable, SnapshotContributor {
     private static final Logger theLogger =
         Logging.newLogger("org.dancres.blitz.entry.EntryRepositoryFactory");
 
-    private static EntryRepositoryFactory theReposFactory =
-        new EntryRepositoryFactory();
+    private static EntryRepositoryFactory theReposFactory;
 
     private Map theRepositories = new HashMap();
 
     private boolean logCountOnBoot;
-    private boolean haveRegisteredForSnapshot = false;
+    private boolean haveRegisteredForSnapshot;
     private Object theLogLock = new Object();
-    
+
+    private static class LifecycleImpl implements Lifecycle {
+        public void init() {
+            theReposFactory = new EntryRepositoryFactory();
+        }
+
+        public void deinit() {
+            theReposFactory.discard();
+            theReposFactory = null;
+        }
+    }
+
+    static {
+        LifecycleRegistry.add(new LifecycleImpl());
+    }
+
     private EntryRepositoryFactory() {
         try {
             long myReapTime =
@@ -96,6 +112,13 @@ public class EntryRepositoryFactory implements Syncable, SnapshotContributor {
         }
 
         Disk.add(this);
+
+        haveRegisteredForSnapshot = false;
+    }
+
+    private void discard() {
+        theReaper = null;
+        Disk.remove(this);
     }
 
     public static void reap() {

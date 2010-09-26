@@ -84,7 +84,7 @@ public class WriteDaemon implements StatGenerator {
         }
     }
 
-    private static WriteDaemon theDaemon = new WriteDaemon();
+    private static WriteDaemon theDaemon;
 
     private int thePendingCount;
     private LinkedQueue thePendingUpdates = new LinkedQueue();
@@ -119,6 +119,10 @@ public class WriteDaemon implements StatGenerator {
         theCompleters.setKeepAliveTime(THREAD_KEEPALIVE);
 
         StatsBoard.get().add(this);
+    }
+
+    public static void init() {
+        theDaemon = new WriteDaemon();
     }
 
     public static WriteDaemon get() {

@@ -3,11 +3,14 @@ package org.dancres.blitz.oid;
 import java.io.File;
 import java.io.IOException;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.HashMap;
 
 import net.jini.config.ConfigurationException;
 
+import org.dancres.blitz.Lifecycle;
+import org.dancres.blitz.LifecycleRegistry;
 import org.dancres.blitz.disk.DiskTxn;
 
 import org.dancres.blitz.config.ConfigurationFactory;
@@ -32,6 +35,26 @@ public class AllocatorFactory {
 
     private static Map theAllocators = new HashMap();
 
+    private static class LifecycleImpl implements Lifecycle {
+        public void init() {
+        }
+
+        public void deinit() {
+            synchronized(theAllocators) {
+                Iterator myAllocs = theAllocators.values().iterator();
+                while (myAllocs.hasNext()) {
+                    ((AllocatorAdmin) myAllocs.next()).discard();
+                }
+
+                theAllocators.clear();
+            }
+        }
+    }
+
+    static {
+        LifecycleRegistry.add(new LifecycleImpl());
+    }
+    
     public static Allocator get(String aName, boolean isFifo)
         throws IOException {
         return get(aName, DEFAULT_MAX_ALLOCATORS, isFifo);

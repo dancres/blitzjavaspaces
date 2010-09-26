@@ -13,6 +13,21 @@ import java.util.Iterator;
 public class BootContext {
     private static List theContext = new LinkedList();
 
+    private static class LifecycleImpl implements Lifecycle {
+        public void init() {
+        }
+
+        public void deinit() {
+            synchronized(theContext) {
+                theContext.clear();
+            }
+        }
+    }
+
+    static {
+        LifecycleRegistry.add(new LifecycleImpl());
+    }
+
     public static void add(BootInfo anInfo) {
         synchronized(theContext) {
             theContext.add(anInfo);

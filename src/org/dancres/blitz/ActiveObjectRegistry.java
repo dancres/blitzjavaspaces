@@ -3,6 +3,13 @@ package org.dancres.blitz;
 import java.util.ArrayList;
 
 /**
+ * ActiveObjectRegistry handles thread lifecycles across a number of objects within the Blitz JVM (e.g.
+ * <code>LeaseReaper</code>). One is guaranteed that <code>Lifecycle.init</code> will be called before
+ * <code>startAll</code> and that <code>stopAll</code> will be called before <code>Lifecycle.deinit</code>.
+ *
+ * Note: ActiveObjectRegistry discards all references when <code>stopAll</code> is called as objects registered with
+ * <code>Lifecycle</code> are expected to restart and re-register threads on <code>init</code>.
+ * 
    @see org.dancres.blitz.ActiveObject
  */
 public class ActiveObjectRegistry {
@@ -30,6 +37,9 @@ public class ActiveObjectRegistry {
             ActiveObject myObject = (ActiveObject) theObjects.get(i);
             myObject.halt();
         }
+
+        theObjects.clear();
+        haveStarted = false;
     }
 
     public synchronized static boolean hasStarted() {

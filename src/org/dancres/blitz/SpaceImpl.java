@@ -28,8 +28,6 @@ import org.dancres.blitz.oid.OID;
 
 import org.dancres.blitz.util.Time;
 
-import org.dancres.blitz.task.Tasks;
-
 import org.dancres.blitz.notify.EventQueue;
 import org.dancres.blitz.notify.QueueEvent;
 
@@ -110,13 +108,14 @@ public class SpaceImpl {
 
         theLogger.info("Synchrounous Notifies: " + isSynchronousNotify);
 
+        LifecycleRegistry.init();
+
         StatsDumper.start(myDebugCycle);
 
         TxnManager.init(aGateway);
 
-        // Make sure EventQueue is hooked up
         EventQueue.get();
-
+        
         // Activate threads etc. only after TxnManager is initialised so
         // state has been recovered/is stable.
         //
@@ -557,16 +556,20 @@ public class SpaceImpl {
     public void stop() throws Exception {
         ActiveObjectRegistry.stopAll();
 
-        Disk.sync();
-
-        Disk.stop();
-
         theLogger.log(Level.INFO, "Dumping stats");
         Stat[] myStats = StatsBoard.get().getStats();
         for (int i = 0; i < myStats.length; i++) {
             theLogger.log(Level.INFO, myStats[i].getId() + ", " + myStats[i]);
         }
 
+        TxnManager.halt();
+
+        Disk.sync();
+
+        Disk.stop();
+
+        LifecycleRegistry.deinit();
+        
         theLogger.log(Level.INFO, "Blitz core halted after: " +
                            (System.currentTimeMillis() - theStartTime) +
                            " ms");

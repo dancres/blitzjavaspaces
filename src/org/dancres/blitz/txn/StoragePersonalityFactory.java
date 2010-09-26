@@ -4,6 +4,8 @@ import java.io.File;
 
 import net.jini.config.ConfigurationException;
 
+import org.dancres.blitz.Lifecycle;
+import org.dancres.blitz.LifecycleRegistry;
 import org.dancres.blitz.config.StorageModel;
 import org.dancres.blitz.config.Persistent;
 import org.dancres.blitz.config.TimeBarrierPersistent;
@@ -15,11 +17,29 @@ import org.dancres.blitz.config.ConfigurationFactory;
  */
 public class StoragePersonalityFactory {
 
+    private static Object _lock = new Object();
+
     private static StorageModel STORAGE_MODEL;
 
     private static StoragePersonality STORAGE_PERSONALITY;
 
+    private static class LifecycleImpl implements Lifecycle {
+        public void init() {
+        }
+
+        public void deinit() {
+            synchronized(_lock) {
+                STORAGE_MODEL = null;
+                STORAGE_PERSONALITY = null;
+            }
+        }
+    }
+
     static {
+        LifecycleRegistry.add(new LifecycleImpl());
+    }
+
+    private static void init() {
         try {
             STORAGE_MODEL =
                 ((StorageModel)
@@ -50,6 +70,11 @@ public class StoragePersonalityFactory {
     }
 
     public static StoragePersonality getPersonality() {
+        synchronized(_lock) {
+            if (STORAGE_MODEL == null)
+                init();
+        }
+
         return STORAGE_PERSONALITY;
     }
 }

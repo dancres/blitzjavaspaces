@@ -438,6 +438,12 @@
       classpathref="allclasses"/>
   </target>
 
+  <target name="testrestart" depends="compile"
+      description="test basic in-JVM restart">
+    <java classname="org.dancres.blitz.RestartTest" 
+      classpathref="allclasses"/>
+  </target>
+
   <target name="testdb" depends="compile"
       description="test basic Berkeley DB functions">
     <java classname="org.dancres.blitz.disk.Disk" 

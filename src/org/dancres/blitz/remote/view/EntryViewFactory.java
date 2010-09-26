@@ -15,8 +15,7 @@ import net.jini.config.ConfigurationException;
 import net.jini.core.transaction.Transaction;
 import net.jini.core.transaction.TransactionException;
 
-import org.dancres.blitz.EntryView;
-import org.dancres.blitz.SpaceImpl;
+import org.dancres.blitz.*;
 
 import org.dancres.blitz.mangler.MangledEntry;
 
@@ -25,8 +24,6 @@ import org.dancres.blitz.lease.Reapable;
 import org.dancres.blitz.lease.ReapFilter;
 
 import org.dancres.blitz.util.Time;
-
-import org.dancres.blitz.Logging;
 
 import org.dancres.blitz.config.ConfigurationFactory;
 
@@ -39,7 +36,21 @@ public class EntryViewFactory implements Reapable {
     private static Logger theLogger =
         Logging.newLogger("org.dancres.blitz.remote.view.EntryViewFactory");
 
-    private static EntryViewFactory theFactory = new EntryViewFactory();
+    static class LifecycleImpl implements Lifecycle {
+        public void init() {
+            theFactory = new EntryViewFactory();
+        }
+
+        public void deinit() {
+            theFactory = null;
+        }
+    }
+
+    static {
+        LifecycleRegistry.add(new LifecycleImpl());
+    }    
+
+    private static EntryViewFactory theFactory;
 
     public static EntryViewFactory get() {
         return theFactory;

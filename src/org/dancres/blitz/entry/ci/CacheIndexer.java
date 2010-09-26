@@ -6,6 +6,8 @@ import java.util.HashMap;
 
 import net.jini.config.ConfigurationException;
 
+import org.dancres.blitz.Lifecycle;
+import org.dancres.blitz.LifecycleRegistry;
 import org.dancres.blitz.entry.TupleLocator;
 
 import org.dancres.blitz.mangler.MangledEntry;
@@ -33,6 +35,19 @@ import org.dancres.blitz.config.Fifo;
 public abstract class CacheIndexer {
     static Logger theLogger =
         Logging.newLogger("org.dancres.blitz.disk.CacheIndexer");
+
+    static class LifecycleImpl implements Lifecycle {
+        public void init() {
+        }
+
+        public void deinit() {
+            _indexers.clear();
+        }
+    }
+
+    static {
+        LifecycleRegistry.add(new LifecycleImpl());
+    }
 
     private static HashMap _indexers = new HashMap();
 

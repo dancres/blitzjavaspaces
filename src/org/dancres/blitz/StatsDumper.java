@@ -54,6 +54,7 @@ class StatsDumper implements Runnable, ActiveObject {
     }
 
     public void begin() {
+        stopDebugging = false;
         theDebugThread = new Thread(this, "StatsDumper");
         theDebugThread.start();
     }
