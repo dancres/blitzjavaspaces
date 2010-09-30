@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import net.jini.core.lease.Lease;
 import net.jini.core.transaction.TransactionException;
 import net.jini.space.JavaSpace;
 
@@ -19,6 +20,7 @@ import org.dancres.blitz.txnlock.LockMgr;
 import org.dancres.blitz.txnlock.TxnLock;
 import org.dancres.blitz.txnlock.TxnLocks;
 import org.dancres.blitz.txnlock.BaulkedParty;
+import org.dancres.blitz.util.Time;
 
 /**
    All search results obtained by the lower layers are offered to a
@@ -183,25 +185,30 @@ class SearchVisitorImpl implements SingleMatchTask,
         }
     }
 
-    /**
-     * NEVER, EVER, EVER invoke <code>haveCompleted</code> in this method.
-     * <code>haveCompleted</code> is an internal function designed to allow
-     * methods to figure out when parallel searching and other operations can
-     * safely abort early.
-     *
-     * This method must _never_ abort early, it must wait until status is set
-     * via <code>setStatus</code> - it cannot peek at potentially incomplete
-     * status which <code>haveCompleted</code> does.
-     */
     public synchronized MangledEntry getEntry(long aTimeout)
         throws TransactionException,
                InterruptedException {
 
-        // We only wait the once because we'll only ever wake from this
-        // if there's a result or we timeout
         if (wouldBlock() && (aTimeout != 0)) {
             needsWakeup = true;
-            wait(aTimeout);
+
+            long myCurrentTime = System.currentTimeMillis();
+            long myExpiry = Time.getAbsoluteTime(myCurrentTime, aTimeout);
+
+            while (true) {
+                long myWait = myExpiry - myCurrentTime;
+
+                if (myWait > 0)
+                    wait(myWait);
+                else
+                    break;
+
+                if (haveFinished())
+                    break;
+
+                myCurrentTime = System.currentTimeMillis();
+            }
+
             needsWakeup = false;
         }
 
@@ -219,16 +226,6 @@ class SearchVisitorImpl implements SingleMatchTask,
         return (theCompletion == null);
     }
 
-    /**
-     * NEVER, EVER, EVER invoke <code>haveCompleted</code> unless you are
-     * attempting to determine that internal parallel functions
-     * such as parallel searching and other operations can
-     * safely abort early.
-     *
-     * When this method returns <code>true</code> it is stating that some
-     * thread has determined a final state for this visitor and is in the
-     * process of resolving it.
-     */
     private synchronized boolean haveFinished() {
         return (theCompletion != null);
     }

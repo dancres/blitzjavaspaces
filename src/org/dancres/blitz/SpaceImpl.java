@@ -267,7 +267,7 @@ public class SpaceImpl {
                 myFactory.enableResolutionSignal();
 
                 myEntry =
-                    myTask.getEntry(Time.getWaitTime(aWaitTime));
+                    myTask.getEntry(aWaitTime);
             }
         } catch (InterruptedException anIE) {
             throw new TransactionException("Search interrupted");
@@ -535,7 +535,7 @@ public class SpaceImpl {
              if (!myVisitor.wouldBlock())
                  return myVisitor.getEntries(0);
              else {
-                 return myVisitor.getEntries(Time.getWaitTime(aWaitTime));
+                 return myVisitor.getEntries(aWaitTime);
              }
          } catch (InterruptedException anIE) {
              throw new TransactionException("Search interrupted");

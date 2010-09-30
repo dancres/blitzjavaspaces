@@ -12,11 +12,11 @@ public class Time {
        Computes an expiry time based on the passed in wait time which might
        be a suitable value or it might be Lease.FOREVER
      */
-    public static long getAbsoluteTime(long aWaitTime) {
+    public static long getAbsoluteTime(long aTime, long aWaitTime) {
         if (aWaitTime == Lease.FOREVER)
             return Long.MAX_VALUE;
 
-        long myTime = System.currentTimeMillis() + aWaitTime;
+        long myTime = aTime + aWaitTime;
 
         if (myTime < 0)
             return Long.MAX_VALUE;
@@ -24,15 +24,8 @@ public class Time {
             return myTime;
     }
 
-    /**
-       Compute the actual time to relative wait time based on the passed
-       argument.  This will typically used by read/take variants.
-     */
-    public static long getWaitTime(long aWaitTime) {
-        if (aWaitTime == Lease.FOREVER)
-            return Long.MAX_VALUE;
-        else
-            return aWaitTime;
+    public static long getAbsoluteTime(long aWaitTime) {
+        return getAbsoluteTime(System.currentTimeMillis(), aWaitTime);
     }
 
     /**

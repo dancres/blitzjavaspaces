@@ -24,6 +24,7 @@ import org.dancres.blitz.notify.EventGenerator;
 import org.dancres.blitz.notify.EventQueue;
 import org.dancres.blitz.notify.QueueEvent;
 import org.dancres.blitz.notify.EventGeneratorState;
+import org.dancres.blitz.util.Time;
 
 class BulkTakeVisitor implements BulkMatchTask, SearchVisitor {
     private static final Logger theLogger =
@@ -154,11 +155,26 @@ class BulkTakeVisitor implements BulkMatchTask, SearchVisitor {
     public synchronized List getEntries(long aTimeout)
         throws TransactionException, InterruptedException {
 
-        // We only wait the once because we'll only ever wake from this
-        // if there's a result or we timeout
         if ((theEntries.size() == 0) && (aTimeout != 0)) {
             needsWakeup = true;
-            wait(aTimeout);
+
+            long myCurrentTime = System.currentTimeMillis();
+            long myExpiry = Time.getAbsoluteTime(myCurrentTime, aTimeout);
+
+            while (true) {
+                long myWait = myExpiry - myCurrentTime;
+
+                if (myWait > 0)
+                    wait(myWait);
+                else
+                    break;
+
+                if (haveCompleted())
+                    break;
+
+                myCurrentTime = System.currentTimeMillis();
+            }
+
             needsWakeup = false;
         }
 
