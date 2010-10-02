@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
 import net.jini.core.transaction.TransactionException;
@@ -20,11 +21,11 @@ import org.prevayler.PrevalentSystem;
 import org.prevayler.SnapshotContributor;
 
 /**
-   Responsible for tracking/managing transactions.  This responsiblity is split
-   across two classes.  TxnManager handles control aspects whilst
-   TxnManagerState tracks the transactional information. <P>
-
-   @see org.dancres.blitz.txn.TxnManager
+ * Responsible for tracking/managing transactions.  This responsiblity is split
+ * across two classes.  TxnManager handles control aspects whilst
+ * TxnManagerState tracks the transactional information. <P>
+ *
+ * @see org.dancres.blitz.txn.TxnManager
  */
 class TxnManagerState implements PrevalentSystem {
     static final long serialVersionUID = -5650181362477845180L;
@@ -38,7 +39,7 @@ class TxnManagerState implements PrevalentSystem {
      */
     private AlarmClock theClock;
 
-    private HashMap theTxns = new HashMap();
+    private ConcurrentHashMap theTxns = new ConcurrentHashMap();
 
     private Serializable[] theSnapshotContributions = new Serializable[0];
 
@@ -59,27 +60,25 @@ class TxnManagerState implements PrevalentSystem {
     public List getActiveTxnIds() {
         ArrayList myTxnIds = new ArrayList();
 
-        synchronized(this) {
-            Iterator myTxns = theTxns.keySet().iterator();
+        Iterator myTxns = theTxns.keySet().iterator();
 
-            while (myTxns.hasNext()) {
-                TxnId myId = (TxnId) myTxns.next();
-                myTxnIds.add(myId);
-            }
+        while (myTxns.hasNext()) {
+            TxnId myId = (TxnId) myTxns.next();
+            myTxnIds.add(myId);
         }
 
         return myTxnIds;
     }
 
     public void add(SnapshotContributor aContributor) {
-        synchronized(theSnapshotContributors) {
+        synchronized (theSnapshotContributors) {
             if (!theSnapshotContributors.contains(aContributor))
                 theSnapshotContributors.add(aContributor);
         }
     }
-    
+
     public void remove(SnapshotContributor aContributor) {
-        synchronized(theSnapshotContributors) {
+        synchronized (theSnapshotContributors) {
             theSnapshotContributors.remove(aContributor);
         }
     }
@@ -103,36 +102,34 @@ class TxnManagerState implements PrevalentSystem {
         */
         ArrayList myPrepared = new ArrayList();
 
-        synchronized(this) {
-            // Write out clock
-            //
-            anOut.writeObject(theClock);
+        // Write out clock
+        //
+        anOut.writeObject(theClock);
 
-            Iterator myTxns = theTxns.keySet().iterator();
+        Iterator myTxns = theTxns.keySet().iterator();
 
-            while (myTxns.hasNext()) {
-                TxnId myId = (TxnId) myTxns.next();
+        while (myTxns.hasNext()) {
+            TxnId myId = (TxnId) myTxns.next();
 
-                TxnState myState = getState(myId);
+            TxnState myState = getState(myId);
 
-                try {
-                    int myStatus = myState.getStatus();
+            try {
+                int myStatus = myState.getStatus();
 
-                    if (myStatus == TransactionConstants.PREPARED) {
-                        myPrepared.add(myState);
-                    }
-
-                } catch (TransactionException aTE) {
-                    // Whoops, got nailed checking status, logged in the call
-                    // nothing to do.
+                if (myStatus == TransactionConstants.PREPARED) {
+                    myPrepared.add(myState);
                 }
-            }
 
-            anOut.writeInt(myPrepared.size());
-
-            for (int i = 0; i < myPrepared.size(); i++) {
-                anOut.writeObject(myPrepared.get(i));
+            } catch (TransactionException aTE) {
+                // Whoops, got nailed checking status, logged in the call
+                // nothing to do.
             }
+        }
+
+        anOut.writeInt(myPrepared.size());
+
+        for (int i = 0; i < myPrepared.size(); i++) {
+            anOut.writeObject(myPrepared.get(i));
         }
 
         /*
@@ -140,7 +137,7 @@ class TxnManagerState implements PrevalentSystem {
          */
         ArrayList myContributions = new ArrayList();
 
-        synchronized(theSnapshotContributors) {
+        synchronized (theSnapshotContributors) {
             for (int i = 0; i < theSnapshotContributors.size(); i++) {
                 myContributions.add(((SnapshotContributor) theSnapshotContributors.get(i)).getContribution());
             }
@@ -153,11 +150,11 @@ class TxnManagerState implements PrevalentSystem {
     }
 
     private void readObject(ObjectInputStream anIn)
-        throws IOException, ClassNotFoundException {
+            throws IOException, ClassNotFoundException {
 
         boolean isUpgrade = false;
 
-        theTxns = new HashMap();
+        theTxns = new ConcurrentHashMap();
         theSnapshotContributors = new ArrayList();
 
         Object myFirst = anIn.readObject();
@@ -167,7 +164,7 @@ class TxnManagerState implements PrevalentSystem {
           log format - upgrade is simple as there's no LogVersion and there
           will be no user checkpoint data so we just ignore those fields.
          */
-        if (! (myFirst instanceof LogVersion)) {
+        if (!(myFirst instanceof LogVersion)) {
             TxnManager.theLogger.log(Level.SEVERE, "Upgrading old transaction log");
             isUpgrade = true;
             theClock = (AlarmClock) myFirst;
@@ -182,21 +179,18 @@ class TxnManagerState implements PrevalentSystem {
 
         int myNumRecords = anIn.readInt();
 
-        synchronized(this) {
+        for (int i = 0; i < myNumRecords; i++) {
+            TxnState myState = (TxnState) anIn.readObject();
 
-            for (int i = 0; i < myNumRecords; i++) {
-                TxnState myState = (TxnState) anIn.readObject();
-
-                try {
-                    myState.prepare(true);
-                } catch (UnknownTransactionException aUTE) {
-                    IOException anIOE = new IOException("Failed to recover prepare");
-                    anIOE.initCause(aUTE);
-                    throw anIOE;
-                }
-
-                theTxns.put(myState.getId(), myState);
+            try {
+                myState.prepare(true);
+            } catch (UnknownTransactionException aUTE) {
+                IOException anIOE = new IOException("Failed to recover prepare");
+                anIOE.initCause(aUTE);
+                throw anIOE;
             }
+
+            theTxns.put(myState.getId(), myState);
         }
 
         if (isUpgrade)
@@ -206,30 +200,28 @@ class TxnManagerState implements PrevalentSystem {
     }
 
     private TxnState getState(TxnId anId) {
-        synchronized(this) {
+        synchronized (this) {
             return (TxnState) theTxns.get(anId);
         }
     }
 
     /**
-       Resolve a transaction using this method before calling any of
-       <code>prepare</code>, <code>commit</code>, <code>abort</code> or
-       <code>prepareAndCommit</code>.
-
-       @todo Add Janitor/Checker thread to clear out dead transaction
-       state - see comments in method
+     * Resolve a transaction using this method before calling any of
+     * <code>prepare</code>, <code>commit</code>, <code>abort</code> or
+     * <code>prepareAndCommit</code>.
+     *
+     * @todo Add Janitor/Checker thread to clear out dead transaction
+     * state - see comments in method
      */
-    TxnState getTxnFor(TxnId anId, TxnGateway aGateway, boolean mustExist) 
-        throws UnknownTransactionException {
+    TxnState getTxnFor(TxnId anId, TxnGateway aGateway, boolean mustExist)
+            throws UnknownTransactionException {
 
         TxnState myState = null;
 
         if (mustExist) {
             myState = getState(anId);
         } else {
-            synchronized(this) {
-                myState = (TxnState) theTxns.get(anId);
-            }
+            myState = (TxnState) theTxns.get(anId);
 
             /*
               If state doesn't exist, we need to join and update the state
@@ -239,9 +231,9 @@ class TxnManagerState implements PrevalentSystem {
                     aGateway.join(anId);
                 } catch (Exception anException) {
                     TxnManager.theLogger.log(Level.SEVERE,
-                                             "Failed to join txn" +
-                                             anId, anException);
-                    
+                            "Failed to join txn" +
+                                    anId, anException);
+
                     throw new UnknownTransactionException();
                 }
 
@@ -265,18 +257,16 @@ class TxnManagerState implements PrevalentSystem {
                   When the client associated with this thread invokes
                   commit there'll be a big nasty mess.
                 */
-                synchronized(this) {
 
-                    /*
-                      Up till now, we race to create/join the transaction
-                      (see above).  Now we must put it right....
-                    */
-                    myState = (TxnState) theTxns.get(anId);
-                    if (myState == null) {
-                        myState = new TxnState(anId);
-                        theTxns.put(anId, myState);
-                    }
-                }
+                /*
+                  Up till now, we race to create/join the transaction
+                  (see above).  Now we must put it right....
+                */
+                myState = new TxnState(anId);
+                TxnState myExistingState = (TxnState) theTxns.putIfAbsent(anId, myState);
+
+                if (myExistingState != null)
+                    myState = myExistingState;
             }
         }
 
@@ -287,44 +277,40 @@ class TxnManagerState implements PrevalentSystem {
     }
 
     /**
-       In cases where no explicit transaction has been passed in by a caller,
-       create a null transaction which is an internal, fully transactional
-       replacement which can be used for the duration of the operation
-       in question.
+     * In cases where no explicit transaction has been passed in by a caller,
+     * create a null transaction which is an internal, fully transactional
+     * replacement which can be used for the duration of the operation
+     * in question.
      */
     TxnState newNullTxn() throws RemoteException {
         TxnId myId = TxnId.newNullTxn();
         TxnState myState = new TxnState(myId);
 
-        synchronized(this) {
-            theTxns.put(myId, myState);
-        }
+        theTxns.put(myId, myState);
 
         return myState;
     }
 
     /**
-       In cases where no state will be changed (no Entry's taken or written),
-       create an instance of this transaction which, when commited or aborted
-       will be undone but not logged.
+     * In cases where no state will be changed (no Entry's taken or written),
+     * create an instance of this transaction which, when commited or aborted
+     * will be undone but not logged.
      */
     TxnState newIdentityTxn() throws RemoteException {
         TxnId myId = TxnId.newNullTxn();
         TxnState myState = new TxnState(myId, true);
 
-        synchronized(this) {
-            theTxns.put(myId, myState);
-        }
+        theTxns.put(myId, myState);
 
         return myState;
     }
 
     /**
-       Do not call this method directly - it should only be invoked from
-       a Prevayler command.
+     * Do not call this method directly - it should only be invoked from
+     * a Prevayler command.
      */
     int prepare(TxnState aState)
-        throws UnknownTransactionException, IOException {
+            throws UnknownTransactionException, IOException {
 
         /*
           Do we know about this transaction?
@@ -335,20 +321,18 @@ class TxnManagerState implements PrevalentSystem {
         boolean needsRestore = (getState(aState.getId()) == null);
 
         if (needsRestore) {
-            synchronized(this) {
-                theTxns.put(aState.getId(), aState);
-            }
+            theTxns.put(aState.getId(), aState);
         }
 
         return aState.prepare(needsRestore);
     }
 
     /**
-       Do not call this method directly - it should only be invoked from
-       a Prevayler command.
+     * Do not call this method directly - it should only be invoked from
+     * a Prevayler command.
      */
     void commit(TxnId anId)
-        throws UnknownTransactionException, IOException {
+            throws UnknownTransactionException, IOException {
 
         TxnState myState = getTxnFor(anId, null, true);
 
@@ -358,11 +342,11 @@ class TxnManagerState implements PrevalentSystem {
     }
 
     /**
-       Do not call this method directly - it should only be invoked from
-       a Prevayler command.
+     * Do not call this method directly - it should only be invoked from
+     * a Prevayler command.
      */
     void abort(TxnId anId)
-        throws UnknownTransactionException, IOException {
+            throws UnknownTransactionException, IOException {
 
         TxnState myState = getTxnFor(anId, null, true);
 
@@ -371,35 +355,33 @@ class TxnManagerState implements PrevalentSystem {
     }
 
     void abortAll() throws IOException {
-        synchronized(this) {
-            Iterator myTxns = theTxns.keySet().iterator();
+        Iterator myTxns = theTxns.keySet().iterator();
 
-            while (myTxns.hasNext()) {
-                TxnId myId = (TxnId) myTxns.next();
+        while (myTxns.hasNext()) {
+            TxnId myId = (TxnId) myTxns.next();
 
-                TxnState myState = getState(myId);
+            TxnState myState = getState(myId);
 
-                try {
-                    int myStatus = myState.getStatus();
+            try {
+                int myStatus = myState.getStatus();
 
-                    if ((myStatus == TransactionConstants.PREPARED) ||
+                if ((myStatus == TransactionConstants.PREPARED) ||
                         (myStatus == TransactionConstants.ACTIVE)) {
 
-                        /*
-                         *  AbortAll is a naive operation in that it has no
-                         *  awareness of a specific transaction thus it cannot
-                         *  explicitly vote one of them off so we must do it
-                         *  ourselves
-                         */
-                        myState.vote();
-                        myState.abort();
-                        myTxns.remove();
-                    }
-
-                } catch (TransactionException aTE) {
-                    // Whoops, got nailed checking status, logged in the call
-                    // nothing to do.
+                    /*
+                    *  AbortAll is a naive operation in that it has no
+                    *  awareness of a specific transaction thus it cannot
+                    *  explicitly vote one of them off so we must do it
+                    *  ourselves
+                    */
+                    myState.vote();
+                    myState.abort();
+                    myTxns.remove();
                 }
+
+            } catch (TransactionException aTE) {
+                // Whoops, got nailed checking status, logged in the call
+                // nothing to do.
             }
         }
     }
@@ -407,15 +389,11 @@ class TxnManagerState implements PrevalentSystem {
     private void removeTxn(TxnId anId) {
         TxnState myState;
 
-        synchronized(this) {
-            myState = (TxnState) theTxns.remove(anId);            
-        }
+        myState = (TxnState) theTxns.remove(anId);
     }
 
     int getNumActiveTxns() {
-        synchronized(this) {
-            return theTxns.size();
-        }
+        return theTxns.size();
     }
 }
 

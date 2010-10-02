@@ -8,6 +8,7 @@ import java.rmi.MarshalledObject;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import net.jini.security.ProxyPreparer;
 
@@ -72,7 +73,7 @@ public final class TxnId implements Serializable {
     private static final LocalTxnManager LOCAL_TXN_MGR =
         new LocalTxnManager();
 
-    private static final Map theMarshalledTxnMgrCache = new HashMap();
+    private static final Map theMarshalledTxnMgrCache = new ConcurrentHashMap();
 
     /**
        Repeatedly marshalling the same txn mgr for writing to disk and
@@ -86,17 +87,15 @@ public final class TxnId implements Serializable {
         throws RemoteException {
 
         try {
-            synchronized(theMarshalledTxnMgrCache) {
-                MarshalledObject myMarshalledMgr =
+            MarshalledObject myMarshalledMgr =
                     (MarshalledObject) theMarshalledTxnMgrCache.get(aMgr);
 
-                if (myMarshalledMgr == null) {
-                    myMarshalledMgr = new MarshalledObject(aMgr);
-                    theMarshalledTxnMgrCache.put(aMgr, myMarshalledMgr);
-                }
-
-                return myMarshalledMgr;
+            if (myMarshalledMgr == null) {
+                myMarshalledMgr = new MarshalledObject(aMgr);
+                theMarshalledTxnMgrCache.put(aMgr, myMarshalledMgr);
             }
+
+            return myMarshalledMgr;
         } catch (IOException anIOE) {
             throw new RemoteException("Failed to marshall txnmgr", anIOE);
         }
