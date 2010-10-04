@@ -8,6 +8,7 @@ import net.jini.config.ConfigurationException;
 
 import org.dancres.blitz.Lifecycle;
 import org.dancres.blitz.LifecycleRegistry;
+import org.dancres.blitz.config.NoIndex;
 import org.dancres.blitz.entry.TupleLocator;
 
 import org.dancres.blitz.mangler.MangledEntry;
@@ -66,6 +67,9 @@ public abstract class CacheIndexer {
             if (aConstraints.get(Fifo.class) != null) {
                 theLogger.log(Level.INFO, "Using FIFO indexer: " + aType);
                 myIndexer = new FifoIndexer(aType);
+            } else if (aConstraints.get(NoIndex.class) != null) {
+                myIndexer = new NullIndexer(aType);
+                theLogger.log(Level.INFO, "Using NULL indexer: " + aType);
             } else {
                 theLogger.log(Level.INFO, "Using HASHMAP indexer: " + aType);
                 myIndexer = new HashMapIndexer(aType);
