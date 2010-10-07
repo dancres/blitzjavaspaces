@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
 import net.jini.core.event.RemoteEventListener;
@@ -37,7 +38,6 @@ import org.dancres.blitz.stats.StatGenerator;
 import org.dancres.blitz.stats.StatsBoard;
 import org.dancres.blitz.stats.Stat;
 import org.dancres.blitz.stats.EventQueueStat;
-import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
 
 /**
    Handles all the storage aspects associated with EventGenerators including

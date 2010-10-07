@@ -3,15 +3,14 @@ package org.dancres.blitz.task;
 import java.util.Iterator;
 import java.util.HashMap;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
 import net.jini.config.ConfigurationException;
-
-import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
-import EDU.oswego.cs.dl.util.concurrent.BoundedLinkedQueue;
-import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
-import EDU.oswego.cs.dl.util.concurrent.Channel;
 
 import org.dancres.blitz.ActiveObject;
 import org.dancres.blitz.ActiveObjectRegistry;
@@ -72,7 +71,7 @@ public class Tasks implements ActiveObject {
         }
     }
 
-    private HashMap theExecutors = new HashMap();
+    private HashMap<String, ExecutorService> theExecutors = new HashMap();
 
     private Tasks() {
         ActiveObjectRegistry.add(this);
@@ -98,10 +97,10 @@ public class Tasks implements ActiveObject {
 
     public void halt() {
         synchronized(theExecutors) {
-            Iterator myExecs = theExecutors.values().iterator();
+            Iterator<ExecutorService> myExecs = theExecutors.values().iterator();
 
             while (myExecs.hasNext()) {
-                PooledExecutor myExec = (PooledExecutor) myExecs.next();
+                ExecutorService myExec = myExecs.next();
                 myExec.shutdownNow();
             }
 
@@ -109,35 +108,34 @@ public class Tasks implements ActiveObject {
         }
     }
 
-    private PooledExecutor getExecutor(String aName) {
-        PooledExecutor myExec;
+    private ExecutorService getExecutor(String aName) {
+        ExecutorService myExec;
 
         synchronized(theExecutors) {
-            myExec = (PooledExecutor) theExecutors.get(aName);
+            myExec = theExecutors.get(aName);
 
             if (myExec == null) {
 
-                BoundedLinkedQueue myQueue;
+                LinkedBlockingQueue myQueue;
 
                 if (TASK_QUEUE_BOUND == 0) {
                     theLogger.log(Level.INFO,
                                   "Creating task pool with no bounds [ " + aName + " ]");
 
 
-                    myQueue = new BoundedLinkedQueue(Integer.MAX_VALUE);
-                    myExec = new PooledExecutor(myQueue, MAX_TASK_THREADS);
+                    myQueue = new LinkedBlockingQueue(Integer.MAX_VALUE);
+                    myExec = new ThreadPoolExecutor(MAX_TASK_THREADS, MAX_TASK_THREADS, 0, TimeUnit.MILLISECONDS,
+                            myQueue);
                 } else {
                     theLogger.log(Level.INFO,
                                   "Creating task pool with bounds: " +
                                   TASK_QUEUE_BOUND);
 
-                    myQueue = new BoundedLinkedQueue(TASK_QUEUE_BOUND);
-                    myExec =
-                        new PooledExecutor(myQueue, MAX_TASK_THREADS);
-                }
+                    myQueue = new LinkedBlockingQueue(TASK_QUEUE_BOUND);
+                    myExec = new ThreadPoolExecutor(MAX_TASK_THREADS, MAX_TASK_THREADS, 0, TimeUnit.MILLISECONDS,
+                            myQueue);
 
-                myExec.setMinimumPoolSize(MAX_TASK_THREADS);
-                // myExec.waitWhenBlocked();
+                }
 
                 StatsBoard.get().add(new QueueStatGenerator(aName, myQueue));
                 theExecutors.put(aName, myExec);

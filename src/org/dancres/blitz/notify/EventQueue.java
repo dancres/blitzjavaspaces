@@ -3,6 +3,10 @@ package org.dancres.blitz.notify;
 import java.io.IOException;
 import java.rmi.MarshalledObject;
 import java.rmi.RemoteException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Iterator;
@@ -17,8 +21,6 @@ import org.dancres.blitz.oid.OID;
 import org.dancres.blitz.stats.StatsBoard;
 import org.dancres.blitz.txn.TxnState;
 import org.dancres.blitz.txn.TxnManager;
-import EDU.oswego.cs.dl.util.concurrent.BoundedLinkedQueue;
-import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 import org.dancres.blitz.util.QueueStatGenerator;
 
 /**
@@ -54,7 +56,7 @@ public class EventQueue implements ActiveObject {
         return theEventQueue;
     }
 
-    private PooledExecutor theProcessors;
+    private ExecutorService theProcessors;
 
     private long theEventCount = 0;
 
@@ -208,22 +210,17 @@ public class EventQueue implements ActiveObject {
             theLogger.log(Level.SEVERE, "Failed to apply restart jump", anIOE);
         }
 
-        BoundedLinkedQueue myQueue;
+        LinkedBlockingQueue myQueue;
         
         if (QUEUE_BOUND == 0) {
             theLogger.log(Level.INFO, "Event queue bounding disabled");
-            myQueue = new BoundedLinkedQueue(Integer.MAX_VALUE);
-            theProcessors =
-                new PooledExecutor(myQueue, NUM_PROCESSORS);
+            myQueue = new LinkedBlockingQueue(Integer.MAX_VALUE);
+            theProcessors = new ThreadPoolExecutor(NUM_PROCESSORS, NUM_PROCESSORS, 0, TimeUnit.MILLISECONDS, myQueue);
         } else {
             theLogger.log(Level.INFO, "Event queue bounding enabled");
-            myQueue = new BoundedLinkedQueue(QUEUE_BOUND);
-            theProcessors =
-                new PooledExecutor(myQueue, NUM_PROCESSORS);
+            myQueue = new LinkedBlockingQueue(QUEUE_BOUND);
+            theProcessors = new ThreadPoolExecutor(NUM_PROCESSORS, NUM_PROCESSORS, 0, TimeUnit.MILLISECONDS, myQueue);
         }
-
-        theProcessors.setMinimumPoolSize(NUM_PROCESSORS);
-        // theProcessors.waitWhenBlocked();
 
         StatsBoard.get().add(new QueueStatGenerator("Events", myQueue));        
     }
