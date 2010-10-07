@@ -6,8 +6,8 @@ import org.dancres.blitz.stats.Stat;
 import org.dancres.blitz.stats.StatGenerator;
 import org.dancres.blitz.stats.StatsBoard;
 
-import edu.emory.mathcs.backport.java.util.concurrent.atomic.AtomicInteger;
-import edu.emory.mathcs.backport.java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Tracks the number ouf outstanding blocked operations (take and read)
