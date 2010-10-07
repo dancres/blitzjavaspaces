@@ -5,11 +5,11 @@ import org.dancres.blitz.mangler.MangledEntry;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.io.IOException;
-
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
 
 /**
  */
@@ -33,7 +33,7 @@ public class Readahead implements ActiveObject {
     
     private static Readahead theReadahead;
 
-    private QueuedExecutor theExecutor;
+    private ExecutorService theExecutor;
 
     private Set theActiveTemplates = new HashSet();
 
@@ -71,11 +71,7 @@ public class Readahead implements ActiveObject {
                         "Readahead going active: " + aReadahead);
                 theActiveTemplates.add(aTemplate);
 
-                try {
-                    theExecutor.execute(new ReadTask(aTemplate, aReadahead));
-                } catch (InterruptedException anIE) {
-                    // Doesn't matter it's just a readahead
-                }
+                theExecutor.execute(new ReadTask(aTemplate, aReadahead));
 
                 return true;
             } else
@@ -90,7 +86,7 @@ public class Readahead implements ActiveObject {
     }
 
     public void begin() {
-        theExecutor = new QueuedExecutor();
+        theExecutor = Executors.newSingleThreadExecutor();
     }
 
     public void halt() {

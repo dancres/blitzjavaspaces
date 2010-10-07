@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import java.util.ArrayList;
 
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.*;
 
 import net.jini.core.transaction.TransactionException;
@@ -31,7 +32,6 @@ import org.dancres.blitz.config.CacheSize;
 import org.dancres.blitz.config.Fifo;
 import org.dancres.blitz.config.EntryConstraints;
 
-import edu.emory.mathcs.backport.java.util.concurrent.atomic.AtomicLong;
 import org.dancres.blitz.config.ConfigurationFactory;
 
 /**

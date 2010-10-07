@@ -7,9 +7,8 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
-
-import EDU.oswego.cs.dl.util.concurrent.Mutex;
 
 import org.dancres.blitz.oid.OID;
 
@@ -279,7 +278,7 @@ class WriteBuffer {
 
         private PersistentEntry theEntry;
 
-        private Mutex theLock = new Mutex();
+        private ReentrantLock theLock = new ReentrantLock();
 
         WriteRequest(int aState, PersistentEntry anEntry) {
             theEntry = anEntry;
@@ -295,11 +294,11 @@ class WriteBuffer {
         }
 
         void lock() throws InterruptedException {
-            theLock.acquire();
+            theLock.lock();
         }
 
         void unlock() {
-            theLock.release();
+            theLock.unlock();
         }
 
         int getStateFlags() {
