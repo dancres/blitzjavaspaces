@@ -1,14 +1,13 @@
 package org.dancres.blitz.txnlock;
 
-import java.util.HashMap;
-
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.dancres.blitz.oid.OID;
 
 class LockCache {
-    private HashMap theLocks = new HashMap();
+    private ConcurrentHashMap<OID, LockHolder> theLocks = new ConcurrentHashMap();
 
     private ReferenceQueue theDeadLocks = new ReferenceQueue();
 
@@ -17,61 +16,57 @@ class LockCache {
 
     TxnLock getOrInsert(OID aOID) {
         cleanQueue();
-        
-        synchronized(this) {
-            TxnLock myLock = get(aOID);
-            
-            if (myLock == null) {
-                myLock = new TxnLock();
-                put(aOID, myLock);
-            }
-            
+
+        TxnLock myLock = getImpl(aOID);
+
+        if (myLock != null) {
+            return myLock;
+        } else {
+            TxnLock myNewLock = new TxnLock();
+            LockHolder myNewHolder = new LockHolder(aOID, myNewLock, theDeadLocks);
+
+            do {
+                LockHolder myCurrentHolder = theLocks.putIfAbsent(aOID, myNewHolder);
+
+                if (myCurrentHolder != null) {
+                    TxnLock myCurrentLock = (TxnLock) myCurrentHolder.get();
+
+                    if (myCurrentLock == null) {
+                        theLocks.remove(aOID, myCurrentHolder);
+                    } else {
+                        myLock = myCurrentLock;
+                    }
+                } else {
+                    myLock = myNewLock;
+                }
+            } while (myLock == null);
+
             return myLock;
         }
     }
     
     TxnLock get(OID aOID) {
         cleanQueue();
+        return getImpl(aOID);
+    }
 
-        synchronized(this) {
-            LockHolder myHolder = (LockHolder) theLocks.get(aOID);
-            
-            return (myHolder == null) ? null : (TxnLock) myHolder.get();
-        }
+    private TxnLock getImpl(OID anOID) {
+        LockHolder myHolder = theLocks.get(anOID);
+        return (myHolder == null) ? null : (TxnLock) myHolder.get();
     }
 
     void put(OID aOID, TxnLock aLock) {
         cleanQueue();
 
-        synchronized(this) {
-            LockHolder myHolder = new LockHolder(aOID, aLock, theDeadLocks);
-            
-            theLocks.put(aOID, myHolder);
-        }
+        LockHolder myHolder = new LockHolder(aOID, aLock, theDeadLocks);
+        theLocks.put(aOID, myHolder);
     }
 
     private void cleanQueue() {
         LockHolder myRef;
         
         while ((myRef = (LockHolder) theDeadLocks.poll()) != null) {
-            synchronized(this) {
-                LockHolder myOther = (LockHolder) theLocks.remove(myRef.getOID());
-                
-                /*
-                   Check that the reference we're releasing is the same as the
-                   one we currently have in the table.  Otherwise:
-
-                   It could be that get(OID) was called above and the holder was
-                   recovered but it's reference had been cleared resulting in
-                   allocation of a new lock BEFORE we've processed the reference
-                   from the queue.  Thus we allocate the new lock, the old
-                   reference (from get(OID)) is enqueued and we then delete the
-                   new lock - oops!
-                 */
-                if ((myOther != null) &&(! myOther.equals(myRef))) {
-                    theLocks.put(myOther.getOID(), myOther);
-                }
-            }
+            theLocks.remove(myRef.getOID(), myRef);
         }
     }
 
