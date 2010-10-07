@@ -1,23 +1,22 @@
 package org.dancres.blitz.remote.nio;
 
-import EDU.oswego.cs.dl.util.concurrent.QueuedExecutor;
-
 import java.io.DataOutputStream;
 import java.io.OutputStream;
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Client-side message transmitter.  Accepts a unique id for the message
  * and the message itself.  This message is then queued and sent asynchronously.
  */
 class Txer {
-    private QueuedExecutor _sender;
+    private ExecutorService _sender;
     private DataOutputStream _socketTx;
 
     Txer(OutputStream anOutgoing) {
         _socketTx = new DataOutputStream(anOutgoing);
-        _sender = new QueuedExecutor();
-        _sender.setThreadFactory(new DaemonThreadFactory());
+        _sender = Executors.newSingleThreadExecutor(new DaemonThreadFactory());
     }
 
     void send(int anId, byte[] anOp) throws InterruptedException {

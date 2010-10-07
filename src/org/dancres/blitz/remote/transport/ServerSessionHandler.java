@@ -1,15 +1,15 @@
 package org.dancres.blitz.remote.transport;
 
 import java.rmi.RemoteException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.dancres.blitz.SpaceImpl;
 import org.dancres.blitz.remote.transport.task.ReadTask;
 import org.dancres.blitz.remote.transport.task.TakeTask;
 import org.dancres.blitz.remote.transport.task.WriteTask;
-import edu.emory.mathcs.backport.java.util.concurrent.Executor;
-import edu.emory.mathcs.backport.java.util.concurrent.ThreadPoolExecutor;
-import edu.emory.mathcs.backport.java.util.concurrent.LinkedBlockingQueue;
-import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
 import org.apache.mina.common.IdleStatus;
 import org.apache.mina.common.IoHandlerAdapter;
 import org.apache.mina.common.IoSession;

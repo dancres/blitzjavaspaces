@@ -1,6 +1,6 @@
 package org.dancres.blitz.remote.nio;
 
-import EDU.oswego.cs.dl.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadFactory;
 
 /**
  */

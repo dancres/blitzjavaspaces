@@ -1,11 +1,10 @@
 package org.dancres.blitz.remote.transport;
 
 import java.rmi.RemoteException;
+import java.util.concurrent.ConcurrentHashMap;
 
-import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
 import org.apache.mina.common.IoHandlerAdapter;
 import org.apache.mina.common.IoSession;
-import org.apache.mina.common.ByteBuffer;
 import org.apache.mina.util.SessionLog;
 
 /**
