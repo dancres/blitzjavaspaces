@@ -2,8 +2,7 @@ package org.dancres.blitz.test;
 
 import java.util.Random;
 import java.util.Iterator;
-
-import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  */

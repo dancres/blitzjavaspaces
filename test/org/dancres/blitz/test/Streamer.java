@@ -2,8 +2,7 @@ package org.dancres.blitz.test;
 
 import java.rmi.RemoteException;
 import java.io.Serializable;
-
-import EDU.oswego.cs.dl.util.concurrent.CyclicBarrier;
+import java.util.concurrent.CyclicBarrier;
 
 import net.jini.core.lease.Lease;
 
@@ -44,11 +43,9 @@ public class Streamer {
                 myTakePause = Long.parseLong(args[2]);
             }
 
-            theBarrier = new CyclicBarrier(2 * myTotalStreams);
-
             theCount = new NotifyCount(myIterations * myTotalStreams);
 
-            theBarrier.setBarrierCommand(new StatsChecker(theCount));
+            theBarrier = new CyclicBarrier(2 * myTotalStreams, new StatsChecker(theCount));
 
             theSpace = new LocalSpace(new TxnGatewayImpl());
 
@@ -188,7 +185,7 @@ public class Streamer {
                         (System.currentTimeMillis() - myStart));
 
                     System.err.println("**");
-                    theBarrier.barrier();
+                    theBarrier.await();
                 }
             } catch (Exception anE) {
                 anE.printStackTrace(System.err);
@@ -236,7 +233,7 @@ public class Streamer {
                     System.err.println("Iteration took: " +
                         (System.currentTimeMillis() - myStart));
 
-                    theBarrier.barrier();
+                    theBarrier.await();
                 }
             } catch (Exception anE) {
                 anE.printStackTrace(System.err);

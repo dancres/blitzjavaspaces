@@ -1,6 +1,7 @@
 package org.dancres.blitz.test.queue;
 
 import java.io.Serializable;
+import java.util.concurrent.CyclicBarrier;
 
 import net.jini.space.JavaSpace;
 import net.jini.core.transaction.server.TransactionConstants;
@@ -9,7 +10,6 @@ import org.dancres.blitz.remote.LocalSpace;
 import org.dancres.blitz.test.DummyEntry;
 import org.dancres.blitz.txn.TxnGateway;
 import org.dancres.blitz.txn.TxnId;
-import EDU.oswego.cs.dl.util.concurrent.CyclicBarrier;
 
 /**
  */
@@ -35,9 +35,7 @@ public class Streamer {
                 myTakePause = Long.parseLong(args[2]);
             }
 
-            theBarrier = new CyclicBarrier(2 * myTotalStreams);
-
-            theBarrier.setBarrierCommand(new StatsChecker());
+            theBarrier = new CyclicBarrier(2 * myTotalStreams, new StatsChecker());
 
             theSpace = new LocalSpace(new TxnGatewayImpl());
 
@@ -100,7 +98,7 @@ public class Streamer {
                         (System.currentTimeMillis() - myStart));
 
                     System.err.println("**");
-                    theBarrier.barrier();
+                    theBarrier.await();
                 }
             } catch (Exception anE) {
                 anE.printStackTrace(System.err);
@@ -140,7 +138,7 @@ public class Streamer {
                     System.err.println("Iteration took: " +
                         (System.currentTimeMillis() - myStart));
 
-                    theBarrier.barrier();
+                    theBarrier.await();
                 }
             } catch (Exception anE) {
                 anE.printStackTrace(System.err);
