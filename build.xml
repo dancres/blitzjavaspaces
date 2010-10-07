@@ -72,7 +72,6 @@
         <pathelement location="${jini_root}/lib/jsk-lib.jar"/>
         <pathelement location="${jini_root}/lib/start.jar"/>
         <pathelement location="${jini_root}/lib/sun-util.jar"/>
-        <pathelement location="${otherlib}/backport-util-concurrent.jar"/>
         <pathelement location="${otherlib}/mina-core-1.0.1.jar"/>
         <pathelement location="${otherlib}/slf4j-api-1.2.jar"/>
         <pathelement location="${otherlib}/slf4j-jdk14-1.2.jar"/>
