@@ -1,16 +1,11 @@
 package org.dancres.blitz.arc;
 
-import java.util.logging.Level;
-
-import java.io.Serializable;
-
-import EDU.oswego.cs.dl.util.concurrent.Mutex;
-
 import org.dancres.struct.LinkedInstance;
 
 import org.dancres.blitz.cache.Identifiable;
 import org.dancres.blitz.cache.Identifier;
-import org.dancres.blitz.cache.CacheListenerSet;
+
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
    Each object currently in cache is referenced via a CacbeBlockDescriptor
@@ -24,17 +19,17 @@ public class CacheBlockDescriptor implements LinkedInstance {
 
     private int isWhere;
 
-    private Mutex theLock = new Mutex();
+    private ReentrantLock theLock = new ReentrantLock();
 
     CacheBlockDescriptor() {
     }
 
     void acquire() throws InterruptedException {
-        theLock.acquire();
+        theLock.lock();
     }
 
     public void release() {
-        theLock.release();
+        theLock.unlock();
     }
 
     public void setId(Identifier anIdentifier) {
