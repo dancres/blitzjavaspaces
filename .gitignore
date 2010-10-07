@@ -1,0 +1,13 @@
+nbproject
+build
+docs
+reports
+.DS_Store
+.diff
+*logs*
+*.iml
+.idea/*
+scripts
+installer
+newinstaller
+dbfiles*
