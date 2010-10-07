@@ -4,13 +4,7 @@ import java.io.Serializable;
 
 import java.util.HashMap;
 
-import net.jini.config.ConfigurationException;
-
-import EDU.oswego.cs.dl.util.concurrent.Mutex;
-
 import org.dancres.util.BytePacker;
-
-import org.dancres.blitz.config.ConfigurationFactory;
 
 /**
    Allocation of OID's is done by an OIDAllocator.  Each OIDAllocator has it's
@@ -19,7 +13,6 @@ import org.dancres.blitz.config.ConfigurationFactory;
    identifier forms part of the underlying OID.
  */
 class OIDAllocator {
-    private Mutex theLock = new Mutex();
     private int theZoneId;
     private long theNextOid = 1;
     private int theSeed;
@@ -81,10 +74,6 @@ class OIDAllocator {
     long jump(long aJump) {
         theNextOid += aJump;
         return theNextOid;
-    }
-
-    Mutex getLock() {
-        return theLock;
     }
 
     OID newOID() {
