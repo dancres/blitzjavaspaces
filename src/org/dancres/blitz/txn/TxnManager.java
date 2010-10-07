@@ -3,6 +3,8 @@ package org.dancres.blitz.txn;
 import java.io.IOException;
 import java.io.Serializable;
 import java.rmi.RemoteException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -19,8 +21,6 @@ import org.dancres.blitz.config.ConfigurationFactory;
 import org.dancres.blitz.disk.Disk;
 import org.dancres.blitz.stats.StatsBoard;
 import org.dancres.blitz.task.Tasks;
-import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
-import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
 import org.prevayler.Command;
 import org.prevayler.SnapshotContributor;
 import org.prevayler.implementation.SnapshotPrevayler;
@@ -89,7 +89,7 @@ public class TxnManager {
 
     private TxnManagerState theManagerState;
 
-    private ReadWriteLock theLock = new WriterPreferenceReadWriteLock();
+    private ReentrantReadWriteLock theLock = new ReentrantReadWriteLock();
 
     private SnapshotPrevayler thePrevayler;
 
@@ -181,23 +181,15 @@ public class TxnManager {
        present depending on state with respect to log records etc).
      */
     int getActiveTxnCount() {
-        try {
-            int myActiveTxnCount;
+        int myActiveTxnCount;
 
-            theLock.readLock().acquire();
+        theLock.readLock().lock();
 
-            myActiveTxnCount = theManagerState.getNumActiveTxns();
+        myActiveTxnCount = theManagerState.getNumActiveTxns();
 
-            theLock.readLock().release();
+        theLock.readLock().unlock();
 
-            return myActiveTxnCount;
-
-        } catch (InterruptedException anIE) {
-            theLogger.log(Level.SEVERE, "Couldn't get active txn count",
-                          anIE);
-
-            return -1;
-        }
+        return myActiveTxnCount;
     }
 
     public TxnState getTxnFor(TxnId anId)
@@ -269,7 +261,7 @@ public class TxnManager {
     public int prepare(TxnState aState) throws UnknownTransactionException {
 
         try {
-            theLock.readLock().acquire();
+            theLock.readLock().lock();
 
             aState.vote();
 
@@ -278,7 +270,7 @@ public class TxnManager {
             Integer myResult = (Integer)
                 execute(new PrepCommand(aState), dontLog);
             
-            theLock.readLock().release();
+            theLock.readLock().unlock();
 
             theCheckpointTrigger.loggedCommand();
 
@@ -288,7 +280,7 @@ public class TxnManager {
             theLogger.log(Level.SEVERE, "Failed to log prepare", anIE);
             throw new UnknownTransactionException();
         } catch (Exception anE) {
-            theLock.readLock().release();
+            theLock.readLock().unlock();
             theLogger.log(Level.SEVERE, "Failed to log prepare", anE);
             throw new UnknownTransactionException();
         }
@@ -297,13 +289,13 @@ public class TxnManager {
     public void commit(TxnState aState) throws UnknownTransactionException {
 
         try {
-            theLock.readLock().acquire();
+            theLock.readLock().lock();
 
             boolean dontLog = ((aState.isIdentity()) || (aState.hasNoOps()));
 
             execute(new CommitCommand(aState.getId()), dontLog);
             
-            theLock.readLock().release();
+            theLock.readLock().unlock();
 
             aState.doFinalize();
 
@@ -313,7 +305,7 @@ public class TxnManager {
             theLogger.log(Level.SEVERE, "Failed to log commit", anIE);
             throw new UnknownTransactionException();
         } catch (Exception anE) {
-            theLock.readLock().release();
+            theLock.readLock().unlock();
             theLogger.log(Level.SEVERE, "Failed to log commit", anE);
             throw new UnknownTransactionException();
         }
@@ -322,7 +314,7 @@ public class TxnManager {
     public void abort(TxnState aState) throws UnknownTransactionException {
 
         try {
-            theLock.readLock().acquire();
+            theLock.readLock().lock();
 
             int myResultingState = aState.vote();
 
@@ -340,7 +332,7 @@ public class TxnManager {
 
             execute(new AbortCommand(aState.getId()), dontLog);
             
-            theLock.readLock().release();
+            theLock.readLock().unlock();
 
             aState.doFinalize();
 
@@ -350,7 +342,7 @@ public class TxnManager {
             theLogger.log(Level.SEVERE, "Failed to log abort", anIE);
             throw new UnknownTransactionException();
         } catch (Exception anE) {
-            theLock.readLock().release();
+            theLock.readLock().unlock();
             theLogger.log(Level.SEVERE, "Failed to log abort", anE);
             throw new UnknownTransactionException();
         }
@@ -360,7 +352,7 @@ public class TxnManager {
         throws UnknownTransactionException {
 
         try {
-            theLock.readLock().acquire();
+            theLock.readLock().lock();
 
             aState.vote();
 
@@ -369,7 +361,7 @@ public class TxnManager {
             Integer myResult = (Integer)
                 execute(new PrepCommitCommand(aState), dontLog);
 
-            theLock.readLock().release();
+            theLock.readLock().unlock();
 
             aState.doFinalize();
 
@@ -381,7 +373,7 @@ public class TxnManager {
             theLogger.log(Level.SEVERE, "Failed to log prepCommit", anIE);
             throw new UnknownTransactionException();
         } catch (Exception anE) {
-            theLock.readLock().release();
+            theLock.readLock().unlock();
             theLogger.log(Level.SEVERE, "Failed to log prepCommit", anE);
             throw new UnknownTransactionException();
         }
@@ -412,13 +404,13 @@ public class TxnManager {
 
             myEnclosing.add(anOp);
 
-            if (theLock.readLock().attempt(aTimeout)) {
+            if (theLock.readLock().tryLock(aTimeout, TimeUnit.MILLISECONDS)) {
                 myEnclosing.vote();
                 
                 // Given the contract of timeout, we can make this loss'y'
                 thePrevayler.executeCommand(new PrepCommitCommand(myEnclosing),
                         false);
-                theLock.readLock().release();
+                theLock.readLock().unlock();
                 theCheckpointTrigger.loggedCommand();
                 return true;
             } else
@@ -427,7 +419,7 @@ public class TxnManager {
             theLogger.log(Level.SEVERE, "Failed to log Action", anIE);
             throw new TransactionException();
         } catch (Exception anE) {
-            theLock.readLock().release();
+            theLock.readLock().unlock();
             theLogger.log(Level.SEVERE, "Failed to log Action", anE);
             throw new TransactionException();
         }
@@ -436,13 +428,13 @@ public class TxnManager {
     public void abortAll() throws IOException {
 
         try {
-            theLock.readLock().acquire();
+            theLock.readLock().lock();
 
             // Has to be logged
             //
             thePrevayler.executeCommand(new AbortAllCommand());
             
-            theLock.readLock().release();
+            theLock.readLock().unlock();
 
             theCheckpointTrigger.loggedCommand();
 
@@ -450,7 +442,7 @@ public class TxnManager {
             theLogger.log(Level.SEVERE, "Failed to log abortAll", anIE);
             throw new IOException();
         } catch (Exception anE) {
-            theLock.readLock().release();
+            theLock.readLock().unlock();
             theLogger.log(Level.SEVERE, "Failed to log abortAll", anE);
             throw new IOException();
         }
@@ -521,20 +513,12 @@ public class TxnManager {
             throw anIOE;
         }
 
+        theLock.writeLock().lock();
+
         try {
-            theLock.writeLock().acquire();
-
-            try {
-                Disk.backup(aDestDir);
-            } finally {
-                theLock.writeLock().release();
-            }
-
-        } catch (InterruptedException anIE) {
-            IOException anIOE = new IOException("Failed to start backup");
-            anIOE.initCause(anIE);
-
-            throw anIOE;
+            Disk.backup(aDestDir);
+        } finally {
+            theLock.writeLock().unlock();
         }
     }
 
@@ -549,21 +533,17 @@ public class TxnManager {
        now.
      */
     public void requestSnapshot() throws TransactionException, IOException {
-        try {
-            int myActiveTxnCount;
+        int myActiveTxnCount;
 
-            theLock.readLock().acquire();
+        theLock.readLock().lock();
 
-            myActiveTxnCount = theManagerState.getNumActiveTxns();
+        myActiveTxnCount = theManagerState.getNumActiveTxns();
 
-            theLock.readLock().release();
+        theLock.readLock().unlock();
 
-            if (myActiveTxnCount != 0)
-                throw new TransactionException(
-                        "Cannot snapshot with active transactions it's bad for your data");
-        } catch (InterruptedException anIE) {
-            throw new TransactionException("Couldn't check for outstanding transactions");
-        }
+        if (myActiveTxnCount != 0)
+            throw new TransactionException(
+                    "Cannot snapshot with active transactions it's bad for your data");
 
         CheckpointTask myTask = new CheckpointTask();
 
@@ -640,14 +620,14 @@ public class TxnManager {
             if (LOG_CKPTS)
                 theLogger.log(Level.INFO, "Checkpoint::start: " + myCkptId);
 
-            theLock.writeLock().acquire();
+            theLock.writeLock().lock();
 
             // Issue tentative checkpoint - change over logs
             // and carry over prepared state from old log in snapshotter
             // which will be commited/aborted in the new log
             Snapshotter mySnapper = thePrevayler.takeSnapshot();
 
-            theLock.writeLock().release();
+            theLock.writeLock().unlock();
 
             // Now sync disks and save snapshot at completion
             if (isBlocking) {
