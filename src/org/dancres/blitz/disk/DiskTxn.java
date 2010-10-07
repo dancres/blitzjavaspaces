@@ -2,14 +2,10 @@ package org.dancres.blitz.disk;
 
 import java.io.IOException;
 
-import java.util.Stack;
 import java.util.logging.Level;
 
 import com.sleepycat.je.Transaction;
 import com.sleepycat.je.DatabaseException;
-import com.sleepycat.je.Database;
-
-import EDU.oswego.cs.dl.util.concurrent.LockReleaser;
 
 /**
    Disk operations are encapsulated in transactions for the purposes of

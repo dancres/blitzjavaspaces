@@ -1,20 +1,14 @@
 package org.dancres.blitz.disk;
 
+import java.util.concurrent.*;
 import java.util.logging.*;
 
 import net.jini.config.ConfigurationException;
 
-import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
-import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
-
 import org.dancres.blitz.Logging;
-
-import org.dancres.blitz.ActiveObject;
-import org.dancres.blitz.ActiveObjectRegistry;
 
 import org.dancres.blitz.config.ConfigurationFactory;
 
-import org.dancres.blitz.task.Tasks;
 import org.dancres.blitz.task.Task;
 
 import org.dancres.blitz.stats.StatGenerator;
@@ -87,13 +81,10 @@ public class WriteDaemon implements StatGenerator {
     private static WriteDaemon theDaemon;
 
     private int thePendingCount;
-    private LinkedQueue thePendingUpdates = new LinkedQueue();
+    private LinkedBlockingQueue thePendingUpdates = new LinkedBlockingQueue();
 
-    private LinkedQueue theAsyncUpdates;
-    private PooledExecutor theWriters;
-
-    private LinkedQueue theCompletions;
-    private PooledExecutor theCompleters;
+    private ExecutorService theWriters;
+    private ExecutorService theCompleters;
 
     private IOStats theIOStats = new IOStats();
 
@@ -101,11 +92,8 @@ public class WriteDaemon implements StatGenerator {
     private int theThrottleCount = 0;
 
     private WriteDaemon() {
-        theAsyncUpdates = new LinkedQueue();
-        theCompletions = new LinkedQueue();
-
-        theWriters = new PooledExecutor(theAsyncUpdates, MAX_WRITE_THREADS);
-        theCompleters = new PooledExecutor(theCompletions, 1);
+        theWriters = Executors.newFixedThreadPool(MAX_WRITE_THREADS);
+        theCompleters = Executors.newFixedThreadPool(1);
 
         theLogger.log(Level.INFO, "Async keepalive: " + THREAD_KEEPALIVE);
         theLogger.log(Level.INFO, "Pending write size: " +
@@ -114,9 +102,6 @@ public class WriteDaemon implements StatGenerator {
                       THROTTLE_PENDING_WRITES);
         theLogger.log(Level.INFO, "Throttle pause: " + 
                       THROTTLE_PAUSE);
-
-        theWriters.setKeepAliveTime(THREAD_KEEPALIVE);
-        theCompleters.setKeepAliveTime(THREAD_KEEPALIVE);
 
         StatsBoard.get().add(this);
     }
@@ -171,7 +156,7 @@ public class WriteDaemon implements StatGenerator {
         Object myTask;
 
         try {
-            while ((myTask = thePendingUpdates.poll(0)) != null) {
+            while ((myTask = thePendingUpdates.poll(0, TimeUnit.MILLISECONDS)) != null) {
                 theWriters.execute((Runnable) myTask);
             }
         } catch (InterruptedException anIE) {
@@ -219,8 +204,8 @@ public class WriteDaemon implements StatGenerator {
 
     void halt() {
         theLogger.log(Level.INFO, "WriteDaemon doing halt");
-        theWriters.shutdownAfterProcessingCurrentlyQueuedTasks();
-        theCompleters.shutdownAfterProcessingCurrentlyQueuedTasks();
+        theWriters.shutdown();
+        theCompleters.shutdown();
         theLogger.log(Level.INFO, "WriteDaemon done halt");
     }
 
@@ -238,11 +223,7 @@ public class WriteDaemon implements StatGenerator {
         }
 
         public void run() {
-            try {
-                theCompleters.execute(theTask);
-            } catch (InterruptedException anIE) {
-                theLogger.log(Level.SEVERE, "Failed to scheduler sync completion task", anIE);
-            }
+            theCompleters.execute(theTask);
         }
     }
 
