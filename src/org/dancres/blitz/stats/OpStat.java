@@ -81,6 +81,6 @@ public class OpStat implements Stat, StatGenerator {
     public String toString() {
         String myOp = getOpTypeAsString();
 
-        return myOp + ":" + theType + " = " + theCount + " (" + theId + ")";
+        return myOp + ":" + theType + " = " + theCount;
     }
 }

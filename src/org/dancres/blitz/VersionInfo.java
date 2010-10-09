@@ -3,24 +3,49 @@ package org.dancres.blitz;
 import java.util.logging.Level;
 
 import com.sleepycat.je.JEVersion;
+import org.dancres.blitz.stats.Stat;
+import org.dancres.blitz.stats.StatGenerator;
+import org.dancres.blitz.stats.StatsBoard;
+import org.dancres.blitz.stats.VersionStat;
 
 public class VersionInfo {
     public static final String PRODUCT_NAME = "Blitz JavaSpaces (PureJavaEdition)";
     public static final String EMAIL_CONTACT = "blitz@dancres.org";
     public static final String SUPPLIER_NAME = "The Blitz Project";
-    public static final String VERSION = "2.1.3";
+    public static final String VERSION = "2.1.4";
+
+    static {
+        StatsBoard.get().add(new Generator());
+    }
+
+    private static class Generator implements StatGenerator {
+
+        private long _id = StatGenerator.UNSET_ID;
+
+        public long getId() {
+            return _id;
+        }
+
+        public void setId(long anId) {
+            _id = anId;
+        }
+
+        public Stat generate() {
+            return new VersionStat(_id, versionString());
+        }
+    }
+
+    private static String versionString() {
+        return PRODUCT_NAME + ", " + EMAIL_CONTACT + ", " +
+                SUPPLIER_NAME + ", " + VERSION + ", Db/Java " +
+                JEVersion.CURRENT_VERSION.getVersionString();
+    }
 
     public static void dump() {
-        SpaceImpl.theLogger.log(Level.INFO, "Version info: " +
-                                PRODUCT_NAME + ", " + EMAIL_CONTACT + ", " +
-                                SUPPLIER_NAME + ", " + VERSION + ", Db/Java " +
-            JEVersion.CURRENT_VERSION.getVersionString());
+        SpaceImpl.theLogger.log(Level.INFO, new VersionStat(versionString()).toString());
     }
 
     public static void main(String anArgs[]) {
-        System.out.println("Version info: " +
-            PRODUCT_NAME + ", " + EMAIL_CONTACT + ", " +
-            SUPPLIER_NAME + ", " + VERSION + ", Db/Java " +
-            JEVersion.CURRENT_VERSION.getVersionString());
+        System.out.println(new VersionStat(versionString()).toString());
     }
 }
