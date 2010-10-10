@@ -10,7 +10,7 @@
   <property name="src" location="src"/>
   <property name="testsrc" location="test"/>
   <property name="installer_base" location="installer"/>
-  <property name="build" location="build"/>
+  <property name="build" location="target"/>
   <property name="installer_build" location="installer_build"/>
   <property name="db_root" location="dbjava/je-3.2.93/"/>
   <property name="bdb" location="dbjava/je.jar"/>
@@ -304,8 +304,6 @@
                     files="true" manifest="${basedir}/MANIFEST.MF">
       <classpath refid="allclasses"/>
       <in name="com.go"/>
-      <in name="EDU.oswego"/>
-      <in name="edu.emory"/>
       <in name="org.dancres"/>
       <in name="net.jini"/>
       <in name="org.jini"/>
@@ -414,7 +412,7 @@
 	   maxmemory="256m"
        destdir="docs/javadocs"
        private="true"
-       packagenames="org.*,EDU.*">
+       packagenames="org.*">
        <tag name="todo" scope="all" description="todo:"/> </javadoc>
 
   </target>
