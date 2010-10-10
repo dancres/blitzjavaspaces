@@ -1,3 +1,13 @@
+2010-10-10  Dan Creswell <dan@dancres.org>
+
+	* Blitz Pure Java Version 2.1.4
+	
+2010-10-07  Dan Creswell <dan@dancres.org>
+
+	* Move away from use of old Doug Lea concurrency library and backport-concurrent-util
+	
+	* Make VersionInfo available as a stat
+	
 2010-10-03  Dan Creswell <dan@dancres.org>
 
 	* Fix a problem where a spurious wakeup could cause a take/read/bulk to fail and quit early.
