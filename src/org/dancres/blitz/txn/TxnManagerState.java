@@ -200,9 +200,7 @@ class TxnManagerState implements PrevalentSystem {
     }
 
     private TxnState getState(TxnId anId) {
-        synchronized (this) {
-            return (TxnState) theTxns.get(anId);
-        }
+        return (TxnState) theTxns.get(anId);
     }
 
     /**
