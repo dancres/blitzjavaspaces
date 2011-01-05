@@ -92,6 +92,20 @@ public class EventQueue implements ActiveObject {
         add(anEvent, false);
     }
 
+    /**
+     * @param anEvent - the event to post
+     * @param aWaitIndicator - whether or not to wait for the event to pass through the queue.
+     *
+     * Background for </code>aWaitIndicator</code> usage. Events are used to signal interested parties the presence
+     * of a newly written Entry. *IfExists implementations exit when all transactional conflicts are resolved and any
+     * potential matches have become unavailable or when an entry becomes available.
+     *
+     * *IfExists tracks _locks_ not _transactions_. i.e.  All write events must have reached the relevant blockers
+     * _before_ the locks are released.  If the locks are released prior to receiving the write events then IfExists
+     * will exit early and in error.  Thus we must block the transaction commit until all write events are processed
+     * and only then release the locks. In such cases aWaitIndicator needs setting to true such that the invoking
+     * write method only returns to user-code once all blocking *IfExists have seen the event.
+     */
     public void add(QueueEvent anEvent, boolean aWaitIndicator) {
         if (TxnManager.get().isRecovery())
             return;

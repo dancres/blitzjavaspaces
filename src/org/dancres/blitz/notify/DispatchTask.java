@@ -16,7 +16,8 @@ package org.dancres.blitz.notify;
  *
  * <li>When the event queue (as to the event senders) has finished generating events it
  * invokes enableResolve which for suitable implementations indicates that the blocker
- * can be released at the appropriate moment.</li>
+ * can be released at the appropriate moment. enableResolve will only be called after <em>all</em>
+ * requests to newDispatch have been completed.</li>
  * </ol>
  */
 public interface DispatchTask extends Runnable {
