@@ -363,6 +363,42 @@
     </java>
   </target>
 
+  <target name="statsjar2" depends="compile">
+	    <mkdir dir="${lib}"/>
+	    <classdepandjar jarfile="${lib}/stats2.jar"
+	                    files="true" manifest="${basedir}/MANIFEST.MF">
+	      <classpath refid="allclasses"/>
+	      <in name="org.dancres.blitz.stats"/>
+	      <in name="org.dancres.blitz.remote"/>
+	    <topclass name="org.dancres.blitz.remote.StatsAdmin"/>
+		<topclass name="org.dancres.blitz.remote.BlitzAdmin"/>
+		<topclass name="org.dancres.blitz.stats.BlockingOpsStat"/>
+		<topclass name="org.dancres.blitz.stats.DirtyBufferStat"/>
+		<topclass name="org.dancres.blitz.stats.EventQueueStat"/>
+		<topclass name="org.dancres.blitz.stats.FieldsStat"/>
+		<topclass name="org.dancres.blitz.stats.HostStat"/>
+		<topclass name="org.dancres.blitz.stats.IOStat"/>
+		<topclass name="org.dancres.blitz.stats.InstanceCount"/>
+		<topclass name="org.dancres.blitz.stats.InstanceSwitch"/>
+		<topclass name="org.dancres.blitz.stats.MemoryStat"/>
+		<topclass name="org.dancres.blitz.stats.MissedOpsStat"/>
+		<topclass name="org.dancres.blitz.stats.OpStat"/>
+		<topclass name="org.dancres.blitz.stats.OpSwitch"/>
+		<topclass name="org.dancres.blitz.stats.SearchStat"/>
+		<topclass name="org.dancres.blitz.stats.Stat"/>
+		<topclass name="org.dancres.blitz.stats.StoreStat"/>
+		<topclass name="org.dancres.blitz.stats.Switch"/>
+		<topclass name="org.dancres.blitz.stats.SwitchListener"/>
+		<topclass name="org.dancres.blitz.stats.SwitchSettings"/>
+		<topclass name="org.dancres.blitz.stats.TaskQueueStat"/>
+		<topclass name="org.dancres.blitz.stats.ThreadStat"/>
+		<topclass name="org.dancres.blitz.stats.TxnStat"/>
+		<topclass name="org.dancres.blitz.stats.TypesStat"/>
+		<topclass name="org.dancres.blitz.stats.VersionStat"/>
+		<topclass name="org.dancres.blitz.stats.WriteEventStat"/>	
+	    </classdepandjar>
+  </target>
+	
   <target name="serverjar" depends="compile"
         description="generate blitz server .jar" >
     <mkdir dir="${lib}"/>
