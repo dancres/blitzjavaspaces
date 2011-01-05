@@ -3,6 +3,7 @@ package org.dancres.blitz.tools;
 import java.io.IOException;
 
 import java.rmi.RMISecurityManager;
+import java.util.Set;
 
 import org.dancres.blitz.disk.Disk;
 import org.dancres.blitz.disk.DiskTxn;
@@ -74,14 +75,14 @@ public class DumpEntries {
 
             Disk.init();
 
-            String[] myKnownTypes =
+            Set<String> myKnownTypes =
                 EntryRepositoryFactory.get().get(EntryRepository.ROOT_TYPE).getSubtypes();
 
-            for (int i = 0; i < myKnownTypes.length; i++) {
+            for (String t: myKnownTypes) {
                 EntryRepository myRepos =
-                    EntryRepositoryFactory.get().get(myKnownTypes[i]);
+                    EntryRepositoryFactory.get().get(t);
                 
-                System.out.println("Repository: " + myKnownTypes[i]);
+                System.out.println("Repository: " + t);
                 dumpRepos(myRepos);
 
                 System.out.println("");

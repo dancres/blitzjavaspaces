@@ -1,6 +1,7 @@
 package org.dancres.blitz.entry;
 
 import java.io.IOException;
+import java.util.Set;
 
 import org.dancres.blitz.mangler.MangledField;
 import org.dancres.blitz.mangler.MangledEntry;
@@ -44,7 +45,7 @@ public interface EntryRepository {
     /**
        Return a list of all currently known subtypes
      */
-    public String[] getSubtypes();
+    public Set<String> getSubtypes();
 
     /**
        Write returns it's result via the passed WriteEscort.  i.e.  If

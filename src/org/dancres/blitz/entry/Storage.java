@@ -1,6 +1,7 @@
 package org.dancres.blitz.entry;
 
 import java.io.IOException;
+import java.util.Set;
 
 import org.dancres.blitz.arc.BackingStore;
 
@@ -86,7 +87,7 @@ public interface Storage extends BackingStore {
        and would need to be searched if this type were the specified template.
      */
     public void addSubtype(String aType) throws IOException;
-    public String[] getSubtypes();
+    public Set<String> getSubtypes();
 
     /**
        @return a new UID for an entry to be added to storage.

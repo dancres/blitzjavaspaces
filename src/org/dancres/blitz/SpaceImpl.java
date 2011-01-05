@@ -7,6 +7,7 @@ import java.rmi.MarshalledObject;
 import java.util.List;
 import java.util.ArrayList;
 
+import java.util.Set;
 import java.util.logging.*;
 
 import net.jini.core.event.RemoteEventListener;
@@ -238,10 +239,10 @@ public class SpaceImpl {
             if (myTask.wouldBlock()) {
 
                 // Try subtypes
-                String[] mySubtypes = myRepos.getSubtypes();
+                Set<String> mySubtypes = myRepos.getSubtypes();
 
-                for (int i = 0; i < mySubtypes.length; i++) {
-                    myRepos = EntryRepositoryFactory.get().find(mySubtypes[i]);
+                for (String t: mySubtypes) {
+                    myRepos = EntryRepositoryFactory.get().find(t);
 
                     if (myRepos != null) {
                         myRepos.find(anEntry, myTask.getVisitor());
@@ -511,11 +512,11 @@ public class SpaceImpl {
                  if (myVisitor.wantsMore()) {
 
                      // If not, try subtypes of the current type
-                     String[] mySubtypes = myRepos.getSubtypes();
+                     Set<String> mySubtypes = myRepos.getSubtypes();
 
-                     for (int j = 0; j < mySubtypes.length; j++) {
+                     for (String t: mySubtypes) {
                          myRepos =
-                             EntryRepositoryFactory.get().find(mySubtypes[j]);
+                             EntryRepositoryFactory.get().find(t);
 
                          if (myRepos != null) {
                              myRepos.find(aTemplates[i], myVisitor.getVisitor());

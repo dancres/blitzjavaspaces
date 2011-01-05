@@ -3,6 +3,8 @@ package org.dancres.blitz.entry;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.*;
 
 import java.util.ArrayList;
@@ -61,7 +63,7 @@ class RootStorage implements Storage {
     private Registry theMetaData;
 
     private ArrayList theSubtypes = new ArrayList();
-    private String[] theCurrentSubtypes = new String[0];
+    private Set<String> theCurrentSubtypes = new HashSet<String>();
 
     private boolean noSchemaDefined = false;
 
@@ -149,7 +151,7 @@ class RootStorage implements Storage {
         }
     }
 
-    public synchronized String[] getSubtypes() {
+    public synchronized Set<String> getSubtypes() {
         return theCurrentSubtypes;
     }
 
@@ -196,10 +198,10 @@ class RootStorage implements Storage {
             StatsBoard.get().add(theTypesStat);
         }
 
-        String[] myTypes = new String[theSubtypes.size()];
-        theCurrentSubtypes = (String[]) theSubtypes.toArray(myTypes);
+        theCurrentSubtypes = new HashSet<String>(theSubtypes);
 
-        theTypesStat.setTypes(theCurrentSubtypes);
+        String[] myTypes = new String[theSubtypes.size()];
+        theTypesStat.setTypes((String[]) theSubtypes.toArray(myTypes));
     }
 
     private KeyIndex newIndex(String aName, int anOffset) throws IOException {

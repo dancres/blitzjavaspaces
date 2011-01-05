@@ -1,6 +1,7 @@
 package org.dancres.blitz;
 
 import java.io.IOException;
+import java.util.Set;
 
 import net.jini.core.transaction.Transaction;
 import net.jini.core.transaction.TransactionException;
@@ -85,10 +86,10 @@ class EntryViewImpl implements EntryView {
                 myRepos.find(aTemplates[i], myFixedView);
 
                 // Try subtypes
-                String[] mySubtypes = myRepos.getSubtypes();
-            
-                for (int j = 0; j < mySubtypes.length; j++) {
-                    myRepos = EntryRepositoryFactory.get().find(mySubtypes[j]);
+                Set<String> mySubtypes = myRepos.getSubtypes();
+
+                for (String t: mySubtypes) {
+                    myRepos = EntryRepositoryFactory.get().find(t);
 
                     if (myRepos != null) {
                         myRepos.find(aTemplates[i], myFixedView);

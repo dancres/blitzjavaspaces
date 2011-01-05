@@ -1,6 +1,7 @@
 package org.dancres.blitz.entry;
 
 import java.io.IOException;
+import java.util.Set;
 
 public class Types {
     /**
@@ -25,12 +26,7 @@ public class Types {
         }
 
         if (myRepos != null) {
-            String[] theSubtypes = myRepos.getSubtypes();
-
-            for (int i = 0 ; i < theSubtypes.length; i++) {
-                if (theSubtypes[i].equals(aSubtype))
-                    return true;
-            }
+            return myRepos.getSubtypes().contains(aSubtype);
         }
 
         return false;

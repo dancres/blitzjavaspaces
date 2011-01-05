@@ -2,6 +2,7 @@ package org.dancres.blitz.entry;
 
 import java.io.IOException;
 
+import java.util.Set;
 import java.util.logging.*;
 
 import net.jini.config.ConfigurationException;
@@ -209,7 +210,7 @@ class EntryReposImpl implements EntryReposRecovery, Reapable {
         theStore.addSubtype(aType);
     }
 
-    public String[] getSubtypes() {
+    public Set<String> getSubtypes() {
         return theStore.getSubtypes();
     }
 

@@ -3,6 +3,8 @@ package org.dancres.blitz.entry;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.*;
 
 import java.util.ArrayList;
@@ -86,7 +88,7 @@ class EntryStorage implements Storage, EntryEditor {
     private Registry theMetaData;
 
     private ArrayList theSubtypes = new ArrayList();
-    private String[] theCurrentSubtypes = new String[0];
+    private Set<String> theCurrentSubtypes = new HashSet<String>();
 
     private KeyIndex[] theIndexes;
 
@@ -185,10 +187,7 @@ class EntryStorage implements Storage, EntryEditor {
                 if (mySubtypeInfo != null) {
                     theSubtypes =(ArrayList)
                         ObjectTransformer.toObject(mySubtypeInfo);
-                    String[] myTypes = new String[theSubtypes.size()];
-                    
-                    theCurrentSubtypes =
-                        (String[]) theSubtypes.toArray(myTypes);
+                    theCurrentSubtypes = new HashSet<String>(theSubtypes);
                 }
             } finally {
                 myTxn.commit();
@@ -236,15 +235,14 @@ class EntryStorage implements Storage, EntryEditor {
     public synchronized void addSubtype(String aType) throws IOException {
         if (! theSubtypes.contains(aType)) {
             theSubtypes.add(aType);
-            String[] myTypes = new String[theSubtypes.size()];
-            theCurrentSubtypes = (String[]) theSubtypes.toArray(myTypes);
+            theCurrentSubtypes = new HashSet<String>(theSubtypes);
 
             theMetaData.getAccessor().save(FixedOIDs.SUBTYPES_KEY,
                                            theSubtypes);
         }
     }
 
-    public synchronized String[] getSubtypes() {
+    public synchronized Set<String> getSubtypes() {
         return theCurrentSubtypes;
     }
 
