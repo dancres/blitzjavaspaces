@@ -260,7 +260,7 @@
     <antcall target="compile"/>
   </target>
 
-  <target name="jars" depends="serverjar,dljar,prefgen,statsjar,dashjar,serviceuijar"/>
+  <target name="jars" depends="serverjar,dljar,prefgen,statsjar2,dashjar,serviceuijar"/>
 
   <target name="serviceuijar" depends="compile" description="generate dashboard serviceui jar">
     <mkdir dir="${lib}"/>
@@ -365,7 +365,7 @@
 
   <target name="statsjar2" depends="compile">
 	    <mkdir dir="${lib}"/>
-	    <classdepandjar jarfile="${lib}/stats2.jar"
+	    <classdepandjar jarfile="${lib}/stats.jar"
 	                    files="true" manifest="${basedir}/MANIFEST.MF">
 	      <classpath refid="allclasses"/>
 	      <in name="org.dancres.blitz.stats"/>
