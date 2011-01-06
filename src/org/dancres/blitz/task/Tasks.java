@@ -1,12 +1,8 @@
 package org.dancres.blitz.task;
 
 import java.util.Iterator;
-import java.util.HashMap;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
@@ -71,7 +67,7 @@ public class Tasks implements ActiveObject {
         }
     }
 
-    private HashMap<String, ExecutorService> theExecutors = new HashMap();
+    private ConcurrentMap<String, ExecutorService> theExecutors = new ConcurrentHashMap();
 
     private Tasks() {
         ActiveObjectRegistry.add(this);
@@ -96,52 +92,48 @@ public class Tasks implements ActiveObject {
     }
 
     public void halt() {
-        synchronized(theExecutors) {
-            Iterator<ExecutorService> myExecs = theExecutors.values().iterator();
-
-            while (myExecs.hasNext()) {
-                ExecutorService myExec = myExecs.next();
-                myExec.shutdownNow();
-            }
-
-            theExecutors.clear();
+        for (ExecutorService e: theExecutors.values()) {
+            e.shutdownNow();
         }
+
+        theExecutors.clear();
     }
 
     private ExecutorService getExecutor(String aName) {
-        ExecutorService myExec;
+        ExecutorService myExec = theExecutors.get(aName);
 
-        synchronized(theExecutors) {
-            myExec = theExecutors.get(aName);
+        if (myExec == null) {
 
-            if (myExec == null) {
+            LinkedBlockingQueue myQueue;
 
-                LinkedBlockingQueue myQueue;
-
-                if (TASK_QUEUE_BOUND == 0) {
-                    theLogger.log(Level.INFO,
-                                  "Creating task pool with no bounds [ " + aName + " ]");
+            if (TASK_QUEUE_BOUND == 0) {
+                theLogger.log(Level.INFO,
+                        "Creating task pool with no bounds [ " + aName + " ]");
 
 
-                    myQueue = new LinkedBlockingQueue(Integer.MAX_VALUE);
-                    myExec = new ThreadPoolExecutor(MAX_TASK_THREADS, MAX_TASK_THREADS, 0, TimeUnit.MILLISECONDS,
-                            myQueue);
-                } else {
-                    theLogger.log(Level.INFO,
-                                  "Creating task pool with bounds: " +
-                                  TASK_QUEUE_BOUND);
+                myQueue = new LinkedBlockingQueue(Integer.MAX_VALUE);
+                myExec = new ThreadPoolExecutor(MAX_TASK_THREADS, MAX_TASK_THREADS, 0, TimeUnit.MILLISECONDS,
+                        myQueue);
+            } else {
+                theLogger.log(Level.INFO,
+                        "Creating task pool with bounds: " +
+                                TASK_QUEUE_BOUND);
 
-                    myQueue = new LinkedBlockingQueue(TASK_QUEUE_BOUND);
-                    myExec = new ThreadPoolExecutor(MAX_TASK_THREADS, MAX_TASK_THREADS, 0, TimeUnit.MILLISECONDS,
-                            myQueue);
+                myQueue = new LinkedBlockingQueue(TASK_QUEUE_BOUND);
+                myExec = new ThreadPoolExecutor(MAX_TASK_THREADS, MAX_TASK_THREADS, 0, TimeUnit.MILLISECONDS,
+                        myQueue);
 
-                }
-
-                StatsBoard.get().add(new QueueStatGenerator(aName, myQueue));
-                theExecutors.put(aName, myExec);
             }
 
-            return myExec;
+            ExecutorService myCollision = theExecutors.putIfAbsent(aName, myExec);
+            if (myCollision == null)
+                StatsBoard.get().add(new QueueStatGenerator(aName, myQueue));
+            else {
+                myExec.shutdownNow();
+                myExec = myCollision;
+            }
         }
+
+        return myExec;
     }
 }
