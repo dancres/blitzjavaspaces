@@ -370,6 +370,7 @@
 	      <classpath refid="allclasses"/>
 	      <in name="org.dancres.blitz.stats"/>
 	      <in name="org.dancres.blitz.remote"/>
+	    <skip name="org.dancres.blitz.remote.StatsBoard"/>
 	    <topclass name="org.dancres.blitz.remote.StatsAdmin"/>
 		<topclass name="org.dancres.blitz.remote.BlitzAdmin"/>
 		<topclass name="org.dancres.blitz.stats.BlockingOpsStat"/>
@@ -389,7 +390,6 @@
 		<topclass name="org.dancres.blitz.stats.StoreStat"/>
 		<topclass name="org.dancres.blitz.stats.Switch"/>
 		<topclass name="org.dancres.blitz.stats.SwitchListener"/>
-		<topclass name="org.dancres.blitz.stats.SwitchSettings"/>
 		<topclass name="org.dancres.blitz.stats.TaskQueueStat"/>
 		<topclass name="org.dancres.blitz.stats.ThreadStat"/>
 		<topclass name="org.dancres.blitz.stats.TxnStat"/>
