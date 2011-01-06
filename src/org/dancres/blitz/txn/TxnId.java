@@ -67,6 +67,17 @@ public final class TxnId implements Serializable {
     private MarshalledObject theMarshalledMgr;
     private long theId;
 
+    private void writeObject(java.io.ObjectOutputStream stream) throws IOException {
+        /*
+          If the manager is a remote manager we must marshall it up for serialization otherwise leave null behind
+          as a marker for getManager
+         */
+        if (theManager != LOCAL_TXN_MGR)
+            theMarshalledMgr = getMarshalledMgr(theManager);
+
+        stream.defaultWriteObject();
+    }
+
     private transient TransactionManager theManager;
     private transient boolean isPrepared;
 
@@ -112,7 +123,6 @@ public final class TxnId implements Serializable {
      */
     private TxnId(long anId) throws RemoteException {
         theManager = LOCAL_TXN_MGR;
-        theMarshalledMgr = null;
         isPrepared = true;
         theId = anId;
     }
@@ -122,11 +132,7 @@ public final class TxnId implements Serializable {
      */
     TxnId(TransactionManager aMgr, long anId) throws RemoteException {
         theId = anId;
-
         theManager = (TransactionManager) PREPARER.prepareProxy(aMgr);
-
-        theMarshalledMgr = getMarshalledMgr(aMgr);
-
         isPrepared = true;
     }
 
@@ -144,7 +150,10 @@ public final class TxnId implements Serializable {
     public synchronized TransactionManager getManager()
         throws RemoteException {
 
-        // This flag is only set in the constructor for non-null txns or by us.
+        /*
+          This flag is only set in the constructor for non-null txns or by us. It will also be unset should this
+          TxnId have been de-serialized back from disk. In such a case we need to unmarshall and re-verify.
+         */
         if (!isPrepared) {
             Object myManager = null;
 
