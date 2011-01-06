@@ -1,6 +1,6 @@
 package org.dancres.blitz.remote.nio;
 
-import org.dancres.blitz.test.DummyEntry;
+import net.jini.core.entry.Entry;
 import org.dancres.blitz.mangler.EntryMangler;
 
 import java.io.*;
@@ -17,6 +17,36 @@ public class Client implements Runnable {
     Client(InetSocketAddress anAddr) throws IOException {
         _invoker = new Invoker(anAddr, true);
         new Thread(this).start();
+    }
+
+    public static class DummyEntry implements Entry {
+        public String theName;
+        public String anotherField;
+
+        public DummyEntry() {
+        }
+
+        public DummyEntry(String aName) {
+            theName = aName;
+        }
+
+        public String toString() {
+            return theName;
+        }
+
+        public boolean equals(Object anObject) {
+            if ((anObject != null) && (anObject instanceof DummyEntry)) {
+
+                DummyEntry myEntry = (DummyEntry) anObject;
+
+                if (myEntry.theName == null)
+                    return (myEntry.theName == theName);
+                else
+                    return ((DummyEntry) anObject).theName.equals(theName);
+            }
+
+            return false;
+        }
     }
 
     public void run() {

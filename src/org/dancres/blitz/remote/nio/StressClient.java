@@ -9,7 +9,6 @@ import net.jini.core.lease.Lease;
 import net.jini.core.entry.Entry;
 import net.jini.space.JavaSpace;
 
-import org.dancres.blitz.remote.test.DummyEntry;
 import org.dancres.blitz.mangler.EntryMangler;
 
 /**
@@ -20,6 +19,36 @@ public class StressClient {
 
     StressClient(InetSocketAddress anAddr) throws IOException {
         _invoker = new Invoker(anAddr, true);
+    }
+
+    public static class DummyEntry implements Entry {
+        public String theName;
+        public String anotherField;
+
+        public DummyEntry() {
+        }
+
+        public DummyEntry(String aName) {
+            theName = aName;
+        }
+
+        public String toString() {
+            return theName;
+        }
+
+        public boolean equals(Object anObject) {
+            if ((anObject != null) && (anObject instanceof DummyEntry)) {
+
+                DummyEntry myEntry = (DummyEntry) anObject;
+
+                if (myEntry.theName == null)
+                    return (myEntry.theName == theName);
+                else
+                    return ((DummyEntry) anObject).theName.equals(theName);
+            }
+
+            return false;
+        }
     }
 
     void test(boolean doLoad, int aNumBeaters, int aPoolSize, int aPause,
