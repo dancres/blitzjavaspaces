@@ -1,6 +1,7 @@
 package org.dancres.blitz;
 
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.sleepycat.je.JEVersion;
 import org.dancres.blitz.stats.Stat;
@@ -9,6 +10,9 @@ import org.dancres.blitz.stats.StatsBoard;
 import org.dancres.blitz.stats.VersionStat;
 
 public class VersionInfo {
+    static final Logger theLogger =
+        Logging.newLogger("org.dancres.blitz.VersionInfo", Level.INFO);
+
     public static final String PRODUCT_NAME = "Blitz JavaSpaces (PureJavaEdition)";
     public static final String EMAIL_CONTACT = "blitz@dancres.org";
     public static final String SUPPLIER_NAME = "The Blitz Project";
@@ -42,7 +46,7 @@ public class VersionInfo {
     }
 
     public static void dump() {
-        SpaceImpl.theLogger.log(Level.INFO, new VersionStat(versionString()).toString());
+        theLogger.log(Level.INFO, new VersionStat(versionString()).toString());
     }
 
     public static void main(String anArgs[]) {
