@@ -10,8 +10,14 @@ import org.dancres.blitz.stats.StatsBoard;
 import org.dancres.blitz.stats.VersionStat;
 
 public class VersionInfo {
-    static final Logger theLogger =
-        Logging.newLogger("org.dancres.blitz.VersionInfo", Level.INFO);
+    private static final Logger theLogger = getLogger();
+
+    private static Logger getLogger() {
+        Logger myLogger = Logger.getLogger("org.dancres.blitz.VersionInfo");
+        myLogger.setLevel(Level.INFO);
+
+        return myLogger;
+    }
 
     public static final String PRODUCT_NAME = "Blitz JavaSpaces (PureJavaEdition)";
     public static final String EMAIL_CONTACT = "blitz@dancres.org";
