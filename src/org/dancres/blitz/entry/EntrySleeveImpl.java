@@ -2,6 +2,7 @@ package org.dancres.blitz.entry;
 
 import java.util.logging.Logger;
 
+import net.jini.core.entry.Entry;
 import org.dancres.struct.LinkedInstance;
 
 import org.dancres.blitz.mangler.MangledEntry;
@@ -12,8 +13,6 @@ import org.dancres.blitz.oid.OIDFactory;
 
 import org.dancres.blitz.cache.Identifiable;
 import org.dancres.blitz.cache.Identifier;
-
-import org.dancres.blitz.test.DummyEntry;
 
 import org.dancres.blitz.Logging;
 import org.dancres.blitz.entry.ci.CacheIndexer;
@@ -191,6 +190,36 @@ final class EntrySleeveImpl implements EntrySleeve, Identifiable,
 
     boolean isDirty() {
         return isDirty;
+    }
+
+    public static class DummyEntry implements Entry {
+        public String theName;
+        public String anotherField;
+
+        public DummyEntry() {
+        }
+
+        public DummyEntry(String aName) {
+            theName = aName;
+        }
+
+        public String toString() {
+            return theName;
+        }
+
+        public boolean equals(Object anObject) {
+            if ((anObject != null) && (anObject instanceof DummyEntry)) {
+
+                DummyEntry myEntry = (DummyEntry) anObject;
+
+                if (myEntry.theName == null)
+                    return (myEntry.theName == theName);
+                else
+                    return ((DummyEntry) anObject).theName.equals(theName);
+            }
+
+            return false;
+        }
     }
 
     public static void main(String args[]) {
