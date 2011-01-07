@@ -1,6 +1,7 @@
 package org.dancres.blitz;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -10,11 +11,8 @@ import net.jini.space.JavaSpace;
 import org.dancres.blitz.disk.DiskTxn;
 import org.dancres.blitz.entry.*;
 import org.dancres.blitz.mangler.MangledEntry;
+import org.dancres.blitz.notify.*;
 import org.dancres.blitz.oid.OID;
-import org.dancres.blitz.notify.EventGenerator;
-import org.dancres.blitz.notify.EventQueue;
-import org.dancres.blitz.notify.QueueEvent;
-import org.dancres.blitz.notify.EventGeneratorState;
 import org.dancres.struct.LinkedInstance;
 
 /**
@@ -62,9 +60,8 @@ class NewView {
         return (theUIDs.isFull());
     }
 
-    private class EventGeneratorImpl implements EventGenerator {
-        private boolean isTainted = false;
-        private OID theOID;
+    private class EventGeneratorImpl extends EventGeneratorBase {
+        private AtomicBoolean isTainted = new AtomicBoolean(false);
 
         EventGeneratorImpl() {
         }
@@ -77,10 +74,6 @@ class NewView {
             return 0;
         }
 
-        public OID getId() {
-            return theOID;
-        }
-
         public boolean isPersistent() {
             return false;
         }
@@ -89,30 +82,12 @@ class NewView {
             return 0;
         }
 
-        void taint(boolean signal) {
-
-            /*
-            try {
-                Tasks.queue(new CleanTask(getId()));
-            } catch (InterruptedException anIE) {
-                theLogger.log(Level.WARNING,
-                    "Failed to lodge cleanup for: " + getId(), anIE);
-            }
-            */
-        }
-
         public void taint() {
-            synchronized (this) {
-                // Tainting can only be done once
-                //
-                if (isTainted)
-                    return;
-
-                isTainted = true;
-            }
+            if (!isTainted.compareAndSet(false, true))
+                return;
 
             try {
-                EventQueue.get().kill(getId());
+                EventQueue.get().kill(this);
             } catch (IOException anIOE) {
                 theLogger.log(Level.SEVERE,
                     "Encountered IOException during kill", anIOE);
@@ -120,11 +95,8 @@ class NewView {
         }
 
         public boolean canSee(QueueEvent anEvent, long aTime) {
-            synchronized (this) {
-                if (isTainted) {
-                    return false;
-                }
-            }
+            if (isTainted.get())
+                return false;
 
             // Check if it's txn_ended and my txn and call resolved if it is
             if ((anEvent.getType() == QueueEvent.TRANSACTION_ENDED) &&
@@ -139,11 +111,8 @@ class NewView {
         }
 
         public boolean matches(MangledEntry anEntry) {
-            synchronized (this) {
-                if (isTainted) {
-                    return false;
-                }
-            }
+            if (isTainted.get())
+                return false;
 
             for (int i = 0; i < theTemplates.length; i++) {
                 MangledEntry myTemplate = theTemplates[i];
@@ -178,11 +147,8 @@ class NewView {
         }
 
         public void ping(QueueEvent anEvent, JavaSpace aSource) {
-            synchronized (this) {
-                if (isTainted) {
-                    return;
-                }
-            }
+            if (isTainted.get())
+                return;
 
             if (atCapacity()) {
                 taint();

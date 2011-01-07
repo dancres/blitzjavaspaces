@@ -1,6 +1,7 @@
 package org.dancres.blitz;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -10,10 +11,7 @@ import net.jini.space.JavaSpace;
 
 import org.dancres.blitz.entry.*;
 import org.dancres.blitz.mangler.MangledEntry;
-import org.dancres.blitz.notify.EventGenerator;
-import org.dancres.blitz.notify.EventGeneratorState;
-import org.dancres.blitz.notify.EventQueue;
-import org.dancres.blitz.notify.QueueEvent;
+import org.dancres.blitz.notify.*;
 import org.dancres.blitz.oid.OID;
 import org.dancres.blitz.txn.TxnState;
 import org.dancres.blitz.txnlock.LockMgr;
@@ -244,10 +242,9 @@ class SearchVisitorImpl implements SingleMatchTask,
             (isTaking ? "take" : "read"))));
     }
 
-    private class EventGeneratorImpl implements EventGenerator {
-        private boolean isTainted = false;
+    private class EventGeneratorImpl extends EventGeneratorBase {
+        private AtomicBoolean isTainted = new AtomicBoolean(false);
         private MangledEntry theTemplate;
-        private OID theOID;
 
         EventGeneratorImpl(MangledEntry aTemplate) {
             theTemplate = aTemplate;
@@ -261,10 +258,6 @@ class SearchVisitorImpl implements SingleMatchTask,
             return 0;
         }
 
-        public OID getId() {
-            return theOID;
-        }
-
         public boolean isPersistent() {
             return false;
         }
@@ -274,17 +267,11 @@ class SearchVisitorImpl implements SingleMatchTask,
         }
 
         public void taint() {
-            synchronized (this) {
-                // Tainting can only be done once
-                //
-                if (isTainted)
-                    return;
-
-                isTainted = true;
-            }
+            if (!isTainted.compareAndSet(false, true))
+                return;
 
             try {
-                EventQueue.get().kill(getId());
+                EventQueue.get().kill(this);
             } catch (IOException anIOE) {
                 theLogger.log(Level.SEVERE,
                     "Encountered IOException during kill", anIOE);
@@ -301,9 +288,7 @@ class SearchVisitorImpl implements SingleMatchTask,
         }
 
         private boolean isTainted() {
-            synchronized(this) {
-                return (isTainted);
-            }
+            return isTainted.get();
         }
 
         public boolean canSee(QueueEvent anEvent, long aTime) {

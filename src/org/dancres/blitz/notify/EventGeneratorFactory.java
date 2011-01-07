@@ -7,7 +7,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
 import net.jini.core.event.RemoteEventListener;
@@ -63,7 +64,12 @@ class EventGeneratorFactory implements Syncable {
      */
     private Allocator theAllocator;
 
-    private ConcurrentHashMap theIDMap = new ConcurrentHashMap();
+    private ConcurrentSkipListSet<EventGenerator> theGens = new ConcurrentSkipListSet<EventGenerator>();
+
+    /**
+     * Because ConcurrentSkipListSet.size is not a constant time operation, we track size independently.
+     */
+    private AtomicInteger theNumGens = new AtomicInteger();
 
     static EventGeneratorFactory get() {
         return theFactory;
@@ -109,11 +115,11 @@ class EventGeneratorFactory implements Syncable {
     Iterator getGenerators() throws IOException {
         loadBarrier();
 
-        return theIDMap.values().iterator();
+        return theGens.iterator();
     }
 
     int getCount() {
-        return theIDMap.size();
+        return theNumGens.get();
     }
     
     private void loadAllocator() throws IOException {
@@ -135,7 +141,8 @@ class EventGeneratorFactory implements Syncable {
                     (EventGeneratorState) myEntry.getData();
                 EventGenerator myGenerator = myGenState.getGenerator();
                     
-                theIDMap.put(myGenerator.getId(), myGenerator);
+                theGens.add(myGenerator);
+                theNumGens.incrementAndGet();
             }
 
             myState.release();
@@ -262,8 +269,18 @@ class EventGeneratorFactory implements Syncable {
 
     private void insert(EventGenerator aGen) {
         // synchronized (this) {
-            theIDMap.put(aGen.getId(), aGen);
+            theGens.add(aGen);
+            theNumGens.incrementAndGet();
         // }
+    }
+
+    private EventGenerator find(OID anOID) {
+        for (EventGenerator g: theGens) {
+            if (g.getId().equals(anOID))
+                return g;
+        }
+
+        return null;
     }
 
     boolean renew(OID aOID, long anExpiry)
@@ -272,7 +289,7 @@ class EventGeneratorFactory implements Syncable {
         loadBarrier();
 
         // synchronized(this) {
-            EventGenerator myGen = (EventGenerator) theIDMap.get(aOID);
+            EventGenerator myGen = find(aOID);
 
             if (myGen == null)
                 return false;
@@ -287,7 +304,7 @@ class EventGeneratorFactory implements Syncable {
         loadBarrier();
 
         // synchronized(this) {
-            EventGenerator myGen = (EventGenerator) theIDMap.get(aOID);
+            EventGenerator myGen = find(aOID);
             
             if (myGen == null)
                 return false;
@@ -314,7 +331,7 @@ class EventGeneratorFactory implements Syncable {
               non-transactional ones.
             */
             if (aState.isPersistent()) {
-                if (theIDMap.get(aState.getOID()) == null) {
+                if (find(aState.getOID()) == null) {
                     EventGenerator myGenerator = aState.getGenerator();
                     insert(myGenerator);
                 }
@@ -331,7 +348,7 @@ class EventGeneratorFactory implements Syncable {
         loadBarrier();
 
         // synchronized(this) {
-            EventGenerator myGen = (EventGenerator) theIDMap.get(aOID);
+            EventGenerator myGen = find(aOID);
 
             if (myGen != null)
                 myGen.recover(aSeqNum);
@@ -348,7 +365,7 @@ class EventGeneratorFactory implements Syncable {
         ArrayList myJumps = new ArrayList();
 
         // synchronized(this) {
-            Iterator myGenerators = theIDMap.values().iterator();
+            Iterator myGenerators = theGens.iterator();
 
             while (myGenerators.hasNext()) {
                 EventGenerator myGenerator =
@@ -377,28 +394,32 @@ class EventGeneratorFactory implements Syncable {
         loadBarrier();
 
         // synchronized(this) {
-            EventGenerator myGen = (EventGenerator) theIDMap.get(aOID);
+            EventGenerator myGen = find(aOID);
             
             if (myGen != null)
                 myGen.jumpSequenceNumber(aJump);
         // }
     }
 
-    void killTemplate(OID aOID) throws IOException {
-        EventGenerator myGen = null;
+    void killTemplate(EventGenerator aGen) throws IOException {
+        boolean removed = (aGen != null) ? theGens.remove(aGen) : false;
 
-        // synchronized(this) {
-            myGen = (EventGenerator) theIDMap.remove(aOID);
-        // }
+        if (removed) {
+            theNumGens.decrementAndGet();
 
-        if ((myGen != null) && (myGen.isPersistent())) {
+            if (aGen.isPersistent()) {
 
-            DiskTxn myTxn = DiskTxn.newStandalone();
+                DiskTxn myTxn = DiskTxn.newStandalone();
 
-            OID myOID = myGen.getId();
-            theStore.getAccessor(myTxn).delete(OIDFactory.getKey(myOID));
-            myTxn.commit(true);
+                OID myOID = aGen.getId();
+                theStore.getAccessor(myTxn).delete(OIDFactory.getKey(myOID));
+                myTxn.commit(true);
+            }
         }
+    }
+
+    void killTemplate(OID aOID) throws IOException {
+        killTemplate(find(aOID));
     }
 
     public void sync() throws Exception {
@@ -409,7 +430,7 @@ class EventGeneratorFactory implements Syncable {
 
         RegistryAccessor myAccessor = theStore.getAccessor(myTxn);
 
-        Iterator myGenerators = theIDMap.values().iterator();
+        Iterator myGenerators = theGens.iterator();
 
         while (myGenerators.hasNext()) {
             EventGenerator myGenerator =
@@ -433,6 +454,6 @@ class EventGeneratorFactory implements Syncable {
         theStore.close();
 
         theStore = null;
-        theIDMap.clear();
+        theGens.clear();
     }
 }

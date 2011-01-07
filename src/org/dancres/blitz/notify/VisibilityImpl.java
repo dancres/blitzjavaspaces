@@ -7,6 +7,7 @@ import java.rmi.MarshalledObject;
 import java.rmi.RemoteException;
 import java.rmi.NoSuchObjectException;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
 import net.jini.core.event.RemoteEventListener;
@@ -51,8 +52,7 @@ import org.dancres.blitz.task.Tasks;
 
    @todo Refactor the commonet stuff out of here and EventGeneratorImpl
  */
-public class VisibilityImpl implements EventGenerator {
-    private OID theOID;
+public class VisibilityImpl extends EventGeneratorBase {
     private MangledEntry[] theTemplates;
     private MarshalledObject theHandback;
     private MarshalledObject theMarshalledListener;
@@ -74,7 +74,7 @@ public class VisibilityImpl implements EventGenerator {
        couldn't get an appropriate response from the client or because
        we're being deleted.
      */
-    private boolean isTainted;
+    private AtomicBoolean isTainted = new AtomicBoolean(false);
 
     private RemoteEventListener theListener;
 
@@ -151,10 +151,6 @@ public class VisibilityImpl implements EventGenerator {
         return theStartSeqNum;
     }
 
-    public OID getId() {
-        return theOID;
-    }
-
     public boolean isPersistent() {
         return (theTxnId == null);
     }
@@ -168,14 +164,8 @@ public class VisibilityImpl implements EventGenerator {
        and schedule cleanup.
      */
     public void taint() {
-        synchronized(this) {
-            // Tainting can only be done once
-            //
-            if (isTainted)
-                return;
-
-            isTainted = true;
-        }
+        if (!isTainted.compareAndSet(false, true))
+            return;
 
         try {
             Tasks.queue(new CleanTask(getId()));
@@ -195,10 +185,10 @@ public class VisibilityImpl implements EventGenerator {
        and that the generator isn't "tainted"
      */
     public boolean canSee(QueueEvent anEvent, long aTime) {
-        synchronized(this) {
-            if (isTainted)
-                return false;
+        if (isTainted.get())
+            return false;
 
+        synchronized(this) {
             if (aTime > theLeaseTime) {
                 taint();
                 return false;
@@ -255,10 +245,10 @@ public class VisibilityImpl implements EventGenerator {
      **********************************************************************/
 
     public boolean renew(long aTime) {
-        synchronized(this) {
-            if (isTainted)
-                return false;
+        if (isTainted.get())
+            return false;
 
+        synchronized(this) {
             if (System.currentTimeMillis() > theLeaseTime)
                 return false;
 
@@ -314,10 +304,10 @@ public class VisibilityImpl implements EventGenerator {
     public void ping(QueueEvent anEvent, JavaSpace aSource) {
         SeqNumInterval mySnapshot = null;
 
-        synchronized(this) {
-            if (isTainted)
-                return;
+        if (isTainted.get())
+            return;
 
+        synchronized(this) {
             RemoteEventListener myTarget = null;
 
             try {

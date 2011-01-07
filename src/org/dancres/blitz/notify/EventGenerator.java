@@ -28,7 +28,7 @@ import org.dancres.blitz.oid.OID;
    lease renewal.  Tainting also results in cleanup for the registration being
    scheduled.</p>
  */
-public interface EventGenerator {
+public interface EventGenerator extends Comparable {
     public void assign(OID anOID);
     
     public long getStartSeqNum();

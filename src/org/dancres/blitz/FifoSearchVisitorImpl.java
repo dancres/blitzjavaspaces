@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import java.util.LinkedList;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.*;
 
 import net.jini.core.transaction.TransactionException;
@@ -291,10 +292,9 @@ class FifoSearchVisitorImpl implements SingleMatchTask,
         }
     }
 
-    private class EventGeneratorImpl implements EventGenerator {
-        private boolean isTainted = false;
+    private class EventGeneratorImpl extends EventGeneratorBase {
+        private AtomicBoolean isTainted = new AtomicBoolean(false);
         private MangledEntry theTemplate;
-        private OID theOID;
 
         EventGeneratorImpl(MangledEntry aTemplate) {
             theTemplate = aTemplate;
@@ -308,10 +308,6 @@ class FifoSearchVisitorImpl implements SingleMatchTask,
             return 0;
         }
 
-        public OID getId() {
-            return theOID;
-        }
-
         public boolean isPersistent() {
             return false;
         }
@@ -321,17 +317,11 @@ class FifoSearchVisitorImpl implements SingleMatchTask,
         }
 
         public void taint() {
-            synchronized (this) {
-                // Tainting can only be done once
-                //
-                if (isTainted)
-                    return;
-
-                isTainted = true;
-            }
+            if (!isTainted.compareAndSet(false, true))
+                return;
 
             try {
-                EventQueue.get().kill(getId());
+                EventQueue.get().kill(this);
             } catch (IOException anIOE) {
                 theLogger.log(Level.SEVERE,
                     "Encountered IOException during kill", anIOE);
@@ -348,9 +338,7 @@ class FifoSearchVisitorImpl implements SingleMatchTask,
         }
 
         private boolean isTainted() {
-            synchronized (this) {
-                return (isTainted);
-            }
+            return isTainted.get();
         }
 
         public boolean canSee(QueueEvent anEvent, long aTime) {

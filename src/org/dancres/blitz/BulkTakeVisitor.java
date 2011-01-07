@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.*;
 
 import net.jini.core.transaction.TransactionException;
@@ -14,16 +15,13 @@ import org.dancres.blitz.mangler.MangledEntry;
 
 import org.dancres.blitz.entry.*;
 
+import org.dancres.blitz.notify.*;
 import org.dancres.blitz.txn.TxnState;
 
 import org.dancres.blitz.txnlock.*;
 
 import org.dancres.blitz.oid.OID;
 
-import org.dancres.blitz.notify.EventGenerator;
-import org.dancres.blitz.notify.EventQueue;
-import org.dancres.blitz.notify.QueueEvent;
-import org.dancres.blitz.notify.EventGeneratorState;
 import org.dancres.blitz.util.Time;
 
 class BulkTakeVisitor implements BulkMatchTask, SearchVisitor {
@@ -229,10 +227,9 @@ class BulkTakeVisitor implements BulkMatchTask, SearchVisitor {
         return theStatus;
     }
 
-    private class EventGeneratorImpl implements EventGenerator {
-        private boolean isTainted = false;
+    private class EventGeneratorImpl extends EventGeneratorBase {
+        private AtomicBoolean isTainted = new AtomicBoolean(false);
         private MangledEntry[] theTemplates;
-        private OID theOID;
 
         EventGeneratorImpl(MangledEntry[] aTemplates) {
             theTemplates = aTemplates;
@@ -246,10 +243,6 @@ class BulkTakeVisitor implements BulkMatchTask, SearchVisitor {
             return 0;
         }
 
-        public OID getId() {
-            return theOID;
-        }
-
         public boolean isPersistent() {
             return false;
         }
@@ -259,20 +252,14 @@ class BulkTakeVisitor implements BulkMatchTask, SearchVisitor {
         }
 
         void taint(boolean signal) {
-            synchronized (this) {
-                // Tainting can only be done once
-                //
-                if (isTainted)
-                    return;
-
-                isTainted = true;
-            }
+            if (!isTainted.compareAndSet(false, true))
+                return;
 
             if (signal)
                 setStatus(STOP, new TransactionException("Destroyed"));
 
             try {
-                EventQueue.get().kill(getId());
+                EventQueue.get().kill(this);
             } catch (IOException anIOE) {
                 theLogger.log(Level.SEVERE,
                     "Encountered IOException during kill", anIOE);
@@ -293,11 +280,8 @@ class BulkTakeVisitor implements BulkMatchTask, SearchVisitor {
         }
 
         public boolean canSee(QueueEvent anEvent, long aTime) {
-            synchronized (this) {
-                if (isTainted) {
-                    return false;
-                }
-            }
+            if (isTainted.get())
+                return false;
 
             // Check if it's txn_ended and my txn and call resolved if it is
             if ((anEvent.getType() == QueueEvent.TRANSACTION_ENDED) &&
@@ -312,11 +296,8 @@ class BulkTakeVisitor implements BulkMatchTask, SearchVisitor {
         }
 
         public boolean matches(MangledEntry anEntry) {
-            synchronized (this) {
-                if (isTainted) {
-                    return false;
-                }
-            }
+            if (isTainted.get())
+                return false;
 
             for (int i = 0; i < theTemplates.length; i++) {
                 MangledEntry myTemplate = theTemplates[i];
@@ -350,11 +331,8 @@ class BulkTakeVisitor implements BulkMatchTask, SearchVisitor {
         }
 
         public void ping(QueueEvent anEvent, JavaSpace aSource) {
-            synchronized (this) {
-                if (isTainted) {
-                    return;
-                }
-            }
+            if (isTainted.get())
+                return;
 
             LongtermOffer myOffer = null;
 

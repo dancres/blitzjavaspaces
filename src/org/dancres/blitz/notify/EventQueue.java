@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Iterator;
@@ -58,7 +59,7 @@ public class EventQueue implements ActiveObject {
 
     private ExecutorService theProcessors;
 
-    private long theEventCount = 0;
+    private AtomicLong theEventCount = new AtomicLong(0);
 
     private RemoteEventDispatcher theDispatcher = new RemoteEventDispatcher();
 
@@ -243,14 +244,12 @@ public class EventQueue implements ActiveObject {
         theProcessors.shutdownNow();
 
         synchronized(this) {
-            theLogger.log(Level.INFO, "Processed: " + theEventCount);
+            theLogger.log(Level.INFO, "Processed: " + theEventCount.get());
         }
     }
 
     void dispatchImpl(DispatchTask aTask) {
-        synchronized(this) {
-            ++theEventCount;
-        }
+        theEventCount.incrementAndGet();
 
         switch (aTask.getEvent().getType()) {
             case QueueEvent.TRANSACTION_ENDED :
@@ -308,4 +307,8 @@ public class EventQueue implements ActiveObject {
 	public void kill(OID anOID) throws IOException {
 		EventGeneratorFactory.get().killTemplate(anOID);
 	}
+
+    public void kill(EventGenerator aGenerator) throws IOException {
+        EventGeneratorFactory.get().killTemplate(aGenerator);
+    }
 }
