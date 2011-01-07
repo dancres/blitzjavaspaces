@@ -43,6 +43,8 @@ public class JavaSpace05Contents {
         System.out.println("Cancel lease");
 
         mySet.getLease().cancel();
+
+        myLocalSpace.stop();
     }
 
     public static final class Contents05Entry implements Entry {
