@@ -1,5 +1,4 @@
 nbproject
-build
 docs
 reports
 .DS_Store
@@ -11,3 +10,6 @@ scripts
 installer
 newinstaller
 dbfiles*
+release/
+target/
+lib/
