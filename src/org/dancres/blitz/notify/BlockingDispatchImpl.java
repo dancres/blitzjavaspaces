@@ -7,65 +7,65 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 class BlockingDispatchImpl implements DispatchTask {
-    private EventQueue theQueue;
-    private QueueEvent theEvent;
+    private EventQueue _queue;
+    private QueueEvent _event;
 
-    private Lock myLock = new ReentrantLock();
-    private Condition myDone = myLock.newCondition();
-    private boolean isDone = false;
-    private AtomicBoolean isResolvable = new AtomicBoolean(false);
-    private AtomicInteger myRemainingDispatches = new AtomicInteger(0);
+    private Lock _lock = new ReentrantLock();
+    private Condition _condition = _lock.newCondition();
+    private boolean _done = false;
+    private AtomicBoolean _resolvable = new AtomicBoolean(false);
+    private AtomicInteger _remainingDispatches = new AtomicInteger(0);
 
     BlockingDispatchImpl(EventQueue aQueue, QueueEvent anEvent) {
-        theQueue = aQueue;
-        theEvent = anEvent;
+        _queue = aQueue;
+        _event = anEvent;
     }
 
     public void run() {
-        theQueue.dispatchImpl(this);
+        _queue.dispatchImpl(this);
     }
 
     public QueueEvent getEvent() {
-        return theEvent;
+        return _event;
     }
 
     public void block() throws InterruptedException {
-        myLock.lock();
+        _lock.lock();
         try {
-            while (!isDone)
-                myDone.await();
+            while (!_done)
+                _condition.await();
         } finally {
-            myLock.unlock();
+            _lock.unlock();
         }
     }
 
     public void newDispatch() {
-        myRemainingDispatches.incrementAndGet();
+        _remainingDispatches.incrementAndGet();
     }
 
     public void dispatched() {
-        myRemainingDispatches.decrementAndGet();
+        _remainingDispatches.decrementAndGet();
 
         checkAndFire();
     }
 
     public void enableResolve() {
-        isResolvable.set(true);
+        _resolvable.set(true);
 
         checkAndFire();
     }
 
     private void checkAndFire() {
-        if (!isResolvable.get())
+        if (!_resolvable.get())
             return;
 
-        if (myRemainingDispatches.get() == 0) {
-            myLock.lock();
+        if (_remainingDispatches.get() == 0) {
+            _lock.lock();
             try {
-                isDone = true;
-                myDone.signal();
+                _done = true;
+                _condition.signal();
             } finally {
-                myLock.unlock();
+                _lock.unlock();
             }
         }
     }
