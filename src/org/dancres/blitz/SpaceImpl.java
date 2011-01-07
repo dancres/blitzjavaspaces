@@ -111,8 +111,6 @@ public class SpaceImpl {
 
         LifecycleRegistry.init();
 
-        StatsDumper.start(myDebugCycle);
-
         TxnManager.init(aGateway);
 
         EventQueue.get();
@@ -125,6 +123,8 @@ public class SpaceImpl {
         // HACK: Ensure root repository is loaded because that publishes
         // the known types stats (we shouldn't know this!)
         EntryRepositoryFactory.get().get(EntryRepository.ROOT_TYPE);
+
+        StatsDumper.start(myDebugCycle);
     }
 
     public WriteTicket write(MangledEntry anEntry, Transaction aTxn,

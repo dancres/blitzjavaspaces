@@ -80,16 +80,15 @@ class StatsDumper implements Runnable, ActiveObject {
         synchronized(this) {            
             while(!stopDebugging) {
                 try {
-                    
+                    Stat[] myStats = StatsBoard.get().getStats();
+                    for (int i = 0; i < myStats.length; i++) {
+                        System.err.println(myStats[i]);
+                    }
+
                     wait(theCycleTime);
                     
                     if (stopDebugging) {
                         continue;
-                    }
-                    
-                    Stat[] myStats = StatsBoard.get().getStats();
-                    for (int i = 0; i < myStats.length; i++) {
-                        System.err.println(myStats[i]);
                     }
                     
                 /*
