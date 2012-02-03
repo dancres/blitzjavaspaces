@@ -347,7 +347,7 @@
     <java jar="/Users/dan/jini/jini2_1/lib/preferredlistgen.jar"
       fork="true">
       <arg line="-cp"/>
-      <arg path="${otherlib}/backport-util-concurrent50.jar:${jini_root}/lib/jsk-platform.jar:${jini_root}/lib/jsk-lib.jar:${jini_root}/lib/outrigger.jar"/>
+      <arg path="${jini_root}/lib/jsk-platform.jar:${jini_root}/lib/jsk-lib.jar:${jini_root}/lib/outrigger.jar"/>
       <arg line="-jar"/>
       <arg path="${lib}/blitz-dl.jar"/>
       <arg line="-default false"/>
@@ -607,7 +607,7 @@
       description="test basic getView">
     <java classname="org.dancres.blitz.test.Contents" fork="true"
       classpathref="allclasses">
-      <jvmarg value="-Dorg.dancres.blitz.config=/Users/dan/src/jini/blitz_pj_05/config/blitz.config"/>
+      <jvmarg value="-Dorg.dancres.blitz.config=/Users/dan/src/jini/blitz_git/config/blitz.config"/>
     </java>
   </target>
 
@@ -616,7 +616,7 @@
         <java classname="org.dancres.blitz.test.JavaSpace05Contents" fork="true"
               classpathref="allclasses">
             <jvmarg
-                value="-Dorg.dancres.blitz.config=/Users/dan/src/jini/blitz_pj_05/config/blitz.config"/>
+                value="-Dorg.dancres.blitz.config=/Users/dan/src/jini/blitz_git/config/blitz.config"/>
         </java>
     </target>
 
@@ -624,7 +624,7 @@
       description="test basic on fly getView">
     <java classname="org.dancres.blitz.test.OnFlyContents" fork="true"
       classpathref="allclasses">
-      <jvmarg value="-Dorg.dancres.blitz.config=/Users/dan/src/jini/blitz_pj_05/config/blitz.config"/>
+      <jvmarg value="-Dorg.dancres.blitz.config=/Users/dan/src/jini/blitz_git/config/blitz.config"/>
     </java>
   </target>
 
@@ -632,7 +632,7 @@
       description="test basic getView">
     <java classname="org.dancres.blitz.test.ConcurrentContents" fork="true"
       classpathref="allclasses">
-      <jvmarg value="-Dorg.dancres.blitz.config=/Users/dan/src/jini/blitz_pj_05/config/blitz.config"/>
+      <jvmarg value="-Dorg.dancres.blitz.config=/Users/dan/src/jini/blitz_git/config/blitz.config"/>
     </java>
   </target>
  
@@ -640,7 +640,7 @@
       description="test basic getView">
     <java classname="org.dancres.blitz.test.InheritingContents" fork="true"
       classpathref="allclasses">
-      <jvmarg value="-Dorg.dancres.blitz.config=/Users/dan/src/jini/blitz_pj_05/config/blitz.config"/>
+      <jvmarg value="-Dorg.dancres.blitz.config=/Users/dan/src/jini/blitz_git/config/blitz.config"/>
     </java>
   </target>
 
