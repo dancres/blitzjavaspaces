@@ -63,7 +63,7 @@ class SleeveCache implements StatGenerator {
                     ((Integer) ConfigurationFactory.getEntry("cacheEntriesPerPartition", int.class,
                     new Integer(128))).intValue();
 
-            theLogger.log(Level.SEVERE, "Loaded config: " +
+            theLogger.log(Level.INFO, "Loaded config: " +
                     ((Integer) ConfigurationFactory.getEntry("cacheEntriesPerPartition", int.class,
                     new Integer(32))).intValue());
             
