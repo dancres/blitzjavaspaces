@@ -371,11 +371,11 @@ public class TxnManager {
             
         } catch (InterruptedException anIE) {
             theLogger.log(Level.SEVERE, "Failed to log prepCommit", anIE);
-            throw new UnknownTransactionException();
+            throw new UnknownTransactionException("Failed to log prepCommit - interrupted");
         } catch (Exception anE) {
             theLock.readLock().unlock();
             theLogger.log(Level.SEVERE, "Failed to log prepCommit", anE);
-            throw new UnknownTransactionException();
+            throw new UnknownTransactionException("Failed to log prepCommit");
         }
     }
 
