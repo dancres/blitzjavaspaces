@@ -7,7 +7,6 @@ reports
 *.iml
 .idea/*
 scripts
-installer
 newinstaller
 dbfiles*
 release/
