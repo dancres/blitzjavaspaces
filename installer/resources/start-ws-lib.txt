@@ -1,0 +1,7 @@
+@echo off
+
+title httpd port <PORT>
+set PATH="<JDK_HOME>\bin"
+set JINI_HOME="<JINI_HOME>"
+
+java -jar %JINI_HOME%tools.jar -dir <LIB> -port <PORT> -verbose

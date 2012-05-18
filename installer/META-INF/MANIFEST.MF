@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Created-By: Inca X - www.incax.com
+Main-Class: com.incax.install.blitz.InstallBlitz
+

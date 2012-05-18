@@ -1,0 +1,7 @@
+@echo off
+
+set PATH="<JDK_HOME>\bin"
+set JINI_HOME="<JINI_HOME>"
+set START_CONFIG=<CONFIG>
+
+java -Djava.security.policy=policy/policy.all -jar %JINI_HOME%/start.jar %START_CONFIG%

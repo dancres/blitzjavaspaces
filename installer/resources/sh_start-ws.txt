@@ -1,0 +1,4 @@
+JAVA_HOME=<JDK_HOME>
+JINI_HOME=<JINI_HOME>
+
+$JAVA_HOME/bin/java -jar $JINI_HOME/tools.jar -dir <LIB_DL> -port <PORT> -verbose
