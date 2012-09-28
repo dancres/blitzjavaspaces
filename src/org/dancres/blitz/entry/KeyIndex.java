@@ -15,8 +15,7 @@ import com.sleepycat.je.Transaction;
 import com.sleepycat.je.DatabaseConfig;
 import com.sleepycat.je.LockMode;
 import com.sleepycat.je.OperationStatus;
-import com.sleepycat.je.DeadlockException;
-import com.sleepycat.je.LockNotGrantedException;
+import com.sleepycat.je.LockConflictException;
 
 import org.dancres.util.BytePacker;
 
@@ -163,12 +162,7 @@ class KeyIndex implements Serializable {
 
                 return;
             } catch (DatabaseException aDbe) {
-                /*
-                  Argh, docs say it'll throw Deadlock but code says
-                  LockNotGranted.....
-                 */
-                if ((aDbe instanceof DeadlockException) ||
-                    (aDbe instanceof LockNotGrantedException)) {
+                if (aDbe instanceof LockConflictException) {
 
                     if (theLogger.isLoggable(Level.FINEST))
                         theLogger.log(Level.FINEST, "Got lock exception", aDbe);

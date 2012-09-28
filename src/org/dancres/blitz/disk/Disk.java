@@ -143,24 +143,22 @@ public class Disk {
 
             lockLocation();
 
-            Properties myDbProps = new Properties();
-
-            InputStream myPropsStream =
-                Disk.class.getResourceAsStream("db.properties");
-
-            if (myPropsStream == null)
-                throw new IOException("Failed to load default db settings");
-
-            myDbProps.load(myPropsStream);
+            EnvironmentConfig myConfig = new EnvironmentConfig();
+            myConfig.setCacheSize(theDbCacheSize);
+            myConfig.setTransactional(true);
+            myConfig.setAllowCreate(true);
+            myConfig.setConfigParam(EnvironmentConfig.LOG_FILE_MAX, Integer.toString(maxDbLog));
 
             if (isTransient) {
                 theLogger.log(Level.INFO,
                               "Forced checkpointer on for transient ops");
-                myDbProps.setProperty("je.env.runCheckpointer", "true");
+
+                myConfig.setConfigParam(EnvironmentConfig.ENV_RUN_CHECKPOINTER, "true");
+
+            } else {
+                myConfig.setConfigParam(EnvironmentConfig.ENV_RUN_CHECKPOINTER, "false");
             }
 
-            myDbProps.setProperty("je.log.fileMax",
-                                  Integer.toString(maxDbLog));
 
             /*
               Run a benchmark with these disabled, then run them again
@@ -178,11 +176,6 @@ public class Disk {
                                   Integer.toString(maxNodeEntries));
 
             */
-
-            EnvironmentConfig myConfig = new EnvironmentConfig(myDbProps);
-            myConfig.setCacheSize(theDbCacheSize);
-            myConfig.setTransactional(true);
-            myConfig.setAllowCreate(true);
 
             // theTxnConfig = new TransactionConfig();
             // theTxnConfig.setNoSync(true);

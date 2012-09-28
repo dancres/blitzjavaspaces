@@ -6,8 +6,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 
 import com.sleepycat.je.DatabaseException;
-import com.sleepycat.je.DeadlockException;
-import com.sleepycat.je.LockNotGrantedException;
+import com.sleepycat.je.LockConflictException;
 
 import org.dancres.blitz.Logging;
 
@@ -40,8 +39,7 @@ public class RetryingUpdate {
 
                 return myResult;
             } catch (DatabaseException aDbe) {
-                if ((aDbe instanceof DeadlockException) ||
-                    (aDbe instanceof LockNotGrantedException)) {
+                if (aDbe instanceof LockConflictException) {
 
                     if (theLogger.isLoggable(Level.FINEST))
                         theLogger.log(Level.FINEST, "Got lock exception", aDbe);
