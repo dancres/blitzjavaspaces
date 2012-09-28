@@ -31,10 +31,10 @@ class SyncFinalizer implements Task {
 
     public void run() {
         try {
-            theEnv.sync();
-
             CheckpointConfig myConfig = new CheckpointConfig();
             myConfig.setForce(true);
+            myConfig.setMinimizeRecoveryTime(true);
+           
             theEnv.checkpoint(myConfig);
 
         } catch (DatabaseException aDbe) {
