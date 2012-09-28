@@ -72,17 +72,6 @@ public class DiskTxn {
         return myTxn;
     }
 
-    /**
-       If you choose to use a non-blocking transaction, you must be prepared
-       to handle (for Db) <code>DatabaseException</code> with an errno of
-       <code>Db.DB_LOCK_NOTGRANTED</code> during any operations performed under
-       that transaction.  This breaks encapsulation of Db a little.
-       Note that Db documentation for 4.1.25 would lead a programmer to
-       believe they need to handle DbLockNotGrantedException - unfortunately,
-       that never seems to be thrown - sigh.
-
-       @todo Fix API leakage.
-     */
     public static DiskTxn newNonBlockingStandalone() throws IOException {
         Transaction myDbTxn;
         
