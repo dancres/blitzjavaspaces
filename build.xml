@@ -97,8 +97,6 @@
               file="${src}/org/dancres/blitz/entry/filters.properties"/>
     <copy todir="${build}/org/dancres/blitz/lease"
               file="${src}/org/dancres/blitz/lease/handlers.properties"/>
-    <copy todir="${build}/org/dancres/blitz/disk"
-              file="${src}/org/dancres/blitz/disk/db.properties"/>
     <copy todir="${build}/org/dancres/blitz/serviceui"
               file="${src}/org/dancres/blitz/serviceui/blitz.htm"/>
     <copy todir="${build}/org/dancres/blitz/tools/dash/images">
