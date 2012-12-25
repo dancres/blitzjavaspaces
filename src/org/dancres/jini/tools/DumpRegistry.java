@@ -110,9 +110,6 @@ public class DumpRegistry {
                 } catch (RemoteException aRE) {
                     System.err.println("Couldn't talk to ServiceRegistrar");
                     aRE.printStackTrace(System.err);
-                } catch (IOException anIOE) {
-                    System.err.println("Whoops couldn't talk to ServiceRegistrar");
-                    anIOE.printStackTrace(System.err);
                 }
             }
         }
