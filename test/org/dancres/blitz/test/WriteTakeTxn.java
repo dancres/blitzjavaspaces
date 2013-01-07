@@ -25,20 +25,22 @@ public class WriteTakeTxn {
         LocalSpace mySpace = new LocalSpace(new TxnGatewayImpl());
 
         TxnMgr myMgr = new TxnMgr(1, mySpace);
-        
+
         Entry myTemplate = new DummyEntry("rhubarb");
 
-        ServerTransaction myTxn = myMgr.newTxn();
+        Transaction.Created myCreatedTxn = TransactionFactory.create(myMgr, Lease.FOREVER);
 
-        mySpace.getProxy().write(myTemplate, myTxn, Lease.FOREVER);
+        mySpace.getProxy().write(myTemplate, myCreatedTxn.transaction, Lease.FOREVER);
+
+        myCreatedTxn.lease.renew(Lease.FOREVER);
 
         Entry myResult =
-            mySpace.getProxy().takeIfExists(myTemplate, myTxn, Lease.FOREVER);
+            mySpace.getProxy().takeIfExists(myTemplate, myCreatedTxn.transaction, Lease.FOREVER);
 
         if (myResult == null)
             throw new Exception("Couldn't take!");
                     
-        myTxn.commit();
+        myCreatedTxn.transaction.commit();
 
         mySpace.stop();
     }

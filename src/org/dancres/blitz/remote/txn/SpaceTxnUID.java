@@ -23,7 +23,7 @@ public class SpaceTxnUID implements SpaceUID {
         return false;
     }
 
-    long getId() {
+    public long getId() {
         return theId;
     }
 

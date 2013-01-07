@@ -88,6 +88,10 @@ public class LocalSpace implements BlitzServer {
         init(null);
     }
 
+    public Uuid getServiceUuid() {
+        return theUuid;
+    }
+
     public JavaSpace05 getProxy() {
         return theSpaceProxy;
     }

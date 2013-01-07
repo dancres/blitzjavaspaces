@@ -10,26 +10,43 @@ import net.jini.core.transaction.*;
 import net.jini.core.transaction.server.*;
 
 import org.dancres.blitz.remote.LocalSpace;
+import org.dancres.blitz.remote.ProxyFactory;
+import org.dancres.blitz.remote.txn.LoopBackMgr;
 import org.dancres.blitz.TxnControl;
+import org.dancres.blitz.remote.txn.TxnTicket;
 
+/**
+ * @todo This is ugly as LoopBackMgr is static but LocalSpace is multi-instance (potentially) which could cause
+ * problems should a user create multiple LocalSpace instances. Needs a fix....
+ */
 public class TxnMgr implements TransactionManager, Serializable {
     private long theId;
-    private long theNextId;
-    private TxnControl theControl;
+
+    /*
+     * We only need this for the leases we provide, and if we're deserialized it's to handle transaction
+     * resolution only, no need to worry about leases. So we can keep this transient (good thing as it's not
+     * serializable).
+     */
+    private transient LocalSpace theSpace;
 
     public TxnMgr(long anId, LocalSpace aSpace) {
         theId = anId;
-        theControl = aSpace.getTxnControl();
+        LoopBackMgr.init(this);
+        theSpace = aSpace;
     }
 
     public TxnMgr(long anId, TxnControl aControl) {
         theId = anId;
-        theControl = aControl;
     }
 
     public ServerTransaction newTxn() {
         synchronized(this) {
-            return new ServerTransaction(this, theNextId++);
+            try {
+                TxnTicket myTicket = LoopBackMgr.get().create(Lease.FOREVER);
+                return new ServerTransaction(this, myTicket.getUID().getId());
+            } catch (Exception anE) {
+                throw new RuntimeException("Failed to create txn", anE);
+            }
         }
     }
 
@@ -47,14 +64,23 @@ public class TxnMgr implements TransactionManager, Serializable {
         return (int) (theId ^ (theId >>> 32));
     }
 
-    public Created create(long lease) throws LeaseDeniedException,
+    public Created create(long leaseTime) throws LeaseDeniedException,
                                              RemoteException {
-        throw new org.dancres.util.NotImplementedException();
+        assert(theSpace != null);
+
+        TxnTicket myTicket = LoopBackMgr.get().create(leaseTime);
+
+        Lease myLease =
+                ProxyFactory.newLeaseImpl(theSpace, theSpace.getServiceUuid(),
+                        myTicket.getUID(), myTicket.getLeaseTime());
+
+        return new TransactionManager.Created(myTicket.getUID().getId(), myLease);
     }
  
     public void join(long id, TransactionParticipant part, long crashCount)
         throws UnknownTransactionException, CannotJoinException,
                CrashCountException, RemoteException {
+        // Go silently so we don't break anything
     }
  
 
@@ -66,26 +92,26 @@ public class TxnMgr implements TransactionManager, Serializable {
     public void commit(long id)
         throws UnknownTransactionException, CannotCommitException,
                RemoteException {
-        theControl.prepareAndCommit(this, id);
+        LoopBackMgr.get().commit(id);
     }
  
     public void commit(long id, long waitFor)
         throws UnknownTransactionException, CannotCommitException,
                TimeoutExpiredException, RemoteException {
-        commit(id);
+        LoopBackMgr.get().commit(id, waitFor);
     }
  
 
     public void abort(long id)
         throws UnknownTransactionException, CannotAbortException,
                RemoteException {
-        theControl.abort(this, id);
+        LoopBackMgr.get().abort(id);
     }
  
     public void abort(long id, long waitFor)
         throws UnknownTransactionException, CannotAbortException,
                TimeoutExpiredException, RemoteException {
-        abort(id);
+        LoopBackMgr.get().abort(id, waitFor);
     }
 }
 

@@ -49,11 +49,11 @@ public class LoopBackMgr implements Reapable {
 
     private static LoopBackMgr theMgr;
 
-    static void init(TransactionManager aStub) {
+    public static void init(TransactionManager aStub) {
         theMgr = new LoopBackMgr(aStub);
     }
 
-    static LoopBackMgr get() {
+    public static LoopBackMgr get() {
         return theMgr;
     }
 
