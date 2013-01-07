@@ -3,16 +3,12 @@ package org.dancres.blitz.test;
 import net.jini.core.entry.Entry;
 import net.jini.core.lease.Lease;
 
-import net.jini.core.transaction.*;
 import net.jini.core.transaction.server.*;
 import net.jini.space.JavaSpace;
 
 import org.dancres.blitz.remote.LocalSpace;
 
-import org.dancres.blitz.txn.TxnGateway;
-import org.dancres.blitz.txn.TxnId;
-
-import org.dancres.blitz.mangler.*;
+import org.dancres.blitz.remote.TxnMgr;
 
 public class LeaseTest {
     public static void main(String args[]) {

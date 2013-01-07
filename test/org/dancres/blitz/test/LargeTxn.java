@@ -1,13 +1,12 @@
 package org.dancres.blitz.test;
 
 import org.dancres.blitz.remote.LocalSpace;
-import org.dancres.blitz.remote.BlitzServiceImpl;
 
 import net.jini.space.JavaSpace;
-import net.jini.core.transaction.Transaction;
 import net.jini.core.transaction.server.ServerTransaction;
 import net.jini.core.entry.Entry;
 import net.jini.core.lease.Lease;
+import org.dancres.blitz.remote.TxnMgr;
 
 public class LargeTxn {
     public static void main(String[] anArgs) throws Exception {

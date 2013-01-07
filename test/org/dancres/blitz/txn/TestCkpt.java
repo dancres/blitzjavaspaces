@@ -3,13 +3,12 @@ package org.dancres.blitz.txn;
 import net.jini.core.entry.Entry;
 import net.jini.core.lease.Lease;
 
-import net.jini.core.transaction.*;
 import net.jini.core.transaction.server.*;
 
 import org.dancres.blitz.remote.LocalSpace;
 
 import org.dancres.blitz.test.DummyEntry;
-import org.dancres.blitz.test.TxnMgr;
+import org.dancres.blitz.remote.TxnMgr;
 
 /**
    Delete all state and ensure that the config is setup for persistent logging.

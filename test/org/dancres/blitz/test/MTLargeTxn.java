@@ -1,14 +1,11 @@
 package org.dancres.blitz.test;
 
-import java.rmi.RemoteException;
 import net.jini.core.entry.Entry;
-import net.jini.core.entry.UnusableEntryException;
 import net.jini.core.lease.Lease;
-import net.jini.core.transaction.TransactionException;
-import net.jini.core.transaction.UnknownTransactionException;
 import net.jini.core.transaction.server.ServerTransaction;
 import net.jini.space.JavaSpace;
 import org.dancres.blitz.remote.LocalSpace;
+import org.dancres.blitz.remote.TxnMgr;
 
 public class MTLargeTxn {
     public MTLargeTxn() {

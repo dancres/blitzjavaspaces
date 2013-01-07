@@ -15,6 +15,7 @@ import net.jini.space.JavaSpace;
 
 import org.dancres.blitz.remote.LocalSpace;
 
+import org.dancres.blitz.remote.TxnMgr;
 import org.dancres.blitz.stats.*;
 
 import org.dancres.blitz.txn.TxnGateway;

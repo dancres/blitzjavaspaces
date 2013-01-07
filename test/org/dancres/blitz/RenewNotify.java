@@ -4,19 +4,14 @@ import java.io.Serializable;
 import java.rmi.MarshalledObject;
 
 import net.jini.core.entry.Entry;
-import net.jini.core.lease.Lease;
 
 import net.jini.core.event.RemoteEvent;
 import net.jini.core.event.RemoteEventListener;
-
-import net.jini.core.transaction.*;
-import net.jini.core.transaction.server.*;
 
 import org.dancres.blitz.mangler.*;
 
 import org.dancres.blitz.lease.SpaceUID;
 
-import org.dancres.blitz.test.TxnMgr;
 import org.dancres.blitz.test.TxnGatewayImpl;
 
 public class RenewNotify {

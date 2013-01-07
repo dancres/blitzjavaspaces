@@ -3,19 +3,15 @@ package org.dancres.blitz.test;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.rmi.RemoteException;
-import java.net.MalformedURLException;
-import java.io.IOException;
 
 import net.jini.space.JavaSpace;
-import net.jini.core.transaction.server.TransactionManager;
 import net.jini.core.transaction.server.ServerTransaction;
 import net.jini.core.transaction.TransactionException;
 import net.jini.core.lease.Lease;
-import net.jini.core.lease.LeaseDeniedException;
 import net.jini.core.entry.UnusableEntryException;
-import net.jini.lease.LeaseRenewalManager;
 
 import org.dancres.blitz.remote.LocalSpace;
+import org.dancres.blitz.remote.TxnMgr;
 
 /**
  */

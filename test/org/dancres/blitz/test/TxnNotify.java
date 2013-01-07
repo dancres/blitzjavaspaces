@@ -2,12 +2,9 @@ package org.dancres.blitz.test;
 
 import java.io.Serializable;
 
-import java.rmi.RemoteException;
 import java.rmi.MarshalledObject;
 
 import net.jini.core.lease.Lease;
-import net.jini.core.lease.LeaseDeniedException;
-import net.jini.core.transaction.*;
 import net.jini.core.transaction.server.*;
 
 import net.jini.core.event.RemoteEventListener;
@@ -19,7 +16,7 @@ import org.dancres.blitz.*;
 
 import org.dancres.blitz.mangler.*;
 
-import org.dancres.blitz.txn.*;
+import org.dancres.blitz.remote.TxnMgr;
 
 public class TxnNotify {
     public static void main(String args[]) {

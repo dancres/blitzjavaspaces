@@ -4,10 +4,10 @@ import org.dancres.blitz.remote.LocalSpace;
 import net.jini.space.JavaSpace;
 import net.jini.space.JavaSpace05;
 import net.jini.space.MatchSet;
-import net.jini.core.transaction.Transaction;
 import net.jini.core.transaction.server.ServerTransaction;
 import net.jini.core.lease.Lease;
 import net.jini.core.entry.Entry;
+import org.dancres.blitz.remote.TxnMgr;
 
 import java.util.Collection;
 import java.util.Collections;

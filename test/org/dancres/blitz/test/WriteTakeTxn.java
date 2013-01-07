@@ -8,6 +8,7 @@ import net.jini.core.transaction.server.*;
 
 import org.dancres.blitz.remote.LocalSpace;
 
+import org.dancres.blitz.remote.TxnMgr;
 import org.dancres.blitz.txn.TxnGateway;
 import org.dancres.blitz.txn.TxnId;
 

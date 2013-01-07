@@ -1,4 +1,4 @@
-package org.dancres.blitz.test;
+package org.dancres.blitz.remote;
 
 import java.io.Serializable;
 
@@ -9,8 +9,6 @@ import net.jini.core.lease.LeaseDeniedException;
 import net.jini.core.transaction.*;
 import net.jini.core.transaction.server.*;
 
-import org.dancres.blitz.remote.LocalSpace;
-import org.dancres.blitz.remote.ProxyFactory;
 import org.dancres.blitz.remote.txn.LoopBackMgr;
 import org.dancres.blitz.TxnControl;
 import org.dancres.blitz.remote.txn.TxnTicket;

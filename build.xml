@@ -771,7 +771,7 @@
 
   <target name="testfullnotify" depends="compile"
       description="test basic lease renewal">
-    <java classname="org.dancres.blitz.test.TxnNotify"
+    <java classname="org.dancres.blitz.remote.TxnNotify"
       classpathref="allclasses">
     </java>
   </target>

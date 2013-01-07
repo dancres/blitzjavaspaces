@@ -11,14 +11,13 @@ import net.jini.core.lease.Lease;
 import net.jini.core.event.RemoteEvent;
 import net.jini.core.event.RemoteEventListener;
 
-import net.jini.core.transaction.*;
 import net.jini.core.transaction.server.*;
 
 import net.jini.space.AvailabilityEvent;
 
 import org.dancres.blitz.mangler.*;
 
-import org.dancres.blitz.txn.*;
+import org.dancres.blitz.remote.TxnMgr;
 
 import org.dancres.blitz.SpaceImpl;
 

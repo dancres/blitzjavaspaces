@@ -1,21 +1,18 @@
 package org.dancres.blitz.test;
 
 import java.util.Random;
-import java.util.logging.Level;
 
 import net.jini.core.entry.Entry;
 import net.jini.core.lease.Lease;
 
-import net.jini.core.transaction.*;
 import net.jini.core.transaction.server.*;
 import net.jini.space.JavaSpace;
 
 import org.dancres.blitz.remote.LocalSpace;
 
+import org.dancres.blitz.remote.TxnMgr;
 import org.dancres.blitz.txn.TxnGateway;
 import org.dancres.blitz.txn.TxnId;
-import org.dancres.blitz.stats.Stat;
-import org.dancres.blitz.stats.StatsBoard;
 
 /**
    Transactionally beat on blitz.  Uses Blitz in an embedded format.
