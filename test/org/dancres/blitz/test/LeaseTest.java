@@ -8,7 +8,7 @@ import net.jini.space.JavaSpace;
 
 import org.dancres.blitz.remote.LocalSpace;
 
-import org.dancres.blitz.remote.TxnMgr;
+import org.dancres.blitz.remote.LocalTxnMgr;
 
 public class LeaseTest {
     public static void main(String args[]) {
@@ -79,7 +79,7 @@ public class LeaseTest {
 
         // First let's find out what's in the space
         System.out.println("what have we got?");
-        TxnMgr myMgr = new TxnMgr(1, aSpace.getTxnControl());
+        LocalTxnMgr myMgr = new LocalTxnMgr(1, aSpace.getTxnControl());
 
         ServerTransaction myTxn = myMgr.newTxn();
 

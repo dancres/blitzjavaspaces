@@ -5,7 +5,7 @@ import net.jini.core.lease.Lease;
 import net.jini.core.transaction.server.ServerTransaction;
 import net.jini.space.JavaSpace;
 import org.dancres.blitz.remote.LocalSpace;
-import org.dancres.blitz.remote.TxnMgr;
+import org.dancres.blitz.remote.LocalTxnMgr;
 
 public class MTLargeTxn {
     public MTLargeTxn() {
@@ -17,7 +17,7 @@ public class MTLargeTxn {
         
         LocalSpace myLocalSpace = new LocalSpace(new TxnGatewayImpl());        
         
-        TxnMgr myMgr = new TxnMgr(1, myLocalSpace);
+        LocalTxnMgr myMgr = new LocalTxnMgr(1, myLocalSpace);
         
         myThreads = Integer.parseInt(anArgs[0]);
         myOps = Integer.parseInt(anArgs[1]);
@@ -35,10 +35,10 @@ public class MTLargeTxn {
     private static class Beater extends Thread {
         private int _ops;
         private LocalSpace _space;
-        private TxnMgr _mgr;
+        private LocalTxnMgr _mgr;
         private Entry _template;
         
-        Beater(int anOps, LocalSpace aSpace, TxnMgr aMgr,
+        Beater(int anOps, LocalSpace aSpace, LocalTxnMgr aMgr,
                 Entry aTemplate) {
             _ops = anOps;
             _space = aSpace;

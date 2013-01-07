@@ -11,7 +11,7 @@ import net.jini.core.lease.Lease;
 import net.jini.core.entry.UnusableEntryException;
 
 import org.dancres.blitz.remote.LocalSpace;
-import org.dancres.blitz.remote.TxnMgr;
+import org.dancres.blitz.remote.LocalTxnMgr;
 
 /**
  */
@@ -21,7 +21,7 @@ public class Exists {
     private static final long SLEEP_TIME_ = 5 * 1000;
 
     private JavaSpace space_ = null;
-    private TxnMgr txnMgr_ = null;
+    private LocalTxnMgr txnMgr_ = null;
 
     private Thread threadOne_ = null;
     private Thread threadTwo_ = null;
@@ -30,7 +30,7 @@ public class Exists {
         LocalSpace mySpace = new LocalSpace(new TxnGatewayImpl());
 
         JavaSpace space = mySpace.getProxy();
-        TxnMgr txnMgr = new TxnMgr(1, mySpace);
+        LocalTxnMgr txnMgr = new LocalTxnMgr(1, mySpace);
 
         log_.info("Space: " + space);
         log_.info("TxnMgr: " + txnMgr);
@@ -41,7 +41,7 @@ public class Exists {
         mySpace.stop();
     }
 
-    public Exists(JavaSpace space, TxnMgr txnMgr) {
+    public Exists(JavaSpace space, LocalTxnMgr txnMgr) {
         space_ = space;
         txnMgr_ = txnMgr;
     }

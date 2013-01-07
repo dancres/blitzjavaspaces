@@ -16,7 +16,7 @@ import org.dancres.blitz.*;
 
 import org.dancres.blitz.mangler.*;
 
-import org.dancres.blitz.remote.TxnMgr;
+import org.dancres.blitz.remote.LocalTxnMgr;
 
 public class TxnNotify {
     public static void main(String args[]) {
@@ -43,7 +43,7 @@ public class TxnNotify {
                            new MarshalledObject(new Integer(12345)));
 
             System.out.println("Notify txn");
-            TxnMgr myMgr = new TxnMgr(1, mySpace.getTxnControl());
+            LocalTxnMgr myMgr = new LocalTxnMgr(1, mySpace.getTxnControl());
             ServerTransaction myTxn = myMgr.newTxn();
 
             mySpace.notify(myPackedTemplate, myTxn, new EventListener(),

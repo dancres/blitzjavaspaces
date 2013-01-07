@@ -17,7 +17,7 @@ import net.jini.space.AvailabilityEvent;
 
 import org.dancres.blitz.mangler.*;
 
-import org.dancres.blitz.remote.TxnMgr;
+import org.dancres.blitz.remote.LocalTxnMgr;
 
 import org.dancres.blitz.SpaceImpl;
 
@@ -28,7 +28,7 @@ public class VisibilityTest {
             System.out.println("Start space");
 
             SpaceImpl mySpace = new SpaceImpl(new TxnGatewayImpl());
-            TxnMgr myMgr = new TxnMgr(1, mySpace.getTxnControl());
+            LocalTxnMgr myMgr = new LocalTxnMgr(1, mySpace.getTxnControl());
 
             System.out.println("Prepare entry");
 

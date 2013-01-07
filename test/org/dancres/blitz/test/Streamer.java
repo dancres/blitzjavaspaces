@@ -15,7 +15,7 @@ import net.jini.space.JavaSpace;
 
 import org.dancres.blitz.remote.LocalSpace;
 
-import org.dancres.blitz.remote.TxnMgr;
+import org.dancres.blitz.remote.LocalTxnMgr;
 import org.dancres.blitz.stats.*;
 
 import org.dancres.blitz.txn.TxnGateway;
@@ -151,13 +151,13 @@ public class Streamer {
     }
 
     private static class Writer extends Thread {
-        private TxnMgr theTxnMgr;
+        private LocalTxnMgr theTxnMgr;
         private long theNextId;
         private int theIterations;
         private NotifyCount theCount;
 
         Writer(int anId, int anIterations) {
-            theTxnMgr = new TxnMgr(anId, theSpace);
+            theTxnMgr = new LocalTxnMgr(anId, theSpace);
             theIterations = anIterations;
         }
 
@@ -195,13 +195,13 @@ public class Streamer {
     }
 
     private static class Taker extends Thread {
-        private TxnMgr theTxnMgr;
+        private LocalTxnMgr theTxnMgr;
         private long theNextId;
         private int theIterations;
         private long thePause;
 
         Taker(int anId, int anIterations, long aPause) {
-            theTxnMgr = new TxnMgr(anId, theSpace);
+            theTxnMgr = new LocalTxnMgr(anId, theSpace);
             theIterations = anIterations;
             thePause = aPause;
         }

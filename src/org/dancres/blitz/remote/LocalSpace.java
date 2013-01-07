@@ -88,7 +88,7 @@ public class LocalSpace implements BlitzServer {
         init(null);
     }
 
-    public Uuid getServiceUuid() {
+    Uuid getServiceUuid() {
         return theUuid;
     }
 

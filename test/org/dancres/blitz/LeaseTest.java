@@ -15,7 +15,7 @@ import org.dancres.blitz.mangler.*;
 
 import org.dancres.blitz.lease.SpaceUID;
 
-import org.dancres.blitz.remote.TxnMgr;
+import org.dancres.blitz.remote.LocalTxnMgr;
 import org.dancres.blitz.test.TxnGatewayImpl;
 
 public class LeaseTest {
@@ -65,7 +65,7 @@ public class LeaseTest {
 
             System.out.println("Txn write renewal");
 
-            TxnMgr myMgr = new TxnMgr(1, mySpace.getTxnControl());
+            LocalTxnMgr myMgr = new LocalTxnMgr(1, mySpace.getTxnControl());
 
             ServerTransaction myTxn = myMgr.newTxn();
 

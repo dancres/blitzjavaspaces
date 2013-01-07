@@ -17,7 +17,7 @@ import org.dancres.blitz.remote.txn.TxnTicket;
  * @todo This is ugly as LoopBackMgr is static but LocalSpace is multi-instance (potentially) which could cause
  * problems should a user create multiple LocalSpace instances. Needs a fix....
  */
-public class TxnMgr implements TransactionManager, Serializable {
+public class LocalTxnMgr implements TransactionManager, Serializable {
     private long theId;
 
     /*
@@ -27,13 +27,13 @@ public class TxnMgr implements TransactionManager, Serializable {
      */
     private transient LocalSpace theSpace;
 
-    public TxnMgr(long anId, LocalSpace aSpace) {
+    public LocalTxnMgr(long anId, LocalSpace aSpace) {
         theId = anId;
         LoopBackMgr.init(this);
         theSpace = aSpace;
     }
 
-    public TxnMgr(long anId, TxnControl aControl) {
+    public LocalTxnMgr(long anId, TxnControl aControl) {
         theId = anId;
     }
 
@@ -49,8 +49,8 @@ public class TxnMgr implements TransactionManager, Serializable {
     }
 
     public boolean equals(Object anObject) {
-        if (anObject instanceof TxnMgr) {
-            TxnMgr myOther = (TxnMgr) anObject;
+        if (anObject instanceof LocalTxnMgr) {
+            LocalTxnMgr myOther = (LocalTxnMgr) anObject;
 
             return (myOther.theId == theId);
         }

@@ -10,7 +10,7 @@ import net.jini.space.JavaSpace;
 
 import org.dancres.blitz.remote.LocalSpace;
 
-import org.dancres.blitz.remote.TxnMgr;
+import org.dancres.blitz.remote.LocalTxnMgr;
 import org.dancres.blitz.txn.TxnGateway;
 import org.dancres.blitz.txn.TxnId;
 
@@ -22,7 +22,7 @@ public class AggressiveFill {
 
             LocalSpace myLocalSpace = new LocalSpace(new TxnGatewayImpl());
 
-            TxnMgr myMgr = new TxnMgr(1, myLocalSpace);
+            LocalTxnMgr myMgr = new LocalTxnMgr(1, myLocalSpace);
 
             System.out.println("Start space");
 

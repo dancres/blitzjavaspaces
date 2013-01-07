@@ -8,7 +8,7 @@ import net.jini.core.transaction.server.*;
 
 import org.dancres.blitz.remote.LocalSpace;
 
-import org.dancres.blitz.remote.TxnMgr;
+import org.dancres.blitz.remote.LocalTxnMgr;
 import org.dancres.blitz.txn.TxnGateway;
 import org.dancres.blitz.txn.TxnId;
 
@@ -25,7 +25,7 @@ public class WriteTakeTxn {
 
         LocalSpace mySpace = new LocalSpace(new TxnGatewayImpl());
 
-        TxnMgr myMgr = new TxnMgr(1, mySpace);
+        LocalTxnMgr myMgr = new LocalTxnMgr(1, mySpace);
 
         Entry myTemplate = new DummyEntry("rhubarb");
 

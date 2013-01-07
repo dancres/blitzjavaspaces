@@ -7,7 +7,7 @@ import net.jini.core.transaction.server.*;
 
 import org.dancres.blitz.remote.LocalSpace;
 
-import org.dancres.blitz.remote.TxnMgr;
+import org.dancres.blitz.remote.LocalTxnMgr;
 
 public class TxnResolve {
 
@@ -15,7 +15,7 @@ public class TxnResolve {
 
         LocalSpace mySpace = new LocalSpace(new TxnGatewayImpl());
         
-        TxnMgr myMgr = new TxnMgr(1, mySpace);
+        LocalTxnMgr myMgr = new LocalTxnMgr(1, mySpace);
         
         ServerTransaction tx = myMgr.newTxn();
         
@@ -49,10 +49,10 @@ public class TxnResolve {
 
     private static class Aborter extends Thread {
         private LocalSpace theSpace;
-        private TxnMgr theMgr;
+        private LocalTxnMgr theMgr;
         private long theId;
 
-        Aborter(LocalSpace aSpace, TxnMgr aMgr, long aTxnId) {
+        Aborter(LocalSpace aSpace, LocalTxnMgr aMgr, long aTxnId) {
             theSpace = aSpace;
             theMgr = aMgr;
             theId = aTxnId;

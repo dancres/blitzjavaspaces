@@ -7,7 +7,7 @@ import net.jini.space.JavaSpace;
 
 import org.dancres.blitz.remote.LocalSpace;
 
-import org.dancres.blitz.remote.TxnMgr;
+import org.dancres.blitz.remote.LocalTxnMgr;
 
 public class TxnAbort {
 
@@ -17,7 +17,7 @@ public class TxnAbort {
 
         JavaSpace mySpace = myLocalSpace.getProxy();
 
-        TxnMgr myMgr = new TxnMgr(1, myLocalSpace);
+        LocalTxnMgr myMgr = new LocalTxnMgr(1, myLocalSpace);
         
         ServerTransaction tx = myMgr.newTxn();
         

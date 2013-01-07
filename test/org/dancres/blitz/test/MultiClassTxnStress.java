@@ -6,7 +6,7 @@ import net.jini.core.transaction.server.ServerTransaction;
 import net.jini.core.transaction.server.TransactionConstants;
 import net.jini.space.JavaSpace05;
 import org.dancres.blitz.remote.LocalSpace;
-import org.dancres.blitz.remote.TxnMgr;
+import org.dancres.blitz.remote.LocalTxnMgr;
 import org.dancres.blitz.txn.TxnGateway;
 import org.dancres.blitz.txn.TxnId;
 
@@ -48,7 +48,7 @@ public class MultiClassTxnStress {
         theBeaters = new Stresser[aNumBeaters];
 
         for (int i = 0; i < aNumBeaters; i++) {
-            TxnMgr myMgr = new TxnMgr(i, myLocalSpace);
+            LocalTxnMgr myMgr = new LocalTxnMgr(i, myLocalSpace);
             theBeaters[i] = new Stresser(myMgr, myLocalSpace, aPoolSize,
                                          aPause, isDebug);
 
@@ -95,7 +95,7 @@ public class MultiClassTxnStress {
     }
 
     private class Stresser implements Runnable {
-        private TxnMgr theTxnMgr;
+        private LocalTxnMgr theTxnMgr;
         private LocalSpace theSpace;
         private Random theRNG = new Random();
         private int thePoolSize;
@@ -107,7 +107,7 @@ public class MultiClassTxnStress {
         */
         private long theTxns;
 
-        Stresser(TxnMgr aMgr, LocalSpace aSpace, int aPoolSize, long aPause,
+        Stresser(LocalTxnMgr aMgr, LocalSpace aSpace, int aPoolSize, long aPause,
                  boolean debug) {
             theTxnMgr = aMgr;
             theSpace = aSpace;

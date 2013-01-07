@@ -6,7 +6,7 @@ import net.jini.space.JavaSpace;
 import net.jini.core.transaction.server.ServerTransaction;
 import net.jini.core.entry.Entry;
 import net.jini.core.lease.Lease;
-import org.dancres.blitz.remote.TxnMgr;
+import org.dancres.blitz.remote.LocalTxnMgr;
 
 public class LargeTxn {
     public static void main(String[] anArgs) throws Exception {
@@ -14,7 +14,7 @@ public class LargeTxn {
 
         JavaSpace mySpace = myLocalSpace.getProxy();
 
-        TxnMgr myMgr = new TxnMgr(1, myLocalSpace);
+        LocalTxnMgr myMgr = new LocalTxnMgr(1, myLocalSpace);
 
         ServerTransaction tx = myMgr.newTxn();
 

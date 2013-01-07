@@ -7,7 +7,7 @@ import net.jini.space.MatchSet;
 import net.jini.core.transaction.server.ServerTransaction;
 import net.jini.core.lease.Lease;
 import net.jini.core.entry.Entry;
-import org.dancres.blitz.remote.TxnMgr;
+import org.dancres.blitz.remote.LocalTxnMgr;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -18,7 +18,7 @@ public class TxnLockContents {
 
         JavaSpace mySpace = myLocalSpace.getProxy();
 
-        TxnMgr myMgr = new TxnMgr(1, myLocalSpace);
+        LocalTxnMgr myMgr = new LocalTxnMgr(1, myLocalSpace);
 
         ServerTransaction tx = myMgr.newTxn();
 

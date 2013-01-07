@@ -7,8 +7,8 @@ import net.jini.core.transaction.server.*;
 
 import org.dancres.blitz.remote.LocalSpace;
 
+import org.dancres.blitz.remote.LocalTxnMgr;
 import org.dancres.blitz.test.DummyEntry;
-import org.dancres.blitz.remote.TxnMgr;
 
 /**
    Delete all state and ensure that the config is setup for persistent logging.
@@ -36,7 +36,7 @@ public class TestCkpt {
 
         LocalSpace mySpace = new LocalSpace(new TxnGatewayImpl());
 
-        TxnMgr myMgr = new TxnMgr(1, mySpace);
+        LocalTxnMgr myMgr = new LocalTxnMgr(1, mySpace);
 
         ServerTransaction myTxn = myMgr.newTxn();
 
