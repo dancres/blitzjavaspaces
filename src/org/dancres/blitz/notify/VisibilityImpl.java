@@ -1,7 +1,6 @@
 package org.dancres.blitz.notify;
 
 import java.io.IOException;
-import java.io.Serializable;
 
 import java.rmi.MarshalledObject;
 import java.rmi.RemoteException;
@@ -16,11 +15,10 @@ import net.jini.core.event.UnknownEventException;
 
 import net.jini.core.transaction.TransactionException;
 
-import net.jini.space.AvailabilityEvent;
 import net.jini.space.JavaSpace;
 
+import org.dancres.blitz.txn.TxnDispatcher;
 import org.dancres.blitz.txn.TxnId;
-import org.dancres.blitz.txn.TxnManager;
 
 import org.dancres.blitz.mangler.MangledEntry;
 
@@ -344,7 +342,7 @@ public class VisibilityImpl extends EventGeneratorBase {
              lock
             */
             if (mySnapshot != null)
-                TxnManager.get().log(mySnapshot);
+                TxnDispatcher.get().log(mySnapshot);
         } catch (TransactionException aTE) {
             RemoteEventDispatcher.theLogger.log(Level.SEVERE,
                 "Couldn't update EventGenerator", aTE);

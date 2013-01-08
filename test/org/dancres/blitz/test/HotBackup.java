@@ -37,7 +37,7 @@ public class HotBackup {
 
             System.out.println("Backup");
 
-            TxnManager.get().hotBackup(args[1]);
+            TxnDispatcher.get().hotBackup(args[1]);
 
             System.out.println("Do exit");
 

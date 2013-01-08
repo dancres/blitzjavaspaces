@@ -21,7 +21,7 @@ import org.dancres.blitz.mangler.MangledEntry;
 import org.dancres.blitz.oid.OID;
 import org.dancres.blitz.stats.StatsBoard;
 import org.dancres.blitz.txn.TxnState;
-import org.dancres.blitz.txn.TxnManager;
+import org.dancres.blitz.txn.TxnDispatcher;
 import org.dancres.blitz.util.QueueStatGenerator;
 
 /**
@@ -108,7 +108,7 @@ public class EventQueue implements ActiveObject {
      * write method only returns to user-code once all blocking *IfExists have seen the event.
      */
     public void add(QueueEvent anEvent, boolean aWaitIndicator) {
-        if (TxnManager.get().isRecovery())
+        if (TxnDispatcher.get().isRecovery())
             return;
 
         // No-one listening, no point in doing work

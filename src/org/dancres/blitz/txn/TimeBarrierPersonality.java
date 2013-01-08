@@ -25,15 +25,15 @@ class TimeBarrierPersonality implements StoragePersonality {
         theModel = aModel;
         theLogDir = aLogDir;
 
-        TxnManager.theLogger.log(Level.INFO, "TimeBarrierPersonality");
+        TxnDispatcher.theLogger.log(Level.INFO, "TimeBarrierPersonality");
 
-        TxnManager.theLogger.log(Level.INFO, "Max logs before sync: " + 
+        TxnDispatcher.theLogger.log(Level.INFO, "Max logs before sync: " +
                           theModel.getMaxLogsBeforeSync());
-        TxnManager.theLogger.log(Level.INFO, "Reset log stream: " +
+        TxnDispatcher.theLogger.log(Level.INFO, "Reset log stream: " +
                           theModel.shouldResetLogStream());
 
         if (theModel.shouldCleanLogs()) {
-            TxnManager.theLogger.log(Level.WARNING,
+            TxnDispatcher.theLogger.log(Level.WARNING,
                                      "*** Automatically cleaning logs *** [EXPERIMENTAL]");
         }
 

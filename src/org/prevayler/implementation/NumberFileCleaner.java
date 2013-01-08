@@ -1,12 +1,9 @@
 package org.prevayler.implementation;
 
-import org.dancres.blitz.txn.TxnManager;
-
 import java.io.File;
 import java.io.FileFilter;
 
 import java.util.Arrays;
-import java.util.logging.Level;
 
 /**
    <p>Cleans up old log files and snapshots.  Helper class produced from a
@@ -29,7 +26,7 @@ class NumberFileCleaner {
 
         /*
         for (int i = (myFiles.length -1); i >-1; i--) {
-            TxnManager.theLogger.log(Level.SEVERE, "Ordered: " + myFiles[i]);
+            TxnDispatcher.theLogger.log(Level.SEVERE, "Ordered: " + myFiles[i]);
         }
         */
 
@@ -37,7 +34,7 @@ class NumberFileCleaner {
 
         if (myLastSnapshot != -1) {
             for (int i = (myLastSnapshot - 1); i > -1; i--) {
-                // TxnManager.theLogger.log(Level.SEVERE, "Delete: " + myFiles[i]);
+                // TxnDispatcher.theLogger.log(Level.SEVERE, "Delete: " + myFiles[i]);
                 myFiles[i].delete();
             }
         }

@@ -9,11 +9,8 @@ import net.jini.core.transaction.TransactionException;
 import net.jini.core.transaction.UnknownTransactionException;
 import net.jini.core.transaction.server.TransactionConstants;
 
-import org.dancres.blitz.disk.DiskTxn;
 import org.dancres.blitz.notify.EventQueue;
 import org.dancres.blitz.notify.QueueEvent;
-import org.dancres.blitz.task.Task;
-import org.dancres.blitz.task.Tasks;
 
 /*
  * We only need to post QueueEvent.TRANSACTION_ENDED during live work, not
@@ -22,7 +19,7 @@ import org.dancres.blitz.task.Tasks;
  * the event because they were registered with a null transaction.
  *
  * Given the above, we can post the event from doFinalize which will be
- * called in TxnManager as part of "live" operations.  This neatly ensures
+ * called in TxnDispatcher as part of "live" operations.  This neatly ensures
  * we will only do this work outside of recovery.
  *
  * We will post TRANSACTION_ENDED even for null transactions and for each
@@ -83,7 +80,7 @@ public class TxnState implements java.io.Serializable {
     public void add(TxnOp anOp) throws TransactionException {
         synchronized (this) {
             if (theState != TransactionConstants.ACTIVE) {
-                TxnManager.theLogger.log(Level.SEVERE,
+                TxnDispatcher.theLogger.log(Level.SEVERE,
                     "Txn not in active state at addOp");
                 throw new TransactionException("Transaction no longer active");
             } else {
@@ -161,7 +158,7 @@ public class TxnState implements java.io.Serializable {
 
         synchronized(this) {
             if (theState != TransactionConstants.PREPARED) {
-                TxnManager.theLogger.log(Level.SEVERE,
+                TxnDispatcher.theLogger.log(Level.SEVERE,
                     "Txn not prepared before commit");
                 throw new UnknownTransactionException();
             }
@@ -200,7 +197,7 @@ public class TxnState implements java.io.Serializable {
             // myTxn = myTxn.append(myOp.toString() + " ");
         }
 
-        // TxnManager.theLogger.log(Level.INFO, myTxn.toString());
+        // TxnDispatcher.theLogger.log(Level.INFO, myTxn.toString());
     }
 
     void abort()
@@ -215,7 +212,7 @@ public class TxnState implements java.io.Serializable {
             */
             if ((theState == TransactionConstants.COMMITTED) ||
                 (theState == TransactionConstants.ABORTED)) {
-                TxnManager.theLogger.log(Level.SEVERE,
+                TxnDispatcher.theLogger.log(Level.SEVERE,
                     "Txn already finalized");
                 throw new UnknownTransactionException();
             }
@@ -286,7 +283,7 @@ public class TxnState implements java.io.Serializable {
     public void test() throws TransactionException {
         synchronized (this) {
             if (theState != TransactionConstants.ACTIVE) {
-                TxnManager.theLogger.log(Level.SEVERE,
+                TxnDispatcher.theLogger.log(Level.SEVERE,
                     "Txn not in active state at addOp");
                 throw new TransactionException("Transaction no longer active");
             }

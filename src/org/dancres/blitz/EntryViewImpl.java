@@ -9,7 +9,7 @@ import net.jini.core.transaction.UnknownTransactionException;
 
 import org.dancres.blitz.entry.*;
 import org.dancres.blitz.mangler.MangledEntry;
-import org.dancres.blitz.txn.TxnManager;
+import org.dancres.blitz.txn.TxnDispatcher;
 import org.dancres.blitz.txn.TxnState;
 import org.dancres.blitz.txnlock.LockMgr;
 import org.dancres.blitz.txnlock.TxnLock;
@@ -48,7 +48,7 @@ class EntryViewImpl implements EntryView {
 
         shouldUpdate = doUpdate;
 
-        theTxn = TxnManager.get().resolve(aTxn);
+        theTxn = TxnDispatcher.get().resolve(aTxn);
 
         /*
           Basic process is to assemble a set of fully matching Entry UID's which we
@@ -125,7 +125,7 @@ class EntryViewImpl implements EntryView {
 
         if (theTxn.isNull()) {
             try {
-                TxnManager.get().prepareAndCommit(theTxn);
+                TxnDispatcher.get().prepareAndCommit(theTxn);
             } catch (UnknownTransactionException aUTE) {
                 /*
                   Don't care much...if we got here, we're defining state

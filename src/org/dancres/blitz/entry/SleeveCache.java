@@ -24,7 +24,7 @@ import org.dancres.blitz.arc.ArcCache;
 import org.dancres.blitz.arc.CacheBlockDescriptor;
 import org.dancres.blitz.arc.RecoverySummary;
 
-import org.dancres.blitz.txn.TxnManager;
+import org.dancres.blitz.txn.TxnDispatcher;
 
 import org.dancres.blitz.entry.ci.CacheIndexer;
 
@@ -712,7 +712,7 @@ class SleeveCache implements StatGenerator {
 
                     if (myInfo != null) {
                         try {
-                            TxnManager.get().log(new ForcedCommit(myInfo));
+                            TxnDispatcher.get().log(new ForcedCommit(myInfo));
                         } catch (TransactionException aTE) {
                             IOException myIOE = new IOException("Eeek failed to delete Entry");
                             myIOE.initCause(aTE);

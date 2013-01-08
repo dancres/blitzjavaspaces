@@ -12,9 +12,9 @@ class CheckpointTask implements Task {
 
     public void run() {
         try {
-            TxnManager.get().requestAsyncCheckpoint();
+            TxnDispatcher.get().requestAsyncCheckpoint();
         } catch (IOException anIOE) {
-            TxnManager.theLogger.log(Level.SEVERE,
+            TxnDispatcher.theLogger.log(Level.SEVERE,
                                      "Checkpoint failed to complete",
                                      anIOE);
             theIOE = anIOE;
@@ -32,7 +32,7 @@ class CheckpointTask implements Task {
                 try {
                     wait();
                 } catch (InterruptedException anIE) {
-                    TxnManager.theLogger.log(Level.SEVERE,
+                    TxnDispatcher.theLogger.log(Level.SEVERE,
                                              "Failed to wait for checkpoint completion",
                                              anIE);
                 }

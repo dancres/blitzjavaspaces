@@ -13,7 +13,7 @@ import org.prevayler.PrevalentSystem;
    place the snapshot on disk - should only be called once all dirty state
    (if any) has been flushed to disk.
 
-   @see org.dancres.blitz.txn.TxnManager
+   @see org.dancres.blitz.txn.TxnDispatcher
  */
 class SnapshotterImpl implements Snapshotter {
     private File theTemp;

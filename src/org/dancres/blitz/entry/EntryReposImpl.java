@@ -21,7 +21,7 @@ import org.dancres.blitz.arc.RecoverySummary;
 import org.dancres.blitz.lease.Reapable;
 import org.dancres.blitz.lease.ReapFilter;
 
-import org.dancres.blitz.txn.TxnManager;
+import org.dancres.blitz.txn.TxnDispatcher;
 
 class EntryReposImpl implements EntryReposRecovery, Reapable {
     private static Logger theLogger =
@@ -65,7 +65,7 @@ class EntryReposImpl implements EntryReposRecovery, Reapable {
        responsibility of <code>EntryRepositoryFactory</code>
      */
     private void logInstanceBarrier() {
-        if (TxnManager.get().isRecovery()) {
+        if (TxnDispatcher.get().isRecovery()) {
             return;
         }
 
@@ -87,7 +87,7 @@ class EntryReposImpl implements EntryReposRecovery, Reapable {
                       If that has happened, chances are we've done a checkpoint
                       and a record will have been emitted anyways.
                     */
-                    TxnManager.get().tryLog(new CountAction(theStore.getType(),
+                    TxnDispatcher.get().tryLog(new CountAction(theStore.getType(),
                                                             theSleeveCache.getCounters().getInstanceCount()), 100);
                 } catch (Exception anE) {
                     theLogger.log(Level.SEVERE, "Failed to log instance count",

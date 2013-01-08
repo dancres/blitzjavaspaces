@@ -40,7 +40,7 @@ class AbortCommand implements Command {
               unaware of which can happen under various circumstances 
               (including a buggy TxnMgr) but it's okay to swallow that silently.
             */
-            TxnManager.theLogger.log(Level.FINE,
+            TxnDispatcher.theLogger.log(Level.FINE,
                                      "Abort failed - transaction is missing",
                                      aUTE);
         }

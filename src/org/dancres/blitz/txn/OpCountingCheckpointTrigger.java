@@ -53,7 +53,7 @@ class OpCountingCheckpointTrigger implements CheckpointTrigger, Runnable {
             theCheckpointThread.join();
             theCheckpointThread = null;
         } catch (InterruptedException anIE) {
-            TxnManager.theLogger.log(Level.SEVERE,
+            TxnDispatcher.theLogger.log(Level.SEVERE,
                                      "Failed to wait for checkpointer",
                                      anIE);
         }
@@ -68,7 +68,7 @@ class OpCountingCheckpointTrigger implements CheckpointTrigger, Runnable {
                     try {
                         wait();
                     } catch (InterruptedException anIE) {
-                        TxnManager.theLogger.log(Level.INFO,
+                        TxnDispatcher.theLogger.log(Level.INFO,
                                                  "Checkpointer interrupted",
                                                  anIE);
                     }
@@ -81,7 +81,7 @@ class OpCountingCheckpointTrigger implements CheckpointTrigger, Runnable {
                 try {
                     theCheckpointer.sync();
                 } catch (IOException anIOE) {
-                    TxnManager.theLogger.log(Level.SEVERE,
+                    TxnDispatcher.theLogger.log(Level.SEVERE,
                                              "Checkpoint failed",
                                              anIOE);
                 }

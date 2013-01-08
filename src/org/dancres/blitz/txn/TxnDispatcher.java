@@ -28,7 +28,7 @@ import org.prevayler.implementation.Snapshotter;
 
 /**
    Responsible for tracking/managing transactions.  This responsiblity is split
-   across two classes.  TxnManager handles control aspects whilst
+   across two classes.  TxnDispatcher handles control aspects whilst
    TxnDispatcherState tracks the transactional information. <P>
 
    We make our lives a little easier by making null transactions look like a
@@ -49,7 +49,7 @@ import org.prevayler.implementation.Snapshotter;
    write lock must be asserted BEFORE invoking snapshot to avoid deadlock.
    The snapshot is only written to disk after Disk.sync completes.<P>
 
-   The actual workings are a little different from the norm with TxnManager
+   The actual workings are a little different from the norm with TxnDispatcher
    generating commands which act upon TxnDispatcherState.  Certain methods don't
    generate commands at all because they don't represent a true state change.
    Typically these methods are related to introducing new initial state into
@@ -66,10 +66,10 @@ import org.prevayler.implementation.Snapshotter;
    @todo Micro-optimization - we don't need to write an abort record if
    the txn isn't prepared - just clear it out!
  */
-public class TxnManager {
+public class TxnDispatcher {
 
     static Logger theLogger =
-        Logging.newLogger("org.dancres.blitz.TxnManager", Level.INFO);
+        Logging.newLogger("org.dancres.blitz.TxnDispatcher", Level.INFO);
 
     private static boolean LOG_CKPTS;
 
@@ -85,7 +85,7 @@ public class TxnManager {
         }
     }
 
-    private static TxnManager theManager;
+    private static TxnDispatcher theManager;
 
     private TxnDispatcherState theManagerState;
 
@@ -107,7 +107,7 @@ public class TxnManager {
         if (theManager != null) {
             return;
         } else {
-            theManager = new TxnManager(aGateway);
+            theManager = new TxnDispatcher(aGateway);
             theManager.recover();
         }
     }
@@ -116,11 +116,11 @@ public class TxnManager {
         theManager = null;
     }
     
-    public static synchronized TxnManager get() {
+    public static synchronized TxnDispatcher get() {
         return theManager;
     }
 
-    private TxnManager(TxnGateway aGateway) {
+    private TxnDispatcher(TxnGateway aGateway) {
         theGateway = aGateway;
     }
 

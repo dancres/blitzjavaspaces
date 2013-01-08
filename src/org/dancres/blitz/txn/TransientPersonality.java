@@ -1,7 +1,5 @@
 package org.dancres.blitz.txn;
 
-import java.io.File;
-
 import java.util.logging.Level;
 
 import org.prevayler.implementation.NullPrevayler;
@@ -16,7 +14,7 @@ class TransientPersonality implements StoragePersonality {
     TransientPersonality(String aLogDir) {
         theLogDir = aLogDir;
 
-        TxnManager.theLogger.log(Level.INFO, "TransientPersonality");
+        TxnDispatcher.theLogger.log(Level.INFO, "TransientPersonality");
 
         destroy();
 

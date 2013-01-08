@@ -49,7 +49,7 @@ public class TestCkpt {
 
             myTxn.commit();
 
-            TxnManager.get().requestAsyncCheckpoint();
+            TxnDispatcher.get().requestAsyncCheckpoint();
         }
 
         mySpace.stop();

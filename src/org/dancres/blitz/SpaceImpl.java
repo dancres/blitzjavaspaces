@@ -35,7 +35,7 @@ import org.dancres.blitz.notify.QueueEvent;
 import org.dancres.blitz.lease.SpaceUID;
 import org.dancres.blitz.lease.LeaseBounds;
 
-import org.dancres.blitz.txn.TxnManager;
+import org.dancres.blitz.txn.TxnDispatcher;
 import org.dancres.blitz.txn.TxnState;
 import org.dancres.blitz.txn.TxnGateway;
 
@@ -111,11 +111,11 @@ public class SpaceImpl {
 
         LifecycleRegistry.init();
 
-        TxnManager.init(aGateway);
+        TxnDispatcher.init(aGateway);
 
         EventQueue.get();
         
-        // Activate threads etc. only after TxnManager is initialised so
+        // Activate threads etc. only after TxnDispatcher is initialised so
         // state has been recovered/is stable.
         //
         ActiveObjectRegistry.startAll();
@@ -131,7 +131,7 @@ public class SpaceImpl {
                              long aLeaseTime)
         throws IOException, TransactionException {
 
-        TxnState myJiniTxn = TxnManager.get().resolve(aTxn);
+        TxnState myJiniTxn = TxnDispatcher.get().resolve(aTxn);
 
         long myLeaseTime =
             Time.getAbsoluteTime(LeaseBounds.boundWrite(aLeaseTime));
@@ -188,7 +188,7 @@ public class SpaceImpl {
 
         // For null transactions we must issue the commit
         if (myJiniTxn.isNull())
-            TxnManager.get().prepareAndCommit(myJiniTxn);
+            TxnDispatcher.get().prepareAndCommit(myJiniTxn);
 
         SpaceUID mySUID = new SpaceEntryUID(anEntry.getType(), myOID);
         return new WriteTicketImpl(mySUID, myLeaseTime);
@@ -200,7 +200,7 @@ public class SpaceImpl {
 
         MangledEntry myEntry = null;
 
-        TxnState myJiniTxn = TxnManager.get().resolve(aTxn);
+        TxnState myJiniTxn = TxnDispatcher.get().resolve(aTxn);
 
         EntryRepository myRepos =
             EntryRepositoryFactory.get().find(anEntry.getType());
@@ -274,14 +274,14 @@ public class SpaceImpl {
             throw new TransactionException("Search interrupted");
         } catch (TransactionException aTE) {
             if (myJiniTxn.isNull())
-                TxnManager.get().abort(myJiniTxn);
+                TxnDispatcher.get().abort(myJiniTxn);
 
             throw aTE;
         }
 
         // If we started the txn we MUST finish it, entry or not
         if (myJiniTxn.isNull()) {
-            TxnManager.get().prepareAndCommit(myJiniTxn);
+            TxnDispatcher.get().prepareAndCommit(myJiniTxn);
         }
 
         return myEntry;
@@ -324,7 +324,7 @@ public class SpaceImpl {
 
         if (aTxn != null) {
             try {
-                myState = TxnManager.get().getTxnFor(aTxn, false);
+                myState = TxnDispatcher.get().getTxnFor(aTxn, false);
             } catch (UnknownTransactionException aUTE) {
                 throw new TransactionException();
             }
@@ -350,7 +350,7 @@ public class SpaceImpl {
 
         if (aTxn != null) {
             try {
-                myState = TxnManager.get().getTxnFor(aTxn, false);
+                myState = TxnDispatcher.get().getTxnFor(aTxn, false);
             } catch (UnknownTransactionException aUTE) {
                 throw new TransactionException();
             }
@@ -410,7 +410,7 @@ public class SpaceImpl {
 
         ArrayList myTickets = new ArrayList();
 
-        TxnState myJiniTxn = TxnManager.get().resolve(aTxn);
+        TxnState myJiniTxn = TxnDispatcher.get().resolve(aTxn);
 
         WriteEscortImpl myEscort = new WriteEscortImpl(myJiniTxn);
 
@@ -479,7 +479,7 @@ public class SpaceImpl {
         }
 
         if (myJiniTxn.isNull()) {
-            TxnManager.get().prepareAndCommit(myJiniTxn);
+            TxnDispatcher.get().prepareAndCommit(myJiniTxn);
         }
 
         return myTickets;
@@ -491,7 +491,7 @@ public class SpaceImpl {
                       long aLimit)
          throws TransactionException, IOException {
 
-         TxnState myJiniTxn = TxnManager.get().resolve(aTxn);
+         TxnState myJiniTxn = TxnDispatcher.get().resolve(aTxn);
 
          BulkMatchTask myVisitor =
              new BulkTakeVisitor(aTemplates, myJiniTxn, aLimit,
@@ -542,7 +542,7 @@ public class SpaceImpl {
              throw new TransactionException("Search interrupted");
          } finally {
              if (myJiniTxn.isNull())
-                 TxnManager.get().prepareAndCommit(myJiniTxn);
+                 TxnDispatcher.get().prepareAndCommit(myJiniTxn);
          }
      }
 
@@ -563,7 +563,7 @@ public class SpaceImpl {
             theLogger.log(Level.INFO, myStats[i].getId() + ", " + myStats[i]);
         }
 
-        TxnManager.halt();
+        TxnDispatcher.halt();
 
         Disk.sync();
 
@@ -590,12 +590,12 @@ public class SpaceImpl {
         // SearchTasks.get().destroy();
 
         // Abort all transactions to release locks
-        TxnManager.get().abortAll();
+        TxnDispatcher.get().abortAll();
 
         EntryRepositoryFactory.get().deleteAllEntrys();
 
         // Checkpoint
-        TxnManager.get().requestSyncCheckpoint();
+        TxnDispatcher.get().requestSyncCheckpoint();
 
         EntryRepositoryFactory.get().deleteAllRepos();
     }

@@ -26,20 +26,20 @@ class PersistentPersonality implements StoragePersonality {
         theModel = aModel;
         theLogDir = aLogDir;
 
-        TxnManager.theLogger.log(Level.INFO, "PersistentPersonality");
-        TxnManager.theLogger.log(Level.INFO, "Max logs before sync: " + 
+        TxnDispatcher.theLogger.log(Level.INFO, "PersistentPersonality");
+        TxnDispatcher.theLogger.log(Level.INFO, "Max logs before sync: " +
                           theModel.getMaxLogsBeforeSync());
-        TxnManager.theLogger.log(Level.INFO, "Reset log stream: " +
+        TxnDispatcher.theLogger.log(Level.INFO, "Reset log stream: " +
                           theModel.shouldResetLogStream());
-        TxnManager.theLogger.log(Level.INFO, "Write barrier window: " +
+        TxnDispatcher.theLogger.log(Level.INFO, "Write barrier window: " +
                           theModel.getBatchWriteWindowSizeMs() + ", " + theModel.getBatchWriteWindowSizeNs());
 
         if (!theModel.dontUseExperimentalBatcher())
-                TxnManager.theLogger.log(Level.INFO,
+                TxnDispatcher.theLogger.log(Level.INFO,
                                          "*** Experimental batcher enabled ***");
 
         if (theModel.shouldCleanLogs()) {
-            TxnManager.theLogger.log(Level.WARNING,
+            TxnDispatcher.theLogger.log(Level.WARNING,
                                      "*** Automatically cleaning logs *** [EXPERIMENTAL]");
         }
 

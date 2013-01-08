@@ -30,8 +30,8 @@ import org.dancres.blitz.oid.Allocator;
 import org.dancres.blitz.oid.OID;
 import org.dancres.blitz.oid.OIDFactory;
 
+import org.dancres.blitz.txn.TxnDispatcher;
 import org.dancres.blitz.txn.TxnState;
-import org.dancres.blitz.txn.TxnManager;
 import org.dancres.blitz.txn.TxnOp;
 
 import org.dancres.blitz.mangler.MangledEntry;
@@ -256,7 +256,7 @@ class EventGeneratorFactory implements Syncable {
             registration
          */
         try {
-            TxnManager.get().log(new RegistrationOp(aGen.getMemento()));
+            TxnDispatcher.get().log(new RegistrationOp(aGen.getMemento()));
         } catch (TransactionException anE) {
             IOException myException =
                 new IOException("Failed to log registration");
@@ -382,7 +382,7 @@ class EventGeneratorFactory implements Syncable {
             TxnOp myAction = (TxnOp) myJumps.get(i);
 
             try {
-                TxnManager.get().log(myAction);
+                TxnDispatcher.get().log(myAction);
             } catch (TransactionException aTE) {
                 EventQueue.theLogger.log(Level.SEVERE,
                                          "Failed to log restart jump", aTE);

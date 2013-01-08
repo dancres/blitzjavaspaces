@@ -6,7 +6,6 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,10 +21,10 @@ import org.prevayler.SnapshotContributor;
 
 /**
  * Responsible for tracking/managing transactions.  This responsiblity is split
- * across two classes.  TxnManager handles control aspects whilst
+ * across two classes.  TxnDispatcher handles control aspects whilst
  * TxnDispatcherState tracks the transactional information. <P>
  *
- * @see org.dancres.blitz.txn.TxnManager
+ * @see TxnDispatcher
  */
 class TxnDispatcherState implements PrevalentSystem {
     static final long serialVersionUID = -5650181362477845180L;
@@ -165,7 +164,7 @@ class TxnDispatcherState implements PrevalentSystem {
           will be no user checkpoint data so we just ignore those fields.
          */
         if (!(myFirst instanceof LogVersion)) {
-            TxnManager.theLogger.log(Level.SEVERE, "Upgrading old transaction log");
+            TxnDispatcher.theLogger.log(Level.SEVERE, "Upgrading old transaction log");
             isUpgrade = true;
             theClock = (AlarmClock) myFirst;
         } else {
@@ -228,7 +227,7 @@ class TxnDispatcherState implements PrevalentSystem {
                 try {
                     aGateway.join(anId);
                 } catch (Exception anException) {
-                    TxnManager.theLogger.log(Level.SEVERE,
+                    TxnDispatcher.theLogger.log(Level.SEVERE,
                             "Failed to join txn" +
                                     anId, anException);
 

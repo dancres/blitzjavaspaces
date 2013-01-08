@@ -26,7 +26,7 @@ public class TxnStatGenerator implements StatGenerator {
 
     public synchronized Stat generate() {
         TxnStat myStat = new TxnStat(theId,
-                                     TxnManager.get().getActiveTxnCount());
+                                     TxnDispatcher.get().getActiveTxnCount());
 
         return myStat;
     }

@@ -18,10 +18,10 @@ import org.dancres.blitz.lease.LeaseBounds;
 import org.dancres.blitz.entry.EntryRepositoryFactory;
 import org.dancres.blitz.entry.EntryRepository;
 
+import org.dancres.blitz.txn.TxnDispatcher;
 import org.dancres.blitz.txn.TxnId;
 import org.dancres.blitz.txn.TxnOp;
 import org.dancres.blitz.txn.TxnState;
-import org.dancres.blitz.txn.TxnManager;
 
 import org.dancres.blitz.txnlock.*;
 
@@ -88,7 +88,7 @@ public class EntryLeaseHandlerImpl implements LeaseHandler {
             TxnState myState = null;
 
             try {
-                myState = TxnManager.get().getTxnFor(myWriter);
+                myState = TxnDispatcher.get().getTxnFor(myWriter);
             } catch (Exception anE) {
                 /*
                   It's either UnknownTransaction or Remote - in this case
@@ -163,7 +163,7 @@ public class EntryLeaseHandlerImpl implements LeaseHandler {
             TxnState myState = null;
 
             try {
-                myState = TxnManager.get().getTxnFor(myWriter);
+                myState = TxnDispatcher.get().getTxnFor(myWriter);
             } catch (Exception anE) {
                 /*
                   It's either UnknownTransaction or Remote - in this case
@@ -190,7 +190,7 @@ public class EntryLeaseHandlerImpl implements LeaseHandler {
 
     private void log(TxnOp anAction) throws IOException {
         try {
-            TxnManager.get().log(anAction);
+            TxnDispatcher.get().log(anAction);
         } catch (TransactionException aTE) {
             throw new IOException("Failed to log action");
         }
@@ -280,7 +280,7 @@ public class EntryLeaseHandlerImpl implements LeaseHandler {
 
         public void run() {
             try {
-                TxnManager.get().log(theAction);
+                TxnDispatcher.get().log(theAction);
             } catch (Exception anException) {
                 SpaceImpl.theLogger.log(Level.SEVERE,
                                         "Failed to log lease action",

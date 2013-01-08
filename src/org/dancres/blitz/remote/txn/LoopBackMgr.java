@@ -16,7 +16,7 @@ import net.jini.config.ConfigurationException;
 import org.dancres.blitz.Lifecycle;
 import org.dancres.blitz.LifecycleRegistry;
 import org.dancres.blitz.lease.*;
-import org.dancres.blitz.txn.TxnManager;
+import org.dancres.blitz.txn.TxnDispatcher;
 import org.dancres.blitz.txn.TxnState;
 import org.dancres.blitz.util.Time;
 import org.dancres.blitz.Logging;
@@ -118,7 +118,7 @@ public class LoopBackMgr implements Reapable {
         try {
             // Insert the transaction
             //
-            TxnManager.get().getTxnFor(myTxn, false);
+            TxnDispatcher.get().getTxnFor(myTxn, false);
         } catch (Exception anE) {
             theLogger.log(Level.SEVERE, "Failed to allocate loopback txn", anE);
             throw new LeaseDeniedException("Couldn't allocate txn");
@@ -153,7 +153,7 @@ public class LoopBackMgr implements Reapable {
 
         SpaceTxnUID myUID = validateTxn(id);
 
-        TxnManager myMgr = TxnManager.get();
+        TxnDispatcher myMgr = TxnDispatcher.get();
 
         TxnState myState = myMgr.getTxnFor(theStub, id);
 
@@ -179,7 +179,7 @@ public class LoopBackMgr implements Reapable {
 
         SpaceTxnUID myUID = validateTxn(id);
 
-        TxnManager myMgr = TxnManager.get();
+        TxnDispatcher myMgr = TxnDispatcher.get();
 
         TxnState myState = myMgr.getTxnFor(theStub, id);
 
@@ -225,9 +225,9 @@ public class LoopBackMgr implements Reapable {
             if (myHolder != null) {
                 try {
                     TxnState myState =
-                        TxnManager.get().getTxnFor(theStub, aUID.getId());
+                        TxnDispatcher.get().getTxnFor(theStub, aUID.getId());
 
-                    TxnManager.get().abort(myState);
+                    TxnDispatcher.get().abort(myState);
                 } catch (Exception anE) {
                     // Nothing we cn do
                 }

@@ -44,7 +44,7 @@ class PersistentReboot {
                 myRegistry.getAccessor().load(MAX_LOGS_KEY);
 
             if (myBarrier != null) {
-                TxnManager.theLogger.log(Level.INFO,
+                TxnDispatcher.theLogger.log(Level.INFO,
                                          "Restoring UnsyncdOps state: " +
                                          myBarrier.getOpsSinceLastCheckpoint());
 

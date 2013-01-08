@@ -26,7 +26,7 @@ import org.dancres.blitz.Logging;
 
 import org.dancres.blitz.lease.LeaseReaper;
 
-import org.dancres.blitz.txn.TxnManager;
+import org.dancres.blitz.txn.TxnDispatcher;
 
 import org.prevayler.SnapshotContributor;
 
@@ -129,7 +129,7 @@ public class EntryRepositoryFactory implements Syncable, SnapshotContributor {
         /*
           Anyone wishing to access the factory's functions must go through
           this method first so it's the ideal place to barrier for registering
-          with TxnManager to supply instance count records to checkpoints.
+          with TxnDispatcher to supply instance count records to checkpoints.
          */
         theReposFactory.registerBarrier();
 
@@ -143,14 +143,14 @@ public class EntryRepositoryFactory implements Syncable, SnapshotContributor {
      */
     private void registerBarrier() {
         synchronized(theLogLock) {
-            if (!logCountOnBoot || TxnManager.get().isRecovery())
+            if (!logCountOnBoot || TxnDispatcher.get().isRecovery())
                 return;
             else if (!haveRegisteredForSnapshot) {
             /*
               If we have to log counts at boot we also need to log them at
               checkpoints - register SnapshotContributor
              */
-                TxnManager.get().add(this);
+                TxnDispatcher.get().add(this);
                 haveRegisteredForSnapshot = true;
             }
         }

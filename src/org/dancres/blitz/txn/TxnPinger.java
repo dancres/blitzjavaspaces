@@ -40,13 +40,13 @@ class TxnPinger implements ActiveObject, Runnable {
                                                long.class,
                                                new Long(NO_PAUSE))).longValue();
         } catch (ConfigurationException anE) {
-            TxnManager.theLogger.log(Level.SEVERE,
+            TxnDispatcher.theLogger.log(Level.SEVERE,
                                      "Failed to load txn ping interval",
                                      anE);
         }
 
         if (thePause != NO_PAUSE) {
-            TxnManager.theLogger.log(Level.INFO, "Txn Pinger active with: " +
+            TxnDispatcher.theLogger.log(Level.INFO, "Txn Pinger active with: " +
                                      thePause + " ms");
             ActiveObjectRegistry.add(this);
         }
@@ -86,7 +86,7 @@ class TxnPinger implements ActiveObject, Runnable {
                    we can kill this transaction.
                  */
                 try {
-                    TxnGateway myGateway = TxnManager.get().getGateway();
+                    TxnGateway myGateway = TxnDispatcher.get().getGateway();
 
                     myGateway.getState(myId);
                 } catch (RemoteException anRE) {
@@ -101,13 +101,13 @@ class TxnPinger implements ActiveObject, Runnable {
     }
 
     private void attemptAbort(TxnId anId) {
-        TxnManager myManager = TxnManager.get();
+        TxnDispatcher myManager = TxnDispatcher.get();
 
         try {
             myManager.abort(myManager.getTxnFor(anId));
         } catch (Exception anE) {
             // Nothing more to do, try again next time
-            TxnManager.theLogger.log(Level.SEVERE,
+            TxnDispatcher.theLogger.log(Level.SEVERE,
                                      "Attempted to abort dead transaction: " +
                                      anId, anE);
         }

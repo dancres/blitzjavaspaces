@@ -9,8 +9,8 @@ import net.jini.core.transaction.server.TransactionManager;
 import net.jini.core.transaction.UnknownTransactionException;
 import net.jini.core.transaction.TransactionException;
 
+import org.dancres.blitz.txn.TxnDispatcher;
 import org.dancres.blitz.txn.TxnState;
-import org.dancres.blitz.txn.TxnManager;
 
 /**
    All of this could be done in-line within SpaceImpl this just keeps
@@ -26,7 +26,7 @@ class TxnControlImpl implements TxnControl, Serializable {
     public int prepare(TransactionManager aMgr, long anId)
         throws UnknownTransactionException, RemoteException {
 
-        TxnManager myManager = TxnManager.get();
+        TxnDispatcher myManager = TxnDispatcher.get();
 
         TxnState myState = myManager.getTxnFor(aMgr, anId);
 
@@ -36,7 +36,7 @@ class TxnControlImpl implements TxnControl, Serializable {
     public void commit(TransactionManager aMgr, long anId)
         throws UnknownTransactionException, RemoteException {
 
-        TxnManager myManager = TxnManager.get();
+        TxnDispatcher myManager = TxnDispatcher.get();
 
         TxnState myState = myManager.getTxnFor(aMgr, anId);
 
@@ -46,7 +46,7 @@ class TxnControlImpl implements TxnControl, Serializable {
     public void abort(TransactionManager aMgr, long anId)
         throws UnknownTransactionException, RemoteException {
 
-        TxnManager myManager = TxnManager.get();
+        TxnDispatcher myManager = TxnDispatcher.get();
 
         TxnState myState = myManager.getTxnFor(aMgr, anId);
 
@@ -56,7 +56,7 @@ class TxnControlImpl implements TxnControl, Serializable {
     public int prepareAndCommit(TransactionManager aMgr, long anId)
         throws UnknownTransactionException, RemoteException {
 
-        TxnManager myManager = TxnManager.get();
+        TxnDispatcher myManager = TxnDispatcher.get();
 
         TxnState myState = myManager.getTxnFor(aMgr, anId);
 
@@ -64,10 +64,10 @@ class TxnControlImpl implements TxnControl, Serializable {
     }
 
     public void requestSnapshot() throws TransactionException, IOException {
-        TxnManager.get().requestSnapshot();
+        TxnDispatcher.get().requestSnapshot();
     }
 
     public void backup(String aDir) throws IOException {
-        TxnManager.get().hotBackup(aDir);
+        TxnDispatcher.get().hotBackup(aDir);
     }
 }

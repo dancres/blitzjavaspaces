@@ -15,9 +15,9 @@ import org.dancres.blitz.lease.SpaceUID;
 import org.dancres.blitz.lease.LeaseHandler;
 import org.dancres.blitz.lease.LeaseBounds;
 
+import org.dancres.blitz.txn.TxnDispatcher;
 import org.dancres.blitz.txn.TxnOp;
 import org.dancres.blitz.txn.TxnState;
-import org.dancres.blitz.txn.TxnManager;
 
 import org.dancres.blitz.task.Task;
 
@@ -79,7 +79,7 @@ public class NotifyLeaseHandlerImpl implements LeaseHandler {
 
     private void log(TxnOp anAction) throws IOException {
         try {
-            TxnManager.get().log(anAction);
+            TxnDispatcher.get().log(anAction);
         } catch (TransactionException aTE) {
             throw new IOException("Failed to log action");
         }
@@ -163,7 +163,7 @@ public class NotifyLeaseHandlerImpl implements LeaseHandler {
 
         public void run() {
             try {
-                TxnManager.get().log(theAction);
+                TxnDispatcher.get().log(theAction);
             } catch (Exception anException) {
                 EventQueue.theLogger.log(Level.SEVERE,
                                          "Failed to log lease action",

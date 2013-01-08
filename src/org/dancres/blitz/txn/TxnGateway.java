@@ -7,7 +7,7 @@ import net.jini.core.transaction.CannotJoinException;
 import net.jini.core.transaction.server.CrashCountException;
 
 /**
-   <p>TxnManager has no direct link with the remote layer, thus it must rely
+   <p>TxnDispatcher has no direct link with the remote layer, thus it must rely
    on a third party to handle the remote communication necessary.  The object
    reponsible for this task should implement this interface. </p>
 

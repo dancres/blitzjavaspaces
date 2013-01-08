@@ -40,7 +40,7 @@ testreaper:
      [java] Jun 10, 2004 12:49:53 PM org.dancres.blitz.config.ConfigurationFactory load
      [java] INFO: Loading config from: config/blitz.config
      [java] Starting debugger on: 12345
-     [java] Jun 10, 2004 12:49:53 PM org.dancres.blitz.txn.TxnManager <init>
+     [java] Jun 10, 2004 12:49:53 PM org.dancres.blitz.txn.TxnDispatcher <init>
      [java] INFO: Doing recovery...
      [java] Jun 10, 2004 12:49:53 PM org.dancres.blitz.txn.PersistentPersonality <init>
      [java] SEVERE: PersistentPersonality
@@ -52,7 +52,7 @@ testreaper:
      [java] INFO: Write barrier window: 20
      [java] Jun 10, 2004 12:49:53 PM org.dancres.blitz.txn.PersistentPersonality <init>
      [java] SEVERE: *** Using concurrent batcher ***
-     [java] Jun 10, 2004 12:49:54 PM org.dancres.blitz.txn.TxnManager <init>
+     [java] Jun 10, 2004 12:49:54 PM org.dancres.blitz.txn.TxnDispatcher <init>
      [java] INFO: Recovery complete...
      [java] Jun 10, 2004 12:49:54 PM org.dancres.blitz.lease.LeaseReaper <init>
      [java] INFO: Reaper::EntryReaper:theReapTime: 60000

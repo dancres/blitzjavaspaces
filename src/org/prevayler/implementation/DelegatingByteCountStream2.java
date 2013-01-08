@@ -36,10 +36,7 @@
 
 package org.prevayler.implementation;
 
-import org.dancres.blitz.txn.TxnManager;
-
 import java.io.*;
-import java.util.logging.Level;
 
 /**
    A FileOutputStream that counts the number of bytes written and forces all
@@ -55,7 +52,7 @@ final class DelegatingByteCountStream2 extends OutputStream {
 
         // System.err.println("Buffer size: " + aBufferSize);
 
-        // TxnManager.theLogger.log(Level.SEVERE, "Open: " + file);
+        // TxnDispatcher.theLogger.log(Level.SEVERE, "Open: " + file);
 
         theFile = new RandomAccessFile(file, "rwd");
 
@@ -63,7 +60,7 @@ final class DelegatingByteCountStream2 extends OutputStream {
     }
 
     public void close() throws IOException {
-        // TxnManager.theLogger.log(Level.SEVERE, "Close log");
+        // TxnDispatcher.theLogger.log(Level.SEVERE, "Close log");
 
         flush();
         theFile.close();
