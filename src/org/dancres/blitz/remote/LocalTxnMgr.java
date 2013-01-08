@@ -35,6 +35,7 @@ public class LocalTxnMgr implements TransactionManager, Serializable {
 
     public LocalTxnMgr(long anId, TxnControl aControl) {
         theId = anId;
+        LoopBackMgr.init(this);
     }
 
     public ServerTransaction newTxn() {
