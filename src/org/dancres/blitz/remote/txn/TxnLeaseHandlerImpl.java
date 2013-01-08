@@ -13,6 +13,12 @@ import org.dancres.blitz.util.Time;
 /**
  */
 public class TxnLeaseHandlerImpl implements LeaseHandler {
+    private LoopBackMgr theMgr;
+
+    TxnLeaseHandlerImpl(LoopBackMgr aMgr) {
+        theMgr = aMgr;
+    }
+
     public boolean recognizes(SpaceUID aUID) {
         return (aUID instanceof SpaceTxnUID);
     }
@@ -25,8 +31,7 @@ public class TxnLeaseHandlerImpl implements LeaseHandler {
 
         boolean myResult;
 
-        myResult = LoopBackMgr.get().renew((SpaceTxnUID) aUID,
-            myExpiry);
+        myResult = theMgr.renew((SpaceTxnUID) aUID, myExpiry);
 
         if (!myResult)
             throw new UnknownLeaseException();
@@ -39,7 +44,7 @@ public class TxnLeaseHandlerImpl implements LeaseHandler {
 
         boolean myResult;
 
-        myResult = LoopBackMgr.get().cancel((SpaceTxnUID) aUID);
+        myResult = theMgr.cancel((SpaceTxnUID) aUID);
 
         if (!myResult)
             throw new UnknownLeaseException();

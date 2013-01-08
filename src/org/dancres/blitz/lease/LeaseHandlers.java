@@ -64,6 +64,14 @@ public class LeaseHandlers {
         }
     }
 
+    public static void add(LeaseHandler aHandler) {
+        theHandlers.add(aHandler);
+    }
+
+    public static void remove(LeaseHandler aHandler) {
+        theHandlers.remove(aHandler);
+    }
+
     public static long renew(SpaceUID aUID, long aLeaseDuration)
         throws UnknownLeaseException, LeaseDeniedException, IOException {
 

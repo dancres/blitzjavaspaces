@@ -59,8 +59,6 @@ import org.dancres.blitz.txn.StoragePersonalityFactory;
 
    @see org.dancres.blitz.txn.TxnGateway
    @see org.dancres.blitz.test.TxnStress
-
-   @todo Add support for lease renewal.
  */
 public class LocalSpace implements BlitzServer {
     static final Logger theLogger =

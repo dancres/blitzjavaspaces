@@ -2,6 +2,8 @@ package org.dancres.blitz.remote.txn;
 
 import java.rmi.RemoteException;
 import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
@@ -11,13 +13,12 @@ import net.jini.core.transaction.*;
 import net.jini.core.lease.LeaseDeniedException;
 import net.jini.config.ConfigurationException;
 
+import org.dancres.blitz.Lifecycle;
+import org.dancres.blitz.LifecycleRegistry;
+import org.dancres.blitz.lease.*;
 import org.dancres.blitz.txn.TxnManager;
 import org.dancres.blitz.txn.TxnState;
 import org.dancres.blitz.util.Time;
-import org.dancres.blitz.lease.LeaseBounds;
-import org.dancres.blitz.lease.Reapable;
-import org.dancres.blitz.lease.ReapFilter;
-import org.dancres.blitz.lease.LeaseReaper;
 import org.dancres.blitz.Logging;
 import org.dancres.blitz.config.ConfigurationFactory;
 
@@ -27,6 +28,30 @@ public class LoopBackMgr implements Reapable {
 
     private static Logger theLogger =
         Logging.newLogger("org.dancres.blitz.remote.txn.LoopBackMgr");
+
+    static class Tracker implements Lifecycle {
+        private List<LoopBackMgr> _activeMgrs = new CopyOnWriteArrayList<LoopBackMgr>();
+
+        void add(LoopBackMgr aMgr) {
+            _activeMgrs.add(aMgr);
+        }
+
+        public void init() {
+        }
+
+        public void deinit() {
+            for (LoopBackMgr m : _activeMgrs)
+                m.stop();
+
+            _activeMgrs.clear();
+        }
+    }
+
+    private static Tracker theTracker = new Tracker();
+
+    static {
+        LifecycleRegistry.add(theTracker);
+    }
 
     /**
      * This will need updating based on reading the log or reading
@@ -46,18 +71,11 @@ public class LoopBackMgr implements Reapable {
     private HashMap theActiveTxns = new HashMap();
 
     private TransactionManager theStub;
+    private TxnLeaseHandlerImpl theLeaseHandler;
 
-    private static LoopBackMgr theMgr;
+    public LoopBackMgr(TransactionManager aStub) {
+        theTracker.add(this);
 
-    public static void init(TransactionManager aStub) {
-        theMgr = new LoopBackMgr(aStub);
-    }
-
-    public static LoopBackMgr get() {
-        return theMgr;
-    }
-
-    private LoopBackMgr(TransactionManager aStub) {
         try {
             long myReapInterval =
                 ((Long) ConfigurationFactory.getEntry("loopbackTxnReapInterval",
@@ -72,6 +90,9 @@ public class LoopBackMgr implements Reapable {
         }
 
         theStub = aStub;
+
+        theLeaseHandler = new TxnLeaseHandlerImpl(this);
+        LeaseHandlers.add(theLeaseHandler);
     }
 
     private long nextId() {
@@ -254,5 +275,9 @@ public class LoopBackMgr implements Reapable {
             return true;
         else
             return false;
+    }
+
+    void stop() {
+        LeaseHandlers.remove(theLeaseHandler);
     }
 }
