@@ -10,7 +10,7 @@ import org.prevayler.Command;
 import org.prevayler.PrevalentSystem;
 
 /**
-   Command to issue abort against transaction held in TxnManagerState
+   Command to issue abort against transaction held in TxnDispatcherState
  */
 class AbortCommand implements Command {
     static final long serialVersionUID = 182858469530698187L;
@@ -22,7 +22,7 @@ class AbortCommand implements Command {
     }
 
     public Serializable execute(PrevalentSystem aSystem) throws Exception {
-        TxnManagerState mySystem = (TxnManagerState) aSystem;
+        TxnDispatcherState mySystem = (TxnDispatcherState) aSystem;
 
         try {
             mySystem.abort(theId);

@@ -6,7 +6,7 @@ import org.prevayler.Command;
 import org.prevayler.PrevalentSystem;
 
 /**
-   Command to issue commit against transaction held in TxnManagerState
+   Command to issue commit against transaction held in TxnDispatcherState
  */
 class CommitCommand implements Command {
     static final long serialVersionUID = 347070110605931202L;
@@ -18,7 +18,7 @@ class CommitCommand implements Command {
     }
 
     public Serializable execute(PrevalentSystem aSystem) throws Exception {
-        TxnManagerState mySystem = (TxnManagerState) aSystem;
+        TxnDispatcherState mySystem = (TxnDispatcherState) aSystem;
 
         mySystem.commit(theId);
 

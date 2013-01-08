@@ -22,7 +22,7 @@ class PrepCommitCommand implements Command {
     }
 
     public Serializable execute(PrevalentSystem aSystem) throws Exception {
-        TxnManagerState mySystem = (TxnManagerState) aSystem;
+        TxnDispatcherState mySystem = (TxnDispatcherState) aSystem;
 
         int myResult = mySystem.prepare(theTxn);
 

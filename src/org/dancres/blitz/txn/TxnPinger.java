@@ -3,7 +3,6 @@ package org.dancres.blitz.txn;
 import java.rmi.RemoteException;
 import java.rmi.NoSuchObjectException;
 
-import java.util.List;
 import java.util.Iterator;
 
 import java.util.logging.Level;
@@ -31,9 +30,9 @@ class TxnPinger implements ActiveObject, Runnable {
 
     private long thePause = NO_PAUSE;
     private Thread theThread;
-    private TxnManagerState theState;
+    private TxnDispatcherState theState;
 
-    TxnPinger(TxnManagerState aState) {
+    TxnPinger(TxnDispatcherState aState) {
         try {
             thePause =
                 ((Long)

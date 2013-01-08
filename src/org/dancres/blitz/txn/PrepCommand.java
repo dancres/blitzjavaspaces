@@ -6,7 +6,7 @@ import org.prevayler.Command;
 import org.prevayler.PrevalentSystem;
 
 /**
-   Command to issue prepare against transaction held in TxnManagerState
+   Command to issue prepare against transaction held in TxnDispatcherState
  */
 class PrepCommand implements Command {
     private TxnState theTxn;
@@ -16,7 +16,7 @@ class PrepCommand implements Command {
     }
 
     public Serializable execute(PrevalentSystem aSystem) throws Exception {
-        TxnManagerState mySystem = (TxnManagerState) aSystem;
+        TxnDispatcherState mySystem = (TxnDispatcherState) aSystem;
 
         Integer myResult = new Integer(mySystem.prepare(theTxn));
 

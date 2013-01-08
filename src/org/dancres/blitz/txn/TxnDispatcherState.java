@@ -23,11 +23,11 @@ import org.prevayler.SnapshotContributor;
 /**
  * Responsible for tracking/managing transactions.  This responsiblity is split
  * across two classes.  TxnManager handles control aspects whilst
- * TxnManagerState tracks the transactional information. <P>
+ * TxnDispatcherState tracks the transactional information. <P>
  *
  * @see org.dancres.blitz.txn.TxnManager
  */
-class TxnManagerState implements PrevalentSystem {
+class TxnDispatcherState implements PrevalentSystem {
     static final long serialVersionUID = -5650181362477845180L;
 
     private static boolean UPGRADE = false;

@@ -29,7 +29,7 @@ import org.prevayler.implementation.Snapshotter;
 /**
    Responsible for tracking/managing transactions.  This responsiblity is split
    across two classes.  TxnManager handles control aspects whilst
-   TxnManagerState tracks the transactional information. <P>
+   TxnDispatcherState tracks the transactional information. <P>
 
    We make our lives a little easier by making null transactions look like a
    normal transaction which keeps things consistent and clean bar an implied
@@ -39,7 +39,7 @@ import org.prevayler.implementation.Snapshotter;
    operations. <P>
 
    The transaction subsystems logging and snapshot/checkpointing requirements
-   are handled by holding all state in TxnManagerState and making it a
+   are handled by holding all state in TxnDispatcherState and making it a
    <code>PrevalentSystem</code>.  Snapshots are treated as the equivalent of
    checkpoints and are triggered in a separate thread.  <P>
 
@@ -50,10 +50,10 @@ import org.prevayler.implementation.Snapshotter;
    The snapshot is only written to disk after Disk.sync completes.<P>
 
    The actual workings are a little different from the norm with TxnManager
-   generating commands which act upon TxnManagerState.  Certain methods don't
+   generating commands which act upon TxnDispatcherState.  Certain methods don't
    generate commands at all because they don't represent a true state change.
    Typically these methods are related to introducing new initial state into
-   TxnManagerState such as a transaction which doesn't need to be made
+   TxnDispatcherState such as a transaction which doesn't need to be made
    durable (saved to log etc.) until it reaches the prepared state. <P>
 
    Prepare records a durable record of the transaction's operations whilst
@@ -61,7 +61,7 @@ import org.prevayler.implementation.Snapshotter;
 
    @see org.prevayler.PrevalentSystem
    @see org.prevayler.Command
-   @see org.dancres.blitz.txn.TxnManagerState
+   @see TxnDispatcherState
 
    @todo Micro-optimization - we don't need to write an abort record if
    the txn isn't prepared - just clear it out!
@@ -87,7 +87,7 @@ public class TxnManager {
 
     private static TxnManager theManager;
 
-    private TxnManagerState theManagerState;
+    private TxnDispatcherState theManagerState;
 
     private ReentrantReadWriteLock theLock = new ReentrantReadWriteLock();
 
@@ -133,12 +133,12 @@ public class TxnManager {
 
         theLogger.log(Level.INFO, "Doing log recovery...");
 
-        thePrevayler = myPersonality.getPrevayler(new TxnManagerState());
+        thePrevayler = myPersonality.getPrevayler(new TxnDispatcherState());
 
         theLogger.log(Level.INFO, "Log Recovery complete...");
         theLogger.log(Level.INFO, "Using prevayler: " + thePrevayler.getClass());
         
-        theManagerState = (TxnManagerState) thePrevayler.system();
+        theManagerState = (TxnDispatcherState) thePrevayler.system();
 
         theCheckpointTrigger =
             myPersonality.getCheckpointTrigger(new CheckpointerImpl(this));
@@ -255,7 +255,7 @@ public class TxnManager {
 
     /**
        Doesn't throw a DbException because it just writes to disk.  Restore
-       is coped with inside TxnManagerState when we're doing recovery and
+       is coped with inside TxnDispatcherState when we're doing recovery and
        an Exception could be thrown then.
      */
     public int prepare(TxnState aState) throws UnknownTransactionException {
@@ -470,7 +470,7 @@ public class TxnManager {
      * the command and then determine if the outcome needs logging and log
      * if necessary.  Only the SnapshotPrevaylerImpl really cares about this
      * so only it needs tweaking.  This state should probably be deduced
-     * by the TxnState itself or TxnManagerState - it certainly needs to be
+     * by the TxnState itself or TxnDispatcherState - it certainly needs to be
      * done under the lock of the TxnState.  The decision points for whether
      * a transaction is idempotent are at initial prepare (where we discover
      * if there are no listeners or the txn is the identity txn) and at an
@@ -576,7 +576,7 @@ public class TxnManager {
        <ol>
        <li> Assert a write lock to prevent further commands from being
        logged. </li>
-       <li> Snapshot the state of the PrevalentSystem (TxnManagerState) </li>
+       <li> Snapshot the state of the PrevalentSystem (TxnDispatcherState) </li>
        <li> Snapshot results in changeover to a new log file.
        <li> Release the write lock to allow further commands to enter the new
        log file </li>
