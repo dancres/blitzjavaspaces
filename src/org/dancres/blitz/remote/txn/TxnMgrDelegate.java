@@ -23,16 +23,19 @@ import org.dancres.blitz.Logging;
 import org.dancres.blitz.config.ConfigurationFactory;
 
 /**
+ * If one is building a transaction manager around the Blitz core, this class provides most of the heavy lifting.
+ * Wrapper classes need to present/convert the input/output into the appropriate universe (e.g. Jini or Local) and not
+ * much else.
  */
-public class LoopBackMgr implements Reapable {
+public class TxnMgrDelegate implements Reapable {
 
     private static Logger theLogger =
-        Logging.newLogger("org.dancres.blitz.remote.txn.LoopBackMgr");
+        Logging.newLogger("org.dancres.blitz.remote.txn.TxnMgrDelegate");
 
     static class Tracker implements Lifecycle {
-        private List<LoopBackMgr> _activeMgrs = new CopyOnWriteArrayList<LoopBackMgr>();
+        private List<TxnMgrDelegate> _activeMgrs = new CopyOnWriteArrayList<TxnMgrDelegate>();
 
-        void add(LoopBackMgr aMgr) {
+        void add(TxnMgrDelegate aMgr) {
             _activeMgrs.add(aMgr);
         }
 
@@ -40,7 +43,7 @@ public class LoopBackMgr implements Reapable {
         }
 
         public void deinit() {
-            for (LoopBackMgr m : _activeMgrs)
+            for (TxnMgrDelegate m : _activeMgrs)
                 m.stop();
 
             _activeMgrs.clear();
@@ -73,7 +76,7 @@ public class LoopBackMgr implements Reapable {
     private TransactionManager theStub;
     private TxnLeaseHandlerImpl theLeaseHandler;
 
-    public LoopBackMgr(TransactionManager aStub) {
+    public TxnMgrDelegate(TransactionManager aStub) {
         theTracker.add(this);
 
         try {
@@ -263,7 +266,7 @@ public class LoopBackMgr implements Reapable {
     }
 
     public String toString() {
-        return "LoopBackMgr";
+        return "TxnMgrDelegate";
     }
 
     public int hashCode() {
@@ -271,7 +274,7 @@ public class LoopBackMgr implements Reapable {
     }
 
     public boolean equals(Object anObject) {
-        if (anObject instanceof LoopBackMgr)
+        if (anObject instanceof TxnMgrDelegate)
             return true;
         else
             return false;

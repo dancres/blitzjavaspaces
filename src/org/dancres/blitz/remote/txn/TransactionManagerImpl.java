@@ -46,7 +46,7 @@ public class TransactionManagerImpl implements TransactionManager,
     private BlitzServer theLandlord;
     private Uuid theLandlordUuid;
 
-    private LoopBackMgr theLoopBackMgr;
+    private TxnMgrDelegate theTxnMgrDelegate;
 
     public TransactionManagerImpl(BlitzServer aLandlord, Uuid aLandlordUuid)
         throws ConfigurationException, IOException {
@@ -93,7 +93,7 @@ public class TransactionManagerImpl implements TransactionManager,
 
         theProxy = new TxnMgrProxy(theStub, theLandlordUuid);
 
-        theLoopBackMgr = new LoopBackMgr(theProxy);
+        theTxnMgrDelegate = new TxnMgrDelegate(theProxy);
         
         theJoinManager = new JoinManager(theProxy, theAttributes, this,
             myLDM, null, ConfigurationFactory.getConfig());
@@ -109,7 +109,7 @@ public class TransactionManagerImpl implements TransactionManager,
     public Created create(long leaseTime) throws LeaseDeniedException,
         RemoteException {
 
-        TxnTicket myTicket = theLoopBackMgr.create(leaseTime);
+        TxnTicket myTicket = theTxnMgrDelegate.create(leaseTime);
 
         Lease myLease =
             ProxyFactory.newLeaseImpl(theLandlord, theLandlordUuid,
@@ -130,22 +130,22 @@ public class TransactionManagerImpl implements TransactionManager,
 
     public void commit(long id) throws UnknownTransactionException,
         CannotCommitException, RemoteException {
-        theLoopBackMgr.commit(id);
+        theTxnMgrDelegate.commit(id);
     }
 
     public void commit(long id, long timeout) throws UnknownTransactionException,
         CannotCommitException, TimeoutExpiredException, RemoteException {
-        theLoopBackMgr.commit(id, timeout);
+        theTxnMgrDelegate.commit(id, timeout);
     }
 
     public void abort(long id) throws UnknownTransactionException,
         CannotAbortException, RemoteException {
-        theLoopBackMgr.abort(id);
+        theTxnMgrDelegate.abort(id);
     }
 
     public void abort(long id, long timeout) throws UnknownTransactionException,
         CannotAbortException, TimeoutExpiredException, RemoteException {
-        theLoopBackMgr.abort(id, timeout);
+        theTxnMgrDelegate.abort(id, timeout);
     }
 
     public void serviceIDNotify(ServiceID serviceID) {

@@ -9,7 +9,7 @@ import net.jini.core.lease.LeaseDeniedException;
 import net.jini.core.transaction.*;
 import net.jini.core.transaction.server.*;
 
-import org.dancres.blitz.remote.txn.LoopBackMgr;
+import org.dancres.blitz.remote.txn.TxnMgrDelegate;
 import org.dancres.blitz.TxnControl;
 import org.dancres.blitz.remote.txn.TxnTicket;
 
@@ -22,23 +22,23 @@ public class LocalTxnMgr implements TransactionManager, Serializable {
      * serializable).
      */
     private transient LocalSpace theSpace;
-    private transient LoopBackMgr theLoopBackMgr;
+    private transient TxnMgrDelegate theTxnMgrDelegate;
 
     public LocalTxnMgr(long anId, LocalSpace aSpace) {
         theId = anId;
-        theLoopBackMgr = new LoopBackMgr(this);
+        theTxnMgrDelegate = new TxnMgrDelegate(this);
         theSpace = aSpace;
     }
 
     public LocalTxnMgr(long anId, TxnControl aControl) {
         theId = anId;
-        theLoopBackMgr = new LoopBackMgr(this);
+        theTxnMgrDelegate = new TxnMgrDelegate(this);
     }
 
     public ServerTransaction newTxn() {
         synchronized(this) {
             try {
-                TxnTicket myTicket = theLoopBackMgr.create(Lease.FOREVER);
+                TxnTicket myTicket = theTxnMgrDelegate.create(Lease.FOREVER);
                 return new ServerTransaction(this, myTicket.getUID().getId());
             } catch (Exception anE) {
                 throw new RuntimeException("Failed to create txn", anE);
@@ -64,7 +64,7 @@ public class LocalTxnMgr implements TransactionManager, Serializable {
                                              RemoteException {
         assert(theSpace != null);
 
-        TxnTicket myTicket = theLoopBackMgr.create(leaseTime);
+        TxnTicket myTicket = theTxnMgrDelegate.create(leaseTime);
 
         Lease myLease =
                 ProxyFactory.newLeaseImpl(theSpace, theSpace.getServiceUuid(),
@@ -88,26 +88,26 @@ public class LocalTxnMgr implements TransactionManager, Serializable {
     public void commit(long id)
         throws UnknownTransactionException, CannotCommitException,
                RemoteException {
-        theLoopBackMgr.commit(id);
+        theTxnMgrDelegate.commit(id);
     }
  
     public void commit(long id, long waitFor)
         throws UnknownTransactionException, CannotCommitException,
                TimeoutExpiredException, RemoteException {
-        theLoopBackMgr.commit(id, waitFor);
+        theTxnMgrDelegate.commit(id, waitFor);
     }
  
 
     public void abort(long id)
         throws UnknownTransactionException, CannotAbortException,
                RemoteException {
-        theLoopBackMgr.abort(id);
+        theTxnMgrDelegate.abort(id);
     }
  
     public void abort(long id, long waitFor)
         throws UnknownTransactionException, CannotAbortException,
                TimeoutExpiredException, RemoteException {
-        theLoopBackMgr.abort(id, waitFor);
+        theTxnMgrDelegate.abort(id, waitFor);
     }
 }
 

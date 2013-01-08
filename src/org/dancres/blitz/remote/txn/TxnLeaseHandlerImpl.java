@@ -13,9 +13,9 @@ import org.dancres.blitz.util.Time;
 /**
  */
 public class TxnLeaseHandlerImpl implements LeaseHandler {
-    private LoopBackMgr theMgr;
+    private TxnMgrDelegate theMgr;
 
-    TxnLeaseHandlerImpl(LoopBackMgr aMgr) {
+    TxnLeaseHandlerImpl(TxnMgrDelegate aMgr) {
         theMgr = aMgr;
     }
 
