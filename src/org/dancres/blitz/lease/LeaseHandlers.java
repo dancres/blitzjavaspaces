@@ -4,21 +4,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.*;
 
 import net.jini.core.lease.UnknownLeaseException;
 import net.jini.core.lease.LeaseDeniedException;
-import net.jini.core.lease.Lease;
 
-import net.jini.config.ConfigurationException;
 import net.jini.config.ConfigurationFile;
 import net.jini.config.Configuration;
 
 import org.dancres.blitz.Logging;
 
 import org.dancres.blitz.config.ConfigurationFactory;
-
-import org.dancres.blitz.util.Time;
 
 /**
    The access point for managing leases associated with SpaceUIDs.  Lease
@@ -35,7 +34,7 @@ public class LeaseHandlers {
 
     private static final String HANDLER_PROPERTY = "handlers";
 
-    private static LeaseHandler[] theHandlers;
+    private static List<LeaseHandler> theHandlers = new CopyOnWriteArrayList<LeaseHandler>();
 
     private static Logger theLogger =
         Logging.newLogger("org.dancres.blitz.lease.LeaseHandlers");
@@ -57,7 +56,7 @@ public class LeaseHandlers {
                                                        HANDLER_PROPERTY,
                                                        LeaseHandler[].class);
 
-                theHandlers = myFilters;
+                theHandlers.addAll(Arrays.asList(myFilters));
             }
 
         } catch (Exception anE) {
@@ -68,10 +67,9 @@ public class LeaseHandlers {
     public static long renew(SpaceUID aUID, long aLeaseDuration)
         throws UnknownLeaseException, LeaseDeniedException, IOException {
 
-        for (int i = 0; i < theHandlers.length; i++) {
-            if (theHandlers[i].recognizes(aUID)) {
-                return theHandlers[i].renew(aUID, aLeaseDuration);
-            }
+        for (LeaseHandler h : theHandlers) {
+            if (h.recognizes(aUID))
+                return h.renew(aUID, aLeaseDuration);
         }
 
         throw new UnknownLeaseException();
@@ -80,9 +78,9 @@ public class LeaseHandlers {
     public static void cancel(SpaceUID aUID)
         throws UnknownLeaseException, IOException {
 
-        for (int i = 0; i < theHandlers.length; i++) {
-            if (theHandlers[i].recognizes(aUID)) {
-                theHandlers[i].cancel(aUID);
+        for (LeaseHandler h : theHandlers) {
+            if (h.recognizes(aUID)) {
+                h.cancel(aUID);
                 return;
             }
         }
