@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import java.rmi.MarshalledObject;
 
+import junit.framework.Assert;
 import net.jini.core.lease.Lease;
 import net.jini.core.transaction.server.*;
 
@@ -21,12 +22,7 @@ import org.dancres.blitz.remote.LocalTxnMgr;
 public class TxnNotify {
     public static void main(String args[]) {
         try {
-            System.out.println("Start space");
-
             SpaceImpl mySpace = new SpaceImpl(new TxnGatewayImpl());
-
-            System.out.println("Prepare entry");
-
             EntryMangler myMangler = new EntryMangler();
 
             TestEntry myEntry = new TestEntry().init();
@@ -36,56 +32,47 @@ public class TxnNotify {
             MangledEntry myPackedEntry = myMangler.mangle(myEntry);
             MangledEntry myPackedTemplate = myMangler.mangle(myTemplate);
 
-            System.out.println("Notify");
+            EventListener myNullListener = new EventListener();
+            EventListener myTxnListener = new EventListener();
 
-            mySpace.notify(myPackedTemplate, null, new EventListener(),
+            mySpace.notify(myPackedTemplate, null, myNullListener,
                            Lease.FOREVER,
                            new MarshalledObject(new Integer(12345)));
 
-            System.out.println("Notify txn");
             LocalTxnMgr myMgr = new LocalTxnMgr(1, mySpace.getTxnControl());
             ServerTransaction myTxn = myMgr.newTxn();
 
-            mySpace.notify(myPackedTemplate, myTxn, new EventListener(),
+            mySpace.notify(myPackedTemplate, myTxn, myTxnListener,
                            Lease.FOREVER,
                            new MarshalledObject(new Integer(67890)));
 
-            System.out.println("Write txn");
+            // Will be caught only by txn listener
+            //
             mySpace.write(myPackedEntry, myTxn, Lease.FOREVER);
 
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException anIE) {
-            }
+            Assert.assertEquals(1, myTxnListener.waitOnCount(1, 500));
 
-            System.out.println("Write null");
+            // Will be caught by both listeners
+            //
             mySpace.write(myPackedEntry, null, Lease.FOREVER);
 
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException anIE) {
-            }
+            Assert.assertEquals(2, myTxnListener.waitOnCount(2, 500));
+            Assert.assertEquals(1, myNullListener.waitOnCount(1, 500));
 
-            System.out.println("Prepare and commit txn");
+            // Txn listener will now close out with the transaction, null sees another entry
+            //
             myTxn.commit();
 
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException anIE) {
-            }
-            
-            System.out.println("Write null");
+            Assert.assertEquals(2, myNullListener.waitOnCount(2, 500));
+
+            // Will only be seen by null listener
+            //
             mySpace.write(myPackedEntry, null, Lease.FOREVER);
 
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException anIE) {
-            }
-
-            System.out.println("Do stop");
+            Assert.assertEquals(3, myNullListener.waitOnCount(3, 500));
 
             mySpace.stop();
-            
+
         } catch (Exception anE) {
             System.err.println("Got exception :(");
             anE.printStackTrace(System.err);
@@ -113,18 +100,40 @@ public class TxnNotify {
     }
 
     private static class EventListener implements RemoteEventListener,
-                                                  Serializable {
-        public void notify(RemoteEvent anEvent) {
+            Serializable {
+        private int _notifyCount = 0;
 
-            try {
-                System.out.println("Got event: " + anEvent.getSource() + ", " +
-                                   anEvent.getID() + ", " +
-                                   anEvent.getSequenceNumber() + ", " + 
-                                   anEvent.getRegistrationObject().get());
-            } catch (Exception anE) {
-                System.out.println("Got event but couldn't display it");
-                anE.printStackTrace(System.out);
+        public void notify(RemoteEvent anEvent) {
+            synchronized(this) {
+                _notifyCount++;
+                notify();
             }
+        }
+
+        public int getCount() {
+            synchronized(this) {
+                return _notifyCount;
+            }
+        }
+
+        public int waitOnCount(int aCount, long aWaitTime) {
+            long myExpiry = System.currentTimeMillis() + aWaitTime;
+
+            synchronized(this) {
+                while (_notifyCount != aCount) {
+                    long myNewWaitTime = myExpiry - System.currentTimeMillis();
+
+                    if (myNewWaitTime <= 0)
+                        return -1;
+
+                    try {
+                        wait(myNewWaitTime);
+                    } catch (InterruptedException anIE) {
+                    }
+                }
+            }
+
+            return aCount;
         }
     }
 }
