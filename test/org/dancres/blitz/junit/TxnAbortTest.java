@@ -1,4 +1,4 @@
-package org.dancres.blitz.test;
+package org.dancres.blitz.junit;
 
 import junit.framework.Assert;
 import net.jini.core.entry.Entry;
@@ -9,11 +9,13 @@ import net.jini.space.JavaSpace;
 import org.dancres.blitz.remote.LocalSpace;
 
 import org.dancres.blitz.remote.LocalTxnMgr;
+import org.dancres.blitz.test.DummyEntry;
+import org.dancres.blitz.test.TxnGatewayImpl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class TxnAbort {
+public class TxnAbortTest {
 
     private LocalSpace _localSpace;
     private LocalTxnMgr _mgr;

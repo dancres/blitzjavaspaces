@@ -684,13 +684,6 @@
     </java>
   </target>
 
-    <target name="testtxnabort" depends="compile"
-            description="test basic txn abort">
-        <java classname="org.dancres.blitz.test.TxnAbort"
-              classpathref="allclasses">
-        </java>
-    </target>
-
   <target name="testexpire" depends="compile"
       description="test basic lease expiry">
     <java classname="org.dancres.blitz.SpaceLeaseExpireTest"
