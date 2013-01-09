@@ -528,12 +528,6 @@
       classpathref="allclasses"/>
   </target>
 
-  <target name="testtracker" depends="compile"
-      description="test basic tracker">
-    <java classname="org.dancres.blitz.LeaseTrackTest"
-      classpathref="allclasses"/>
-  </target>
-
     <target name="stressreaper" depends="compile"
             description="stress reaper">
         <java classname="org.dancres.blitz.remote.test.StressReap"
@@ -648,13 +642,6 @@
     <java classname="org.dancres.blitz.test.LargeTxn"
       classpathref="allclasses">
       <arg value="100"/>
-    </java>
-  </target>
-
-  <target name="testexpire" depends="compile"
-      description="test basic lease expiry">
-    <java classname="org.dancres.blitz.SpaceLeaseExpireTest"
-      classpathref="allclasses">
     </java>
   </target>
 
