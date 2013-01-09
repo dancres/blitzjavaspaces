@@ -1,79 +1,60 @@
 package org.dancres.blitz;
 
+import junit.framework.Assert;
 import net.jini.core.entry.Entry;
 import net.jini.core.lease.Lease;
 
 import org.dancres.blitz.mangler.*;
 
 import org.dancres.blitz.disk.Disk;
-import org.dancres.blitz.disk.DiskTxn;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 public class SpaceWriteTakeTest {
-    public static void main(String args[]) {
+    private SpaceImpl _space;
+    private EntryMangler _mangler;
 
-        try {
-            System.out.println("Start space");
+    @Before
+    public void init() throws Exception {
+        _space = new SpaceImpl(null);
+        _mangler = new EntryMangler();
+    }
 
-            SpaceImpl mySpace = new SpaceImpl(null);
+    @After
+    public void deinit() throws Exception {
+        _space.stop();
+    }
 
-            System.out.println("Prepare entry");
+    @Test
+    public void writeTake() throws Exception {
+        MangledEntry myPackedEntry = _mangler.mangle(new TestEntry().init());
 
-            EntryMangler myMangler = new EntryMangler();
+        _space.write(myPackedEntry, null, Lease.FOREVER);
 
-            System.out.println("init'd entry");
-            MangledEntry myPackedEntry =
-                myMangler.mangle(new TestEntry().init());
+        MangledEntry myWild = _mangler.mangle(new TestEntry());
 
-            System.out.println("Do write: " + 
-                               mySpace.write(myPackedEntry, null,
-                                             Lease.FOREVER));
+        Assert.assertNotNull(_space.read(myWild, null, Lease.FOREVER));
 
-            MangledEntry myWild = myMangler.mangle(new TestEntry());
-            System.out.println("Do wild read: ");
-            System.out.println(mySpace.read(myWild, null, Lease.FOREVER));
+        Assert.assertNotNull(_space.take(myPackedEntry, null, Lease.FOREVER));
 
-            System.out.println("Do specific take:");
-            System.out.println(mySpace.take(myPackedEntry, null, 
-                                            Lease.FOREVER));
+        myPackedEntry = _mangler.mangle(new TestEntry().init2());
 
-            myPackedEntry = myMangler.mangle(new TestEntry().init2());
+        _space.write(myPackedEntry, null, Lease.FOREVER);
 
-            System.out.println("Do write: " + 
-                               mySpace.write(myPackedEntry, null,
-                                             Lease.FOREVER));
+        Assert.assertNotNull(_space.take(myPackedEntry, null, Lease.FOREVER));
 
-            myPackedEntry = myMangler.mangle(new TestEntry().init2());
-            System.out.println("Do other take: ");
-            System.out.println(mySpace.take(myPackedEntry, null, 
-                                            Lease.FOREVER));
+        myPackedEntry = _mangler.mangle(new TestEntry().init3());
 
-            myPackedEntry = myMangler.mangle(new TestEntry().init3());
-            System.out.println("Do non-match take: ");
-            System.out.println(mySpace.take(myPackedEntry, null,
-                                            5000));
+        Assert.assertNull(_space.take(myPackedEntry, null, 5000));
 
-            // This is naughty - we're messing with internals directly
-            // but it's a useful test
-            //
-            System.out.println("Do sync write: " +
-                               mySpace.write(myPackedEntry, null,
-                                             Lease.FOREVER));
+        // We now want to make sure that when an entry is on-disk we still match it
+        //
+        _space.write(myPackedEntry, null, Lease.FOREVER);
 
-            System.out.println("Force sync");
-            Disk.sync();
+        Disk.sync();
 
-            System.out.println("Do wild take");
-            System.out.println(mySpace.take(myWild, null, Lease.FOREVER));
-
-            System.out.println("Do stop");
-
-            mySpace.stop();
-
-        } catch (Exception anE) {
-            System.err.println("Got exception :(");
-            anE.printStackTrace(System.err);
-        }
-
+        Assert.assertNotNull(_space.take(myWild, null, Lease.FOREVER));
     }
 
     public static class TestEntry implements Entry {
