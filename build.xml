@@ -540,12 +540,6 @@
       classpathref="allclasses"/>
   </target>
 
-  <target name="testreaper" depends="compile"
-      description="test basic reaper">
-    <java classname="org.dancres.blitz.LeaseReapTest"
-      classpathref="allclasses"/>
-  </target>
-
     <target name="stressreaper" depends="compile"
             description="stress reaper">
         <java classname="org.dancres.blitz.remote.test.StressReap"
@@ -651,13 +645,6 @@
     <java classname="org.dancres.blitz.WriteSpeedTest"
       classpathref="allclasses">
       <arg value="4000"/>
-    </java>
-  </target>
-
-  <target name="testtxnlockcontents" depends="compile"
-      description="test txn locking and contents doesn't return duplicates">
-    <java classname="org.dancres.blitz.test.TxnLockContents"
-      classpathref="allclasses">
     </java>
   </target>
 
