@@ -1,4 +1,4 @@
-package org.dancres.blitz;
+package org.dancres.blitz.junit;
 
 import java.io.Serializable;
 
@@ -12,6 +12,7 @@ import net.jini.core.lease.Lease;
 import net.jini.core.event.RemoteEvent;
 import net.jini.core.event.RemoteEventListener;
 
+import org.dancres.blitz.SpaceImpl;
 import org.dancres.blitz.mangler.*;
 import org.junit.After;
 import org.junit.Before;
@@ -43,8 +44,6 @@ public class SpaceNotifyTest {
         _space.notify(myPackedEntry, null, myListener,
                 Lease.FOREVER,
                 new MarshalledObject(new String("Here's a handback")));
-
-        System.out.println("Do write");
 
         for (int i = 0; i < 3; i++) {
             _space.write(myPackedEntry, null, Lease.FOREVER);
