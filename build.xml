@@ -585,14 +585,6 @@
     </java>
   </target>
  
-  <target name="testinheritcontents" depends="compile"
-      description="test basic getView">
-    <java classname="org.dancres.blitz.test.InheritingContents" fork="true"
-      classpathref="allclasses">
-      <jvmarg value="-Dorg.dancres.blitz.config=/Users/dan/src/jini/blitz_git/config/blitz.config"/>
-    </java>
-  </target>
-
   <target name="testschema" depends="compile"
       description="test basic schema break">
     <java classname="org.dancres.blitz.SpaceSchemaBreakTest"
