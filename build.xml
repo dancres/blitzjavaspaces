@@ -692,13 +692,6 @@
     </java>
   </target>
 
-  <target name="testblocking" depends="compile"
-      description="test basic blocking">
-    <java classname="org.dancres.blitz.SpaceBlockTest"
-      classpathref="allclasses">
-    </java>
-  </target>
-
   <target name="testtxnblocking" depends="compile"
       description="test basic txn blocking">
     <java classname="org.dancres.blitz.test.TxnResolve"
