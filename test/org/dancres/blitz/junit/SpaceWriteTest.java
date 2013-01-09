@@ -29,31 +29,24 @@ public class SpaceWriteTest {
     }
 
     @Test public void write() throws Exception {
+        TestEntry myEntry = new TestEntry();
+        myEntry.init();
 
-        try {
-            TestEntry myEntry = new TestEntry();
-            myEntry.init();
+        MangledEntry myPackedEntry = _mangler.mangle(myEntry);
 
-            MangledEntry myPackedEntry = _mangler.mangle(myEntry);
+        _space.write(myPackedEntry, null, Lease.FOREVER);
 
-            _space.write(myPackedEntry, null, Lease.FOREVER);
+        Stat[] myStats = StatsBoard.get().getStats();
 
-            Stat[] myStats = StatsBoard.get().getStats();
+        for (int i = 0; i < myStats.length; i++) {
+            if (myStats[i] instanceof InstanceCount) {
+                InstanceCount myCount = (InstanceCount) myStats[i];
 
-            for (int i = 0; i < myStats.length; i++) {
-                if (myStats[i] instanceof InstanceCount) {
-                    InstanceCount myCount = (InstanceCount) myStats[i];
-
-                    if (myCount.getType().contains("Test"))
-                        Assert.assertEquals(myCount.getCount(), 1);
+                if (myCount.getType().contains("Test")) {
+                    Assert.assertEquals(1, myCount.getCount());
                 }
             }
-
-        } catch (Exception anE) {
-            System.err.println("Got exception :(");
-            anE.printStackTrace(System.err);
         }
-
     }
 
     public static class TestEntry implements Entry {
