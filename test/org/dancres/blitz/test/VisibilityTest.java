@@ -21,95 +21,101 @@ import org.dancres.blitz.mangler.*;
 import org.dancres.blitz.remote.LocalTxnMgr;
 
 import org.dancres.blitz.SpaceImpl;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 public class VisibilityTest {
-    public static void main(String args[]) {
+    private SpaceImpl _space;
+    private LocalTxnMgr _mgr;
+    private EntryMangler _mangler;
 
-        try {
-            SpaceImpl mySpace = new SpaceImpl(new TxnGatewayImpl());
-            LocalTxnMgr myMgr = new LocalTxnMgr(1, mySpace.getTxnControl());
+    @Before
+    public void init() throws Exception {
+        _space = new SpaceImpl(new TxnGatewayImpl());
+        _mgr = new LocalTxnMgr(1, _space.getTxnControl());
+        _mangler = new EntryMangler();
+    }
+    
+    @After
+    public void deinit() throws Exception {
+        _space.stop();
+    }
+    
+    @Test
+    public void testVis() throws Exception {
+        TestEntry myEntry = new TestEntry();
+        myEntry.init();
 
-            EntryMangler myMangler = EntryMangler.getMangler();
-            TestEntry myEntry = new TestEntry();
-            myEntry.init();
+        MangledEntry myPackedEntry = _mangler.mangle(myEntry);
 
-            MangledEntry myPackedEntry = myMangler.mangle(myEntry);
+        EventListener myVis = new EventListener();
+        EventListener myVisOnly = new EventListener();
+        EventListener myNotify = new EventListener();
 
-            EventListener myVis = new EventListener();
-            EventListener myVisOnly = new EventListener();
-            EventListener myNotify = new EventListener();
+        _space.visibility(new MangledEntry[] {myPackedEntry}, null,
+                myVis,
+                Lease.FOREVER,
+                new MarshalledObject(new String("Here's a vis handback")), false);
+        _space.visibility(new MangledEntry[] {myPackedEntry}, null,
+                myVisOnly,
+                Lease.FOREVER,
+                new MarshalledObject(new String("Here's a vis-only handback")), true);
+        _space.notify(myPackedEntry, null, myNotify,
+                Lease.FOREVER,
+                new MarshalledObject(new String("Here's a handback")));
 
-            mySpace.visibility(new MangledEntry[] {myPackedEntry}, null,
-                               myVis,
-                               Lease.FOREVER,
-                               new MarshalledObject(new String("Here's a vis handback")), false);
-            mySpace.visibility(new MangledEntry[] {myPackedEntry}, null,
-                               myVisOnly,
-                               Lease.FOREVER,
-                               new MarshalledObject(new String("Here's a vis-only handback")), true);
-            mySpace.notify(myPackedEntry, null, myNotify,
-                           Lease.FOREVER,
-                           new MarshalledObject(new String("Here's a handback")));
-
-            for (int i = 0; i < 2; i++) {
-                mySpace.write(myPackedEntry, null, Lease.FOREVER);
-            }
-
-            Assert.assertEquals(2, myVis.waitOnNotifyCount(2, 500));
-            Assert.assertEquals(2, myVis.getAvailabilityCount());
-
-            Assert.assertEquals(2, myVisOnly.waitOnNotifyCount(2, 500));
-            Assert.assertEquals(2, myVisOnly.getAvailabilityCount());
-
-            Assert.assertEquals(2, myNotify.waitOnNotifyCount(2, 500));
-            Assert.assertEquals(0, myNotify.getAvailabilityCount());
-
-            ServerTransaction myTxn = myMgr.newTxn();
-
-            Assert.assertNotNull(mySpace.take(myPackedEntry, myTxn, 0));
-
-            // Aborted take transaction causes a vis and avail change
-            //
-            myTxn.abort();
-
-            Assert.assertEquals(3, myVis.waitOnNotifyCount(3, 500));
-            Assert.assertEquals(3, myVis.getAvailabilityCount());
-
-            Assert.assertEquals(3, myVisOnly.waitOnNotifyCount(3, 500));
-            Assert.assertEquals(3, myVisOnly.getAvailabilityCount());
-
-            Assert.assertEquals(2, myNotify.waitOnNotifyCount(2, 500));
-            Assert.assertEquals(0, myNotify.getAvailabilityCount());
-
-            ServerTransaction myTxn1 = myMgr.newTxn();
-            ServerTransaction myTxn2 = myMgr.newTxn();
-
-            Assert.assertNotNull(mySpace.read(myPackedEntry, myTxn1, 0));
-            Assert.assertNotNull(mySpace.read(myPackedEntry, myTxn2, 0));
-
-            // Because there are two transactions "stacked" on the same entry, releasing the first one generates
-            // no events. Releasing the second one, causes a change in availability but not visibility
-            //
-            myTxn1.abort();
-
-            myTxn2.commit();
-
-            Assert.assertEquals(4, myVis.waitOnNotifyCount(4, 500));
-            Assert.assertEquals(4, myVis.getAvailabilityCount());
-
-            Assert.assertEquals(3, myVisOnly.waitOnNotifyCount(3, 500));
-            Assert.assertEquals(3, myVisOnly.getAvailabilityCount());
-
-            Assert.assertEquals(2, myNotify.waitOnNotifyCount(2, 500));
-            Assert.assertEquals(0, myNotify.getAvailabilityCount());
-
-            mySpace.stop();
-
-        } catch (Exception anE) {
-            System.err.println("Got exception :(");
-            anE.printStackTrace(System.err);
+        for (int i = 0; i < 2; i++) {
+            _space.write(myPackedEntry, null, Lease.FOREVER);
         }
 
+        Assert.assertEquals(2, myVis.waitOnNotifyCount(2, 500));
+        Assert.assertEquals(2, myVis.getAvailabilityCount());
+
+        Assert.assertEquals(2, myVisOnly.waitOnNotifyCount(2, 500));
+        Assert.assertEquals(2, myVisOnly.getAvailabilityCount());
+
+        Assert.assertEquals(2, myNotify.waitOnNotifyCount(2, 500));
+        Assert.assertEquals(0, myNotify.getAvailabilityCount());
+
+        ServerTransaction myTxn = _mgr.newTxn();
+
+        Assert.assertNotNull(_space.take(myPackedEntry, myTxn, 0));
+
+        // Aborted take transaction causes a vis and avail change
+        //
+        myTxn.abort();
+
+        Assert.assertEquals(3, myVis.waitOnNotifyCount(3, 500));
+        Assert.assertEquals(3, myVis.getAvailabilityCount());
+
+        Assert.assertEquals(3, myVisOnly.waitOnNotifyCount(3, 500));
+        Assert.assertEquals(3, myVisOnly.getAvailabilityCount());
+
+        Assert.assertEquals(2, myNotify.waitOnNotifyCount(2, 500));
+        Assert.assertEquals(0, myNotify.getAvailabilityCount());
+
+        ServerTransaction myTxn1 = _mgr.newTxn();
+        ServerTransaction myTxn2 = _mgr.newTxn();
+
+        Assert.assertNotNull(_space.read(myPackedEntry, myTxn1, 0));
+        Assert.assertNotNull(_space.read(myPackedEntry, myTxn2, 0));
+
+        // Because there are two transactions "stacked" on the same entry, releasing the first one generates
+        // no events. Releasing the second one, causes a change in availability but not visibility
+        //
+        myTxn1.abort();
+
+        myTxn2.commit();
+
+        Assert.assertEquals(4, myVis.waitOnNotifyCount(4, 500));
+        Assert.assertEquals(4, myVis.getAvailabilityCount());
+
+        Assert.assertEquals(3, myVisOnly.waitOnNotifyCount(3, 500));
+        Assert.assertEquals(3, myVisOnly.getAvailabilityCount());
+
+        Assert.assertEquals(2, myNotify.waitOnNotifyCount(2, 500));
+        Assert.assertEquals(0, myNotify.getAvailabilityCount());
     }
 
     public static class TestEntry implements Entry {
