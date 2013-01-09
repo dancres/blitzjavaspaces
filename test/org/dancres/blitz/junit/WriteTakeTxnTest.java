@@ -1,4 +1,4 @@
-package org.dancres.blitz.test;
+package org.dancres.blitz.junit;
 
 import junit.framework.Assert;
 import net.jini.core.entry.Entry;
@@ -10,13 +10,14 @@ import net.jini.core.transaction.server.*;
 import org.dancres.blitz.remote.LocalSpace;
 
 import org.dancres.blitz.remote.LocalTxnMgr;
+import org.dancres.blitz.test.DummyEntry;
 import org.dancres.blitz.txn.TxnGateway;
 import org.dancres.blitz.txn.TxnId;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class WriteTakeTxn {
+public class WriteTakeTxnTest {
     private LocalSpace _space;
     private LocalTxnMgr _mgr;
 

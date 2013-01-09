@@ -522,12 +522,6 @@
       classpathref="allclasses"/>
   </target>
 
-  <target name="testtxnwritetake" depends="compile"
-      description="test basic write, take under txn">
-    <java classname="org.dancres.blitz.test.WriteTakeTxn"
-      classpathref="allclasses"/>
-  </target>
-
   <target name="spacewrite" depends="compile"
       description="test basic write">
     <java classname="com.incax.SpaceWriter"
