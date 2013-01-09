@@ -1,9 +1,10 @@
-package org.dancres.blitz;
+package org.dancres.blitz.junit;
 
 import junit.framework.Assert;
 import net.jini.core.entry.Entry;
 import net.jini.core.lease.Lease;
 
+import org.dancres.blitz.SpaceImpl;
 import org.dancres.blitz.mangler.*;
 
 import org.dancres.blitz.disk.Disk;
