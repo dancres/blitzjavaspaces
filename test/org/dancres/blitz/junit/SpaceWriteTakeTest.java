@@ -47,7 +47,7 @@ public class SpaceWriteTakeTest {
 
         myPackedEntry = _mangler.mangle(new TestEntry().init3());
 
-        Assert.assertNull(_space.take(myPackedEntry, null, 5000));
+        Assert.assertNull(_space.take(myPackedEntry, null, 100));
 
         // We now want to make sure that when an entry is on-disk we still match it
         //
