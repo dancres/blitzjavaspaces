@@ -1,4 +1,4 @@
-package org.dancres.blitz.test;
+package org.dancres.blitz.junit;
 
 import java.io.Serializable;
 
@@ -21,6 +21,7 @@ import org.dancres.blitz.mangler.*;
 import org.dancres.blitz.remote.LocalTxnMgr;
 
 import org.dancres.blitz.SpaceImpl;
+import org.dancres.blitz.test.TxnGatewayImpl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

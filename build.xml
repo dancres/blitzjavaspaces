@@ -698,13 +698,6 @@
     </java>
   </target>
 
-  <target name="testvisibility" depends="compile"
-      description="test basic visibility reg">
-    <java classname="org.dancres.blitz.test.VisibilityTest"
-      classpathref="allclasses">
-    </java>
-  </target>
-
   <target name="arctest" depends="compile"
       description="test basic arc cache impl">
     <java classname="org.dancres.blitz.arc.ArcTest"
