@@ -631,12 +631,6 @@
       classpathref="allclasses"/>
   </target>
 
-  <target name="testnulltake" depends="compile"
-      description="test basic take">
-    <java classname="org.dancres.blitz.NullTakeTest"
-      classpathref="allclasses"/>
-  </target>
-
   <target name="testnotifyrenew" depends="compile"
       description="test basic notify renewal">
     <java classname="org.dancres.blitz.RenewNotify"
