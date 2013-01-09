@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import java.rmi.MarshalledObject;
 
+import junit.framework.Assert;
 import net.jini.core.entry.Entry;
 
 import net.jini.core.lease.Lease;
@@ -25,91 +26,82 @@ public class VisibilityTest {
     public static void main(String args[]) {
 
         try {
-            System.out.println("Start space");
-
             SpaceImpl mySpace = new SpaceImpl(new TxnGatewayImpl());
             LocalTxnMgr myMgr = new LocalTxnMgr(1, mySpace.getTxnControl());
-
-            System.out.println("Prepare entry");
 
             EntryMangler myMangler = EntryMangler.getMangler();
             TestEntry myEntry = new TestEntry();
             myEntry.init();
 
-            System.out.println("init'd entry");
             MangledEntry myPackedEntry = myMangler.mangle(myEntry);
 
-            System.out.println("Do notify");
+            EventListener myVis = new EventListener();
+            EventListener myVisOnly = new EventListener();
+            EventListener myNotify = new EventListener();
+
             mySpace.visibility(new MangledEntry[] {myPackedEntry}, null,
-                               new EventListener(),
+                               myVis,
                                Lease.FOREVER,
                                new MarshalledObject(new String("Here's a vis handback")), false);
             mySpace.visibility(new MangledEntry[] {myPackedEntry}, null,
-                               new EventListener(),
+                               myVisOnly,
                                Lease.FOREVER,
                                new MarshalledObject(new String("Here's a vis-only handback")), true);
-            mySpace.notify(myPackedEntry, null, new EventListener(),
+            mySpace.notify(myPackedEntry, null, myNotify,
                            Lease.FOREVER,
                            new MarshalledObject(new String("Here's a handback")));
 
-            System.out.println("Do write");
-
-            for (int i = 0; i < 3; i++) {
+            for (int i = 0; i < 2; i++) {
                 mySpace.write(myPackedEntry, null, Lease.FOREVER);
             }
 
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException anIE) {
-            }
+            Assert.assertEquals(2, myVis.waitOnNotifyCount(2, 500));
+            Assert.assertEquals(2, myVis.getAvailabilityCount());
 
-            System.out.println("Take under txn");
+            Assert.assertEquals(2, myVisOnly.waitOnNotifyCount(2, 500));
+            Assert.assertEquals(2, myVisOnly.getAvailabilityCount());
+
+            Assert.assertEquals(2, myNotify.waitOnNotifyCount(2, 500));
+            Assert.assertEquals(0, myNotify.getAvailabilityCount());
+
             ServerTransaction myTxn = myMgr.newTxn();
 
-            /*
-              If we take and then abort, we should get an extra event
-              on the visibility registration
-             */
-            if (mySpace.take(myPackedEntry, myTxn, 0) == null)
-                throw new RuntimeException("Eeek entry's gone");
+            Assert.assertNotNull(mySpace.take(myPackedEntry, myTxn, 0));
 
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException anIE) {
-            }
+            // Aborted take transaction causes a vis and avail change
+            //
+            myTxn.abort();
 
-            System.out.println("Commit txn");
+            Assert.assertEquals(3, myVis.waitOnNotifyCount(3, 500));
+            Assert.assertEquals(3, myVis.getAvailabilityCount());
 
-            myTxn.commit();
+            Assert.assertEquals(3, myVisOnly.waitOnNotifyCount(3, 500));
+            Assert.assertEquals(3, myVisOnly.getAvailabilityCount());
 
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException anIE) {
-            }
+            Assert.assertEquals(2, myNotify.waitOnNotifyCount(2, 500));
+            Assert.assertEquals(0, myNotify.getAvailabilityCount());
 
-            System.out.println("Release all conflicts");
             ServerTransaction myTxn1 = myMgr.newTxn();
-
             ServerTransaction myTxn2 = myMgr.newTxn();
 
-            if (mySpace.read(myPackedEntry, myTxn1, 0) == null)
-                throw new RuntimeException("Eeek entry's gone");
+            Assert.assertNotNull(mySpace.read(myPackedEntry, myTxn1, 0));
+            Assert.assertNotNull(mySpace.read(myPackedEntry, myTxn2, 0));
 
-            if (mySpace.read(myPackedEntry, myTxn2, 0) == null)
-                throw new RuntimeException("Eeek entry's gone");
-
-            System.out.println("Abort 1");
+            // Because there are two transactions "stacked" on the same entry, releasing the first one generates
+            // no events. Releasing the second one, causes a change in availability but not visibility
+            //
             myTxn1.abort();
 
-            System.out.println("Commit 2");
             myTxn2.commit();
 
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException anIE) {
-            }
-            
-            System.out.println("Do stop");
+            Assert.assertEquals(4, myVis.waitOnNotifyCount(4, 500));
+            Assert.assertEquals(4, myVis.getAvailabilityCount());
+
+            Assert.assertEquals(3, myVisOnly.waitOnNotifyCount(3, 500));
+            Assert.assertEquals(3, myVisOnly.getAvailabilityCount());
+
+            Assert.assertEquals(2, myNotify.waitOnNotifyCount(2, 500));
+            Assert.assertEquals(0, myNotify.getAvailabilityCount());
 
             mySpace.stop();
 
@@ -139,26 +131,55 @@ public class VisibilityTest {
 
     private static class EventListener implements RemoteEventListener,
                                                   Serializable {
+        private int _notifyCount = 0;
+        private int _availabilityCount = 0;
+
+        public int getAvailabilityCount() {
+            synchronized(this) {
+                return _availabilityCount;
+            }
+        }
+
+        public int waitOnNotifyCount(int aCount, long aWaitTime) {
+            long myExpiry = System.currentTimeMillis() + aWaitTime;
+
+            synchronized(this) {
+                while (_notifyCount != aCount) {
+                    long myNewWaitTime = myExpiry - System.currentTimeMillis();
+
+                    if (myNewWaitTime <= 0)
+                        return -1;
+
+                    try {
+                        wait(myNewWaitTime);
+                    } catch (InterruptedException anIE) {
+                    }
+                }
+            }
+
+            return aCount;
+        }
+
         public void notify(RemoteEvent anEvent) {
 
+            synchronized(this) {
+                ++_notifyCount;
+            }
+
             try {
-                System.out.println("Got event: " + anEvent.getSource() + ", " +
-                                   anEvent.getID() + ", " +
-                                   anEvent.getSequenceNumber() + ", " + 
-                                   anEvent.getRegistrationObject().get());
-
                 if (anEvent instanceof AvailabilityEvent) {
-                    AvailabilityEvent myEvent = (AvailabilityEvent) anEvent;
-
-                    System.out.println("Entry: " + myEvent.getEntry());
-                    System.out.println("Snapshot: " + myEvent.getSnapshot());
-                    System.out.println("IsVisibility: " +
-                                       myEvent.isVisibilityTransition());
+                    synchronized(this) {
+                        ++_availabilityCount;
+                    }
                 }
 
             } catch (Exception anE) {
                 System.out.println("Got event but couldn't display it");
                 anE.printStackTrace(System.out);
+            }
+
+            synchronized(this) {
+                notify();
             }
         }
     }
