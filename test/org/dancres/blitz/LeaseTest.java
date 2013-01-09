@@ -3,6 +3,7 @@ package org.dancres.blitz;
 import java.io.Serializable;
 import java.rmi.MarshalledObject;
 
+import junit.framework.Assert;
 import net.jini.core.entry.Entry;
 import net.jini.core.lease.Lease;
 
@@ -18,78 +19,89 @@ import org.dancres.blitz.lease.SpaceUID;
 import org.dancres.blitz.remote.LocalTxnMgr;
 import org.dancres.blitz.test.TxnGatewayImpl;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 public class LeaseTest {
-    public static void main(String args[]) {
-        try {
-            System.out.println("Start space");
+    private SpaceImpl _space;
+    private EntryMangler _mangler;
 
-            SpaceImpl mySpace = new SpaceImpl(new TxnGatewayImpl());
+    @Before
+    public void init() throws Exception {
+        _mangler = new EntryMangler();
+        _space = new SpaceImpl(new TxnGatewayImpl());
+    }
 
-            System.out.println("Prepare entry");
+    @After
+    public void deinit() throws Exception {
+        _space.stop();
+    }
 
-            EntryMangler myMangler = new EntryMangler();
-            TestEntry myEntry = new TestEntry();
-            myEntry.init();
+    @Test
+    public void testNotify() throws Exception {
+        TestEntry myEntry = new TestEntry();
+        myEntry.init();
 
-            System.out.println("init'd entry");
-            MangledEntry myPackedEntry = myMangler.mangle(new TestEntry());
+        MangledEntry myPackedEntry = _mangler.mangle(new TestEntry());
+        EventListener myListener = new EventListener();
 
-            System.out.println("Do write");
+        RegTicket myTicket =
+                _space.notify(myPackedEntry, null, myListener,
+                        1000,
+                        new MarshalledObject(new Integer(12345)));
 
-            SpaceUID myEntryUID =
-                mySpace.write(myPackedEntry, null, 50000).getUID();
+        SpaceUID myNotifyUID = myTicket.getUID();
+        SpaceUID myEntryUID =
+                _space.write(myPackedEntry, null, 1000).getUID();
 
-            System.out.println("Do notify");
+        Assert.assertEquals(1, myListener.waitOnCount(1, 500));
 
-            RegTicket myTicket = 
-                mySpace.notify(myPackedEntry, null, new EventListener(),
-                               20000,
-                               new MarshalledObject(new Integer(12345)));
-            
-            SpaceUID myNotifyUID = myTicket.getUID();
+        _space.getLeaseControl().renew(myEntryUID, 1000);
+        _space.getLeaseControl().renew(myNotifyUID, 1000);
 
-            System.out.println("Renew entry");
-            mySpace.getLeaseControl().renew(myEntryUID, 500000);
-            System.out.println("Renew notify");
-            mySpace.getLeaseControl().renew(myNotifyUID, 500000);
+        _space.write(myPackedEntry, null, Lease.FOREVER);
 
-            System.out.println("Renew entry");
-            mySpace.getLeaseControl().renew(myEntryUID, Lease.FOREVER);
-            System.out.println("Renew notify");
-            mySpace.getLeaseControl().renew(myNotifyUID, Lease.FOREVER);
+        // Should get another notify
+        //
+        Assert.assertEquals(2, myListener.waitOnCount(2, 500));
 
-            System.out.println("Cancel entry");
-            mySpace.getLeaseControl().cancel(myEntryUID);
-            System.out.println("Cancel notify");
-            mySpace.getLeaseControl().cancel(myNotifyUID);
+        _space.getLeaseControl().cancel(myEntryUID);
+        _space.getLeaseControl().cancel(myNotifyUID);
 
-            System.out.println("Txn write renewal");
+        Thread.sleep(2000);
 
-            LocalTxnMgr myMgr = new LocalTxnMgr(1, mySpace.getTxnControl());
+        // Should only be one entry left at this point
+        //
+        int myEntryCount = 0;
 
-            ServerTransaction myTxn = myMgr.newTxn();
+        while (_space.take(myPackedEntry, null, 1) != null)
+            myEntryCount++;
 
-            myEntryUID = mySpace.write(myPackedEntry, myTxn, 50000).getUID();
+        Assert.assertEquals(1, myEntryCount);
 
-            mySpace.getLeaseControl().renew(myEntryUID, 500000);
+        LocalTxnMgr myMgr = new LocalTxnMgr(1, _space.getTxnControl());
 
-            myTxn.commit();
+        ServerTransaction myTxn = myMgr.newTxn();
 
-            System.out.println("Settling");
+        myEntryUID = _space.write(myPackedEntry, myTxn, 50000).getUID();
 
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException anIE) {
-            }
+        _space.getLeaseControl().renew(myEntryUID, 500000);
 
-            System.out.println("Do stop");
+        myTxn.commit();
 
-            mySpace.stop();
+        // Would be a notify at txn commit unless the notify was gone, which it should be
+        //
+        Assert.assertEquals(2, myListener.waitOnCount(2, 500));
 
-        } catch (Exception anE) {
-            System.err.println("Got exception :(");
-            anE.printStackTrace(System.err);
-        }
+        // Should be one entry to take
+        //
+        myEntryCount = 0;
+
+        while (_space.take(myPackedEntry, null, 1) != null)
+            myEntryCount++;
+
+        Assert.assertEquals(1, myEntryCount);
     }
 
     public static class TestEntry implements Entry {
@@ -110,18 +122,34 @@ public class LeaseTest {
     }
 
     private static class EventListener implements RemoteEventListener,
-                                                  Serializable {
-        public void notify(RemoteEvent anEvent) {
+            Serializable {
+        private int _notifyCount = 0;
 
-            try {
-                System.out.println("Got event: " + anEvent.getSource() + ", " +
-                                   anEvent.getID() + ", " +
-                                   anEvent.getSequenceNumber() + ", " + 
-                                   anEvent.getRegistrationObject().get());
-            } catch (Exception anE) {
-                System.out.println("Got event but couldn't display it");
-                anE.printStackTrace(System.out);
+        public void notify(RemoteEvent anEvent) {
+            synchronized(this) {
+                _notifyCount++;
+                notify();
             }
+        }
+
+        public int waitOnCount(int aCount, long aWaitTime) {
+            long myExpiry = System.currentTimeMillis() + aWaitTime;
+
+            synchronized(this) {
+                while (_notifyCount != aCount) {
+                    long myNewWaitTime = myExpiry - System.currentTimeMillis();
+
+                    if (myNewWaitTime <= 0)
+                        return -1;
+
+                    try {
+                        wait(myNewWaitTime);
+                    } catch (InterruptedException anIE) {
+                    }
+                }
+            }
+
+            return aCount;
         }
     }
 }
