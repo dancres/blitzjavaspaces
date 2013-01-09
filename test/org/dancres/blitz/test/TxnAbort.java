@@ -1,5 +1,6 @@
 package org.dancres.blitz.test;
 
+import junit.framework.Assert;
 import net.jini.core.entry.Entry;
 
 import net.jini.core.transaction.server.*;
@@ -8,56 +9,50 @@ import net.jini.space.JavaSpace;
 import org.dancres.blitz.remote.LocalSpace;
 
 import org.dancres.blitz.remote.LocalTxnMgr;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 public class TxnAbort {
 
+    private LocalSpace _localSpace;
+    private LocalTxnMgr _mgr;
+
+    @Before
+    public void init() throws Exception {
+        _localSpace = new LocalSpace(new TxnGatewayImpl());
+        _mgr = new LocalTxnMgr(1, _localSpace);
+    }
+
+    @After
+    public void deinit() throws Exception {
+        _localSpace.stop();
+    }
+
+    @Test
     public void test() throws Exception {
 
-        LocalSpace myLocalSpace = new LocalSpace(new TxnGatewayImpl());
+        JavaSpace mySpace = _localSpace.getProxy();
 
-        JavaSpace mySpace = myLocalSpace.getProxy();
+        ServerTransaction tx = _mgr.newTxn();
 
-        LocalTxnMgr myMgr = new LocalTxnMgr(1, myLocalSpace);
-        
-        ServerTransaction tx = myMgr.newTxn();
-        
         mySpace.write(new DummyEntry("1"), null, Long.MAX_VALUE);
 
         mySpace.write(new DummyEntry("2"), tx, Long.MAX_VALUE);
 
-        try {
-            Entry myResult = 
+        Entry myResult =
                 mySpace.take(new DummyEntry("1"), tx, 100);
-            
-            System.out.println("(1) Got result: " + myResult);
-            if (myResult == null)
-                throw new RuntimeException("Failed to get Entry match");
 
-            myMgr.abort(tx.id);
+        Assert.assertNotNull(myResult);
 
-            myResult = mySpace.take(new DummyEntry("1"), null, 100);
-            System.out.println("(2) Got result: " + myResult);
-            if (myResult == null)
-                throw new RuntimeException("Failed to get Entry match");
+        _mgr.abort(tx.id);
 
-            myResult = mySpace.take(new DummyEntry(), null, 100);
+        myResult = mySpace.take(new DummyEntry("1"), null, 100);
 
-            System.out.println("(3) Got result: " + myResult);
-            if (myResult != null)
-                throw new RuntimeException("Failed: Got Entry match");
+        Assert.assertNotNull(myResult);
 
-        } catch(Exception e){
-            System.out.println("Tx failed");
-            e.printStackTrace(System.err);
-            tx.abort();
-        }
-    }
+        myResult = mySpace.take(new DummyEntry(), null, 100);
 
-    public static void main(String args[]) {
-        try {
-            new TxnAbort().test();
-        } catch (Exception anE) {
-            anE.printStackTrace(System.err);
-        }
+        Assert.assertNull(myResult);
     }
 }
