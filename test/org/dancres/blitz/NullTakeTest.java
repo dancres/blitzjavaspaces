@@ -1,5 +1,6 @@
 package org.dancres.blitz;
 
+import junit.framework.Assert;
 import net.jini.core.entry.Entry;
 import net.jini.core.lease.Lease;
 
@@ -7,49 +8,37 @@ import org.dancres.blitz.mangler.*;
 
 import org.dancres.blitz.disk.Disk;
 import org.dancres.blitz.disk.DiskTxn;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 public class NullTakeTest {
-    public static void main(String args[]) {
+    private SpaceImpl _space;
+    private EntryMangler _mangler;
 
-        try {
-            System.out.println("Start space");
+    @Before
+    public void init() throws Exception {
+        _space = new SpaceImpl(null);
+        _mangler = new EntryMangler();
+    }
 
-            SpaceImpl mySpace = new SpaceImpl(null);
+    @After
+    public void deinit() throws Exception {
+        _space.stop();
+    }
 
-            System.out.println("Prepare entry");
-
-            EntryMangler myMangler = new EntryMangler();
-
-            System.out.println("init'd entry");
+    @Test
+    public void testNullTake() throws Exception {
             MangledEntry myPackedEntry =
-                myMangler.mangle(new TestEntry().init());
+                _mangler.mangle(new TestEntry().init());
 
-            System.out.println("Do null take:");
-            System.out.println(mySpace.take(MangledEntry.NULL_TEMPLATE, null, 
-                                            1000));
+        Assert.assertNull(_space.take(MangledEntry.NULL_TEMPLATE, null, 100));
 
-            System.out.println("Do write: " + 
-                               mySpace.write(myPackedEntry, null,
-                                             Lease.FOREVER));
+        _space.write(myPackedEntry, null, Lease.FOREVER);
 
-            MangledEntry myWild = myMangler.mangle(new TestEntry());
-            System.out.println("Do null read: ");
-            System.out.println(mySpace.read(MangledEntry.NULL_TEMPLATE,
-                                            null, Lease.FOREVER));
+        Assert.assertNotNull(_space.read(MangledEntry.NULL_TEMPLATE, null, Lease.FOREVER));
 
-            System.out.println("Do null take:");
-            System.out.println(mySpace.take(MangledEntry.NULL_TEMPLATE, null, 
-                                            Lease.FOREVER));
-
-            System.out.println("Do stop");
-
-            mySpace.stop();
-
-        } catch (Exception anE) {
-            System.err.println("Got exception :(");
-            anE.printStackTrace(System.err);
-        }
-
+        Assert.assertNotNull(_space.take(MangledEntry.NULL_TEMPLATE, null, Lease.FOREVER));
     }
 
     public static class TestEntry implements Entry {
