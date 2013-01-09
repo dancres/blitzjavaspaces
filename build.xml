@@ -522,12 +522,6 @@
       classpathref="allclasses"/>
   </target>
 
-  <target name="testbulkwrite" depends="compile"
-      description="test basic bulk write">
-    <java classname="org.dancres.blitz.BulkWriteTest"
-      classpathref="allclasses"/>
-  </target>
-
   <target name="testbulktake" depends="compile"
       description="test basic bulk take">
     <java classname="org.dancres.blitz.BulkWriteTakeTest"

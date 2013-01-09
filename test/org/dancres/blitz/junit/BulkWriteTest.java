@@ -1,4 +1,4 @@
-package org.dancres.blitz;
+package org.dancres.blitz.junit;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,6 +6,8 @@ import java.util.List;
 import junit.framework.Assert;
 import net.jini.core.entry.Entry;
 
+import org.dancres.blitz.SpaceImpl;
+import org.dancres.blitz.WriteTicket;
 import org.dancres.blitz.mangler.*;
 import org.junit.After;
 import org.junit.Before;
