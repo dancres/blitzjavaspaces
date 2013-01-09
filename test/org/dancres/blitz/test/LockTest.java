@@ -11,28 +11,30 @@ import org.dancres.blitz.remote.LocalSpace;
 import org.dancres.blitz.remote.LocalTxnMgr;
 import org.dancres.blitz.txn.TxnGateway;
 import org.dancres.blitz.txn.TxnId;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 public class LockTest {
     private LocalSpace theSpace;
 
-    public static void main(String args[]) {
-        try {
-            new LockTest().test();
-        } catch (Exception anE) {
-            anE.printStackTrace(System.err);
-        }
+    @Before
+    public void init() throws Exception {
+        theSpace = new LocalSpace(new TxnGatewayImpl());
     }
 
+    @After
+    public void deinit() throws Exception {
+        theSpace.stop();
+    }
+
+    @Test
     public void test() throws Exception {
-
-        theSpace = new LocalSpace(new TxnGatewayImpl());
-
         JavaSpace mySpace = theSpace.getProxy();
 
         LocalTxnMgr myMgr = new LocalTxnMgr(1, theSpace);
         
-        new Taker().start();
-
         Entry myTemplate = new DummyEntry("rhubarb");
 
         ServerTransaction myTxn = myMgr.newTxn();
@@ -41,21 +43,16 @@ public class LockTest {
 
         mySpace.write(myTemplate, myTxn, Lease.FOREVER);
 
-        System.out.println("Read");
+        Taker myTaker = new Taker();
+        myTaker.start();
 
-        Entry myResult = mySpace.read(myTemplate, myTxn, Lease.FOREVER);
-
-        if (myResult == null)
-            throw new Exception("Couldn't read!");
+        Assert.assertNotNull(mySpace.read(myTemplate, myTxn, Lease.FOREVER));
 
         Thread.sleep(5000);
-        
-        System.out.println("Commit");
+
         myTxn.commit();
 
-        // Wait for things to settle
-        //
-        Thread.sleep(5000);
+        myTaker.join();
 
         theSpace.stop();
     }
@@ -70,22 +67,15 @@ public class LockTest {
     }
 
     private class Taker extends Thread {
+        private Entry _result;
+
         public void run() {
             try {
-                System.out.println("Prepare template");
-
                 JavaSpace mySpace = theSpace.getProxy();
 
-                System.out.println("Taking....." + Thread.currentThread());
-                Entry myResult = mySpace.take(new DummyEntry(), null,
-                                               20000);
+                Entry myResult = mySpace.takeIfExists(new DummyEntry(), null, 20000);
 
-                if (myResult != null)
-                    System.out.println(myResult + " " + Thread.currentThread());
-                else
-                    throw new RuntimeException ("No entry found :(" +
-                        Thread.currentThread());
-
+                Assert.assertNotNull(myResult);
             } catch (Exception anException) {
                 System.out.println("Taker failed");
                 anException.printStackTrace(System.out);
