@@ -5,30 +5,48 @@ import net.jini.core.lease.Lease;
 
 import org.dancres.blitz.mangler.*;
 
+import org.dancres.blitz.stats.InstanceCount;
+import org.dancres.blitz.stats.Stat;
+import org.dancres.blitz.stats.StatsBoard;
+import org.junit.Before;
+import org.junit.After;
+import org.junit.Test;
+import org.junit.Assert;
+
+
 public class SpaceWriteTest {
-    public static void main(String args[]) {
+    private SpaceImpl _space;
+    private EntryMangler _mangler;
+
+    @Before public void init() throws Exception {
+        _space = new SpaceImpl(null);
+        _mangler = new EntryMangler();
+    }
+
+    @After public void deinit() throws Exception {
+        _space.stop();
+    }
+
+    @Test public void write() throws Exception {
 
         try {
-            System.out.println("Start space");
-
-            SpaceImpl mySpace = new SpaceImpl(null);
-
-            System.out.println("Prepare entry");
-
-            EntryMangler myMangler = new EntryMangler();
             TestEntry myEntry = new TestEntry();
             myEntry.init();
 
-            System.out.println("init'd entry");
-            MangledEntry myPackedEntry = myMangler.mangle(myEntry);
+            MangledEntry myPackedEntry = _mangler.mangle(myEntry);
 
-            System.out.println("Do write");
+            _space.write(myPackedEntry, null, Lease.FOREVER);
 
-            mySpace.write(myPackedEntry, null, Lease.FOREVER);
+            Stat[] myStats = StatsBoard.get().getStats();
 
-            System.out.println("Do stop");
+            for (int i = 0; i < myStats.length; i++) {
+                if (myStats[i] instanceof InstanceCount) {
+                    InstanceCount myCount = (InstanceCount) myStats[i];
 
-            mySpace.stop();
+                    if (myCount.getType().contains("Test"))
+                        Assert.assertEquals(myCount.getCount(), 1);
+                }
+            }
 
         } catch (Exception anE) {
             System.err.println("Got exception :(");
