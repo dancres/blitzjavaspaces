@@ -578,14 +578,6 @@
     </java>
   </target>
 
-  <target name="testcontents" depends="compile"
-      description="test basic getView">
-    <java classname="org.dancres.blitz.test.Contents" fork="true"
-      classpathref="allclasses">
-      <jvmarg value="-Dorg.dancres.blitz.config=/Users/dan/src/jini/blitz_git/config/blitz.config"/>
-    </java>
-  </target>
-
     <target name="test05contents" depends="compile"
             description="test basic getView">
         <java classname="org.dancres.blitz.test.JavaSpace05Contents" fork="true"

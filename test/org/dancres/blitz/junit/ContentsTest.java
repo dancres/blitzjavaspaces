@@ -1,4 +1,4 @@
-package org.dancres.blitz.test;
+package org.dancres.blitz.junit;
 
 import junit.framework.Assert;
 import net.jini.core.entry.Entry;
@@ -9,6 +9,8 @@ import org.dancres.blitz.mangler.*;
 import org.dancres.blitz.SpaceImpl;
 import org.dancres.blitz.EntryView;
 import org.dancres.blitz.EntryChit;
+import org.dancres.blitz.test.DummyEntry;
+import org.dancres.blitz.test.LoadEntry;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,7 +22,7 @@ import java.util.Iterator;
    Note that only the getView with a true/hold locks will contribute to
    stats on reads because only they create and log txnops.
  */
-public class Contents {
+public class ContentsTest {
     private static final int TOTAL_ENTRIES = 10;
 
     private SpaceImpl _space;
@@ -29,6 +31,7 @@ public class Contents {
     @Before
     public void init() throws Exception {
         _space = new SpaceImpl(null);
+        _mangler = new EntryMangler();
     }
 
     @After
