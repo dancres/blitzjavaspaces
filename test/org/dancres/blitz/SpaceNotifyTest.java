@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import java.rmi.MarshalledObject;
 
+import junit.framework.Assert;
 import net.jini.core.entry.Entry;
 
 import net.jini.core.lease.Lease;
@@ -12,49 +13,44 @@ import net.jini.core.event.RemoteEvent;
 import net.jini.core.event.RemoteEventListener;
 
 import org.dancres.blitz.mangler.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 public class SpaceNotifyTest {
-    public static void main(String args[]) {
+    private SpaceImpl _space;
+    private EntryMangler _mangler;
 
-        try {
-            System.out.println("Start space");
+    @Before
+    public void init() throws Exception {
+        _space = new SpaceImpl(null);
+        _mangler = new EntryMangler();
+    }
 
-            SpaceImpl mySpace = new SpaceImpl(null);
+    @After
+    public void deinit() throws Exception {
+        _space.stop();
+    }
 
-            System.out.println("Prepare entry");
+    @Test
+    public void test() throws Exception {
+        TestEntry myEntry = new TestEntry();
+        myEntry.init();
 
-            EntryMangler myMangler = new EntryMangler();
-            TestEntry myEntry = new TestEntry();
-            myEntry.init();
+        MangledEntry myPackedEntry = _mangler.mangle(myEntry);
 
-            System.out.println("init'd entry");
-            MangledEntry myPackedEntry = myMangler.mangle(myEntry);
+        EventListener myListener = new EventListener();
+        _space.notify(myPackedEntry, null, myListener,
+                Lease.FOREVER,
+                new MarshalledObject(new String("Here's a handback")));
 
-            System.out.println("Do notify");
-            mySpace.notify(myPackedEntry, null, new EventListener(),
-                           Lease.FOREVER,
-                           new MarshalledObject(new String("Here's a handback")));
+        System.out.println("Do write");
 
-            System.out.println("Do write");
+        for (int i = 0; i < 3; i++) {
+            _space.write(myPackedEntry, null, Lease.FOREVER);
 
-            for (int i = 0; i < 3; i++) {
-                mySpace.write(myPackedEntry, null, Lease.FOREVER);
-            }
-
-            try {
-                Thread.sleep(10000);
-            } catch (InterruptedException anIE) {
-            }
-
-            System.out.println("Do stop");
-
-            mySpace.stop();
-
-        } catch (Exception anE) {
-            System.err.println("Got exception :(");
-            anE.printStackTrace(System.err);
+            Assert.assertEquals(i + 1, myListener.waitOnCount(i + 1, 500));
         }
-
     }
 
     public static class TestEntry implements Entry {
@@ -76,17 +72,33 @@ public class SpaceNotifyTest {
 
     private static class EventListener implements RemoteEventListener,
                                                   Serializable {
-        public void notify(RemoteEvent anEvent) {
+        private int _notifyCount = 0;
 
-            try {
-                System.out.println("Got event: " + anEvent.getSource() + ", " +
-                                   anEvent.getID() + ", " +
-                                   anEvent.getSequenceNumber() + ", " + 
-                                   anEvent.getRegistrationObject().get());
-            } catch (Exception anE) {
-                System.out.println("Got event but couldn't display it");
-                anE.printStackTrace(System.out);
+        public void notify(RemoteEvent anEvent) {
+            synchronized(this) {
+                _notifyCount++;
+                notify();
             }
+        }
+
+        public int waitOnCount(int aCount, long aWaitTime) {
+            long myExpiry = System.currentTimeMillis() + aWaitTime;
+
+            synchronized(this) {
+                while (_notifyCount != aCount) {
+                    long myNewWaitTime = myExpiry - System.currentTimeMillis();
+
+                    if (myNewWaitTime <= 0)
+                        return -1;
+
+                    try {
+                        wait(myNewWaitTime);
+                    } catch (InterruptedException anIE) {
+                    }
+                }
+            }
+
+            return aCount;
         }
     }
 }
