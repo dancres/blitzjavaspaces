@@ -698,13 +698,6 @@
     </java>
   </target>
 
-  <target name="testfullnotify" depends="compile"
-      description="test basic lease renewal">
-    <java classname="org.dancres.blitz.remote.TxnNotify"
-      classpathref="allclasses">
-    </java>
-  </target>
-
   <target name="testvisibility" depends="compile"
       description="test basic visibility reg">
     <java classname="org.dancres.blitz.test.VisibilityTest"
