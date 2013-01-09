@@ -1,5 +1,6 @@
 package org.dancres.blitz.test;
 
+import junit.framework.Assert;
 import net.jini.core.entry.Entry;
 import net.jini.core.lease.Lease;
 
@@ -11,39 +12,41 @@ import org.dancres.blitz.remote.LocalSpace;
 import org.dancres.blitz.remote.LocalTxnMgr;
 import org.dancres.blitz.txn.TxnGateway;
 import org.dancres.blitz.txn.TxnId;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 public class WriteTakeTxn {
-    public static void main(String args[]) {
-        try {
-            new WriteTakeTxn().test();
-        } catch (Exception anE) {
-            anE.printStackTrace(System.err);
-        }
+    private LocalSpace _space;
+    private LocalTxnMgr _mgr;
+
+    @Before
+    public void init() throws Exception {
+        _space = new LocalSpace(new TxnGatewayImpl());
+        _mgr = new LocalTxnMgr(1, _space);
     }
 
-    public void test() throws Exception {
+    @After
+    public void deinit() throws Exception {
+        _space.stop();
+    }
 
-        LocalSpace mySpace = new LocalSpace(new TxnGatewayImpl());
-
-        LocalTxnMgr myMgr = new LocalTxnMgr(1, mySpace);
-
+    @Test
+    public void testTakeTxn() throws Exception {
         Entry myTemplate = new DummyEntry("rhubarb");
 
-        Transaction.Created myCreatedTxn = TransactionFactory.create(myMgr, Lease.FOREVER);
+        Transaction.Created myCreatedTxn = TransactionFactory.create(_mgr, Lease.FOREVER);
 
-        mySpace.getProxy().write(myTemplate, myCreatedTxn.transaction, Lease.FOREVER);
+        _space.getProxy().write(myTemplate, myCreatedTxn.transaction, Lease.FOREVER);
 
         myCreatedTxn.lease.renew(Lease.FOREVER);
 
         Entry myResult =
-            mySpace.getProxy().takeIfExists(myTemplate, myCreatedTxn.transaction, Lease.FOREVER);
+            _space.getProxy().takeIfExists(myTemplate, myCreatedTxn.transaction, Lease.FOREVER);
 
-        if (myResult == null)
-            throw new Exception("Couldn't take!");
-                    
+        Assert.assertNotNull(myResult);
+
         myCreatedTxn.transaction.commit();
-
-        mySpace.stop();
     }
     
     private static class TxnGatewayImpl implements TxnGateway {
