@@ -1,4 +1,4 @@
-package org.dancres.blitz;
+package org.dancres.blitz.junit;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +9,7 @@ import junit.framework.Assert;
 import net.jini.core.entry.Entry;
 import net.jini.core.lease.Lease;
 
+import org.dancres.blitz.SpaceImpl;
 import org.dancres.blitz.mangler.*;
 import org.junit.After;
 import org.junit.Before;
@@ -49,9 +50,10 @@ public class BulkWriteTakeTest {
         int myTotal = 0;
 
         while ((myTakes = _space.take(new MangledEntry[] {myTemplate},
-                null, 30000, 25)).size() != 0) {
+                null, 100, 25)).size() != 0) {
             Iterator myTaken = myTakes.iterator();
             while (myTaken.hasNext()) {
+                myTaken.next();
                 ++myTotal;
             }
         }
