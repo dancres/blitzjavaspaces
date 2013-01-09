@@ -516,12 +516,6 @@
       classpathref="allclasses"/>
   </target>
 
-  <target name="testwrite" depends="compile"
-      description="test basic write">
-    <java classname="org.dancres.blitz.SpaceWriteTest"
-      classpathref="allclasses"/>
-  </target>
-
   <target name="testnoschematake" depends="compile"
       description="test basic write">
     <java classname="org.dancres.blitz.UndefinedSchemaTake"
@@ -581,12 +575,6 @@
         <arg value="10000"/>
         </java>
     </target>
-
-    <target name="testtake" depends="compile"
-      description="test basic take">
-    <java classname="org.dancres.blitz.SpaceWriteTakeTest"
-      classpathref="allclasses"/>
-  </target>
 
   <target name="testmultifieldmatch" depends="compile"
       description="test basic field matching/ordering">
@@ -658,12 +646,6 @@
   <target name="testnulltake" depends="compile"
       description="test basic take">
     <java classname="org.dancres.blitz.NullTakeTest"
-      classpathref="allclasses"/>
-  </target>
-
-  <target name="testnotify" depends="compile"
-      description="test basic notify">
-    <java classname="org.dancres.blitz.SpaceNotifyTest"
       classpathref="allclasses"/>
   </target>
 
@@ -755,13 +737,6 @@
               classpathref="allclasses">
         </java>
     </target>
-
-    <target name="testlease" depends="compile"
-      description="test basic lease renewal">
-    <java classname="org.dancres.blitz.LeaseTest"
-      classpathref="allclasses">
-    </java>
-  </target>
 
   <target name="testexpire" depends="compile"
       description="test basic lease expiry">
