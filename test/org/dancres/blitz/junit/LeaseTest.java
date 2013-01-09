@@ -1,4 +1,4 @@
-package org.dancres.blitz;
+package org.dancres.blitz.junit;
 
 import java.io.Serializable;
 import java.rmi.MarshalledObject;
@@ -12,6 +12,8 @@ import net.jini.core.event.RemoteEventListener;
 
 import net.jini.core.transaction.server.*;
 
+import org.dancres.blitz.RegTicket;
+import org.dancres.blitz.SpaceImpl;
 import org.dancres.blitz.mangler.*;
 
 import org.dancres.blitz.lease.SpaceUID;
