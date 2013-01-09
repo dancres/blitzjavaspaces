@@ -1,59 +1,63 @@
 package org.dancres.blitz.test;
 
-import net.jini.core.entry.Entry;
+import junit.framework.Assert;
 import net.jini.core.lease.Lease;
 
 import net.jini.core.transaction.server.*;
 
 import org.dancres.blitz.remote.LocalSpace;
-
 import org.dancres.blitz.remote.LocalTxnMgr;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 public class TxnResolve {
+    private LocalSpace _space;
+    private LocalTxnMgr _mgr;
 
+    @Before
+    public void init() throws Exception {
+        _space = new LocalSpace(new TxnGatewayImpl());
+        _mgr = new LocalTxnMgr(1, _space);
+    }
+
+    @After
+    public void deinit() throws Exception {
+        _space.stop();
+    }
+
+    @Test
     public void test() throws Exception {
-
-        LocalSpace mySpace = new LocalSpace(new TxnGatewayImpl());
+        ServerTransaction tx = _mgr.newTxn();
         
-        LocalTxnMgr myMgr = new LocalTxnMgr(1, mySpace);
-        
-        ServerTransaction tx = myMgr.newTxn();
-        
-        Writer myWriter = new Writer(mySpace);
-
+        Writer myWriter = new Writer(_space);
         myWriter.start();
 
-        new Aborter(mySpace, myMgr, tx.id).start();
+        Aborter myAborter = new Aborter(_mgr, tx.id);
+        myAborter.start();
         
         try {
-            Entry myResult = 
-                mySpace.getProxy().take(new DummyEntry(), tx, Long.MAX_VALUE);
-                        
-            System.out.println("Got result: " + myResult);
-            
+            _space.getProxy().take(new DummyEntry(), tx, Long.MAX_VALUE);
             tx.commit();
 
-            System.out.println("Failed");
+            Assert.fail("Transaction should never commit");
 
         } catch(Exception e){
-            System.out.println("Tx failed - test passes");
-            e.printStackTrace(System.err);
-            // tx.abort();
         }
 
         try {
             myWriter.join();
+            myAborter.join();
         } catch (InterruptedException anIE) {
         }
     }
 
     private static class Aborter extends Thread {
-        private LocalSpace theSpace;
         private LocalTxnMgr theMgr;
         private long theId;
 
-        Aborter(LocalSpace aSpace, LocalTxnMgr aMgr, long aTxnId) {
-            theSpace = aSpace;
+        Aborter(LocalTxnMgr aMgr, long aTxnId) {
             theMgr = aMgr;
             theId = aTxnId;
         }
@@ -61,13 +65,9 @@ public class TxnResolve {
         public void run() {
             try {
 
-                Thread.sleep(10000);
-
-                System.err.println("Abort");
+                Thread.sleep(5000);
 
                 theMgr.abort(theId);
-
-                System.err.println("Done");
             } catch (Exception anE) {
                 anE.printStackTrace(System.err);
             }
@@ -84,23 +84,13 @@ public class TxnResolve {
         public void run() {
             try {
 
-                Thread.sleep(30000);
+                Thread.sleep(10000);
 
-                System.err.println("Writing");
                 theSpace.getProxy().write(new DummyEntry("blah"), null,
                         Lease.FOREVER);
-                System.err.println("Done");
             } catch (Exception anE) {
                 anE.printStackTrace(System.err);
             }
-        }
-    }
-
-    public static void main(String args[]) {
-        try {
-            new TxnResolve().test();
-        } catch (Exception anE) {
-            anE.printStackTrace(System.err);
         }
     }
 }
