@@ -1,4 +1,4 @@
-package org.dancres.blitz.test;
+package org.dancres.blitz.junit;
 
 import net.jini.core.entry.Entry;
 import net.jini.core.lease.Lease;
@@ -9,6 +9,7 @@ import net.jini.space.JavaSpace;
 import org.dancres.blitz.remote.LocalSpace;
 
 import org.dancres.blitz.remote.LocalTxnMgr;
+import org.dancres.blitz.test.DummyEntry;
 import org.dancres.blitz.txn.TxnGateway;
 import org.dancres.blitz.txn.TxnId;
 import org.junit.After;
@@ -53,8 +54,6 @@ public class LockTest {
         myTxn.commit();
 
         myTaker.join();
-
-        theSpace.stop();
     }
     
     private static class TxnGatewayImpl implements TxnGateway {

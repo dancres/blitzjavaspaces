@@ -699,13 +699,6 @@
     </java>
   </target>
 
-  <target name="testlockresolve" depends="compile"
-      description="test basic lock resolution">
-    <java classname="org.dancres.blitz.test.LockTest"
-      classpathref="allclasses">
-    </java>
-  </target>
-
   <target name="testtxnblocking" depends="compile"
       description="test basic txn blocking">
     <java classname="org.dancres.blitz.test.TxnResolve"
