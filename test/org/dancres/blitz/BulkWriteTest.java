@@ -3,48 +3,59 @@ package org.dancres.blitz;
 import java.util.ArrayList;
 import java.util.List;
 
+import junit.framework.Assert;
 import net.jini.core.entry.Entry;
-import net.jini.core.lease.Lease;
 
 import org.dancres.blitz.mangler.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 public class BulkWriteTest {
-    public static void main(String args[]) {
+    private SpaceImpl _space;
+    private EntryMangler _mangler;
 
-        try {
-            System.out.println("Start space");
+    @Before
+    public void init() throws Exception {
+        _space = new SpaceImpl(null);
+        _mangler = new EntryMangler();
+    }
 
-            SpaceImpl mySpace = new SpaceImpl(null);
+    @After
+    public void deinit() throws Exception {
+        _space.stop();
+    }
 
-            System.out.println("Prepare entry");
+    @Test
+    public void testWrite() throws Exception {
+        ArrayList myMangled = new ArrayList();
+        ArrayList myLeases = new ArrayList();
 
-            EntryMangler myMangler = new EntryMangler();
-
-            ArrayList myMangled = new ArrayList();
-            ArrayList myLeases = new ArrayList();
-
-            for (int i = 0; i < 100; i++) {
-                TestEntry myEntry = new TestEntry(Integer.toString(i));
-                MangledEntry myPackedEntry = myMangler.mangle(myEntry);
-                myMangled.add(myPackedEntry);
-                myLeases.add(new Long(300000 + i));
-            }
-               
-            List myLeaseResults = mySpace.write(myMangled, null, myLeases);
-
-            for (int i = 0; i < myLeaseResults.size(); i++) {
-                System.out.println("Lease: " + i + " is " + ((WriteTicket) myLeaseResults.get(i)).getExpirationTime());
-            }
-
-            System.out.println("Do stop");
-
-            mySpace.stop();
-
-        } catch (Exception anE) {
-            System.err.println("Got exception :(");
-            anE.printStackTrace(System.err);
+        for (int i = 0; i < 100; i++) {
+            TestEntry myEntry = new TestEntry(Integer.toString(i));
+            MangledEntry myPackedEntry = _mangler.mangle(myEntry);
+            myMangled.add(myPackedEntry);
+            myLeases.add(new Long(300000 + i));
         }
 
+        long myCurrentTime = System.currentTimeMillis();
+
+        List myLeaseResults = _space.write(myMangled, null, myLeases);
+
+        for (int i = 0; i < myLeaseResults.size(); i++) {
+            long myExpiry = ((WriteTicket) myLeaseResults.get(i)).getExpirationTime();
+
+            Assert.assertTrue((myExpiry - myCurrentTime) > 300000);
+        }
+
+        int myEntryCount = 0;
+        TestEntry myEntry = new TestEntry(null);
+        MangledEntry myPackedEntry = _mangler.mangle(myEntry);
+
+        while (_space.take(myPackedEntry, null, 1) != null)
+            myEntryCount++;
+
+        Assert.assertEquals(100, myEntryCount);
     }
 
     public static class TestEntry implements Entry {
