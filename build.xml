@@ -106,6 +106,7 @@
   </target>
 
   <target name="test" depends="compile">
+    <mkdir dir="${reports.tests}"/>
   	<junit printsummary="on" haltonfailure="off" showoutput="true" filtertrace="off">
   	  <classpath refid="allclasses"/>
   	  <batchtest fork="yes" todir="${reports.tests}">
