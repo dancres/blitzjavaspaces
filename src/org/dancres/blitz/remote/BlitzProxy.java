@@ -1,7 +1,6 @@
 package org.dancres.blitz.remote;
 
 import java.io.Serializable;
-import java.io.ObjectInputStream;
 import java.io.IOException;
 
 import java.rmi.RemoteException;
@@ -44,7 +43,6 @@ import org.dancres.blitz.mangler.EntryMangler;
 import org.dancres.blitz.mangler.MangledEntry;
 
 import org.dancres.blitz.VersionInfo;
-import org.dancres.blitz.remote.nio.FastSpace;
 
 /**
    The Blitz front-end proxy responsible for implementing the JavaSpace
@@ -53,31 +51,12 @@ import org.dancres.blitz.remote.nio.FastSpace;
 class BlitzProxy implements Serializable, JavaSpace, JavaSpace05,
                             Administrable, ReferentUuid {
 
-    FastSpace theFast;
     BlitzServer theStub;
     Uuid theUuid;
 
     BlitzProxy(BlitzServer aServer, Uuid aUuid) {
         theStub = aServer;
         theUuid = aUuid;
-    }
-
-    void enableFastIO(FastSpace aSpace) {
-        theFast = aSpace;
-    }
-
-    synchronized FastSpace getFastChannel() {
-        if (theFast != null) {
-            if (! theFast.isInited()) {
-                try {
-                    theFast.init();
-                } catch (IOException anIOE) {
-                    throw new Error("Panic: fast io didn't init", anIOE);
-                }
-            }
-        }
-
-        return theFast;
     }
 
     public Uuid getReferentUuid() {
@@ -106,10 +85,7 @@ class BlitzProxy implements Serializable, JavaSpace, JavaSpace05,
 
         LeaseImpl myLease;
 
-        if (getFastChannel() != null)
-            myLease = getFastChannel().write(packEntry(entry, true), txn, lease);
-        else
-            myLease = theStub.write(packEntry(entry, true), txn, lease);
+        myLease = theStub.write(packEntry(entry, true), txn, lease);
 
         myLease.setLandlord(theStub, theUuid);
         return myLease;
@@ -121,10 +97,7 @@ class BlitzProxy implements Serializable, JavaSpace, JavaSpace05,
 
         MangledEntry myResult;
 
-        if (getFastChannel() != null)
-            myResult = getFastChannel().read(packEntry(tmpl, false), txn, timeout);
-        else
-            myResult = theStub.read(packEntry(tmpl, false), txn, timeout);
+        myResult = theStub.read(packEntry(tmpl, false), txn, timeout);
 
         return (myResult != null) ?
             getMangler().unMangle(myResult) : null;
@@ -136,10 +109,7 @@ class BlitzProxy implements Serializable, JavaSpace, JavaSpace05,
 
         MangledEntry myResult;
 
-        if (getFastChannel() != null)
-            myResult = getFastChannel().readIfExists(packEntry(tmpl, false), txn, timeout);
-        else
-            myResult = theStub.readIfExists(packEntry(tmpl, false), txn, timeout);
+        myResult = theStub.readIfExists(packEntry(tmpl, false), txn, timeout);
 
         return (myResult != null) ?
             getMangler().unMangle(myResult) : null;
@@ -151,10 +121,7 @@ class BlitzProxy implements Serializable, JavaSpace, JavaSpace05,
 
         MangledEntry myResult;
 
-        if (getFastChannel() != null)
-            myResult = getFastChannel().take(packEntry(tmpl, false), txn, timeout);
-        else
-            myResult = theStub.take(packEntry(tmpl, false), txn, timeout);
+        myResult = theStub.take(packEntry(tmpl, false), txn, timeout);
 
         return (myResult != null) ?
             getMangler().unMangle(myResult) : null;
@@ -166,10 +133,7 @@ class BlitzProxy implements Serializable, JavaSpace, JavaSpace05,
 
         MangledEntry myResult;
 
-        if (getFastChannel() != null)
-            myResult = getFastChannel().takeIfExists(packEntry(tmpl, false), txn, timeout);
-        else
-            myResult = theStub.takeIfExists(packEntry(tmpl, false), txn, timeout);
+        myResult = theStub.takeIfExists(packEntry(tmpl, false), txn, timeout);
 
         return (myResult != null) ?
             getMangler().unMangle(myResult) : null;
