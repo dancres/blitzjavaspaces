@@ -1,0 +1,153 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.dancres</groupId>
+  <artifactId>blitz</artifactId>
+  <packaging>jar</packaging>
+  <version>2.1.7</version>
+  <name>Blitz JavaSpaces</name>
+  <url>http://maven.apache.org</url>
+
+  <properties>
+    <junit.version>4.5</junit.version>
+    <river.version>2.1.255</river.version>
+    <sleepycat.version>4.1.21</sleepycat.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+  </properties>
+  
+  <repositories>
+   <repository>
+      <id>oracleReleases</id>
+      <name>Oracle Released Java Packages</name>
+      <url>http://download.oracle.com/maven</url>
+      <layout>default</layout>
+    </repository>
+  </repositories>
+	
+  <dependencies>   
+    <dependency>
+      <groupId>net.jini</groupId>
+      <artifactId>jsk-lib</artifactId>
+      <version>${river.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>net.jini</groupId>
+      <artifactId>jsk-dl</artifactId>
+      <version>${river.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>net.jini</groupId>
+      <artifactId>jsk-platform</artifactId>
+      <version>${river.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.sun.jini</groupId>
+      <artifactId>outrigger</artifactId>
+      <version>${river.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.sun.jini</groupId>
+      <artifactId>outrigger-dl</artifactId>
+      <version>${river.version}</version>
+    </dependency>
+
+    <dependency>
+        <groupId>net.jini.lookup</groupId>
+        <artifactId>serviceui</artifactId>
+        <version>${river.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.sleepycat</groupId>
+      <artifactId>je</artifactId>
+      <version>${sleepycat.version}</version>
+    </dependency> 
+
+  	<dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.objectweb.howl</groupId>
+      <artifactId>howl</artifactId>
+      <version>1.0.1-1</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+      <plugins>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>rmic-maven-plugin</artifactId>
+          <version>1.2.1</version>
+          <executions>
+            <execution>
+              <phase>compile</phase>
+              <configuration>
+                <outputDirectory>${project.build.outputDirectory}</outputDirectory>
+                <includes>
+                  <include>**/BlitzServiceImpl.class</include>
+                </includes>
+                <excludes>
+                  <exclude>**/AdminProxy.class</exclude>
+                  <exclude>**/LocalSpace.class</exclude>
+                  <exclude>**/LocalTxnMgr.class</exclude>
+                  <exclude>**/TxnParticipantProxy.class</exclude>
+                  <exclude>**/TransactionManagerImpl.class</exclude>
+                  <exclude>**/TxnMgrProxy.class</exclude>                      
+                </excludes>
+                <iiop>false</iiop>
+                <version>1.2</version>
+              </configuration>
+              <goals>
+                <goal>rmic</goal>
+              </goals>
+            </execution>
+          </executions>          
+        </plugin>        
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>2.14.1</version>
+            <configuration>
+                <forkCount>1</forkCount>
+                <reuseForks>false</reuseForks>
+                <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                <includes>
+                    <include>**/junit/*Test.java</include>
+                </includes>
+            </configuration>
+        </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>2.9</version>
+            <configuration>
+                <show>private</show>
+                <nohelp>true</nohelp>
+            </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-jar-plugin</artifactId>
+          <executions>
+            <execution>
+              <id>server</id>
+              <goals><goal>jar</goal></goals>
+              <phase>package</phase>
+              <configuration>
+                <classifier>only-library</classifier>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+  </build>
+</project>
