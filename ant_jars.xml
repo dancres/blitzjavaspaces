@@ -1,0 +1,246 @@
+<project name="Blitz JavaSpaces 2.0 FCS" default="init">
+    <description>
+        Main build file for Blitz space implementation running on Db-Java
+    </description>
+    
+  <property file="${basedir}/user.properties" />
+  <property file="${basedir}/build.properties" />
+
+  <!-- set global properties for this build -->
+  <property name="installer_base" location="installer"/>
+  <property name="build" location="target/classes"/>
+  <property name="installer_build" location="installer_build"/>
+  <property name="bdb" location="dbjava/je.jar"/>
+  <property name="jini_root" location="${JINI_HOME}"/>
+  <property name="jdk_root" location="${JDK_HOME}"/>
+  <property name="lib" location="lib"/>
+  <property name="otherlib" location="thirdpartylib"/>
+  <property name="config" location="config"/>
+  <property name="examples" location="examples"/>
+
+  <taskdef name="classdepandjar" 
+    classname="org.jini.project.example.jade.tools.ClassDepAndJarTask"
+    classpath="${basedir}/ant_addon/classdepandjar.jar:${jini_root}/lib/tools.jar"/>
+
+  <path id="allclasses">
+      <pathelement location="${build}"/>
+      <pathelement location="${jini_root}/lib/jsk-platform.jar"/>
+      <pathelement location="${jini_root}/lib/jsk-lib.jar"/>
+      <pathelement location="${jini_root}/lib/start.jar"/>
+      <pathelement location="${jini_root}/lib/sun-util.jar"/>
+      <pathelement location="${otherlib}/serviceui-1.1.jar"/>
+    	<pathelement location="${otherlib}/junit-4.5.jar"/>
+      <pathelement location="${bdb}"/>
+  </path>
+
+  <target name="installer" depends="jars">
+    <delete dir="${installer_build}"/>
+    <mkdir dir="${installer_build}"/>
+    <javac srcdir="${installer_base}/com/incax/install/blitz" destdir="${installer_build}" debug="true"
+      debuglevel="lines,vars,source"
+      classpathref="allclasses"/>
+    <copy todir="${installer_build}/resources">
+      <fileset dir="${installer_base}/resources">
+      </fileset>
+    </copy>
+    <copy todir="${installer_build}/resources/extract/examples">
+      <fileset dir="examples">
+      </fileset>
+    </copy>
+    <copy todir="${installer_build}/resources/extract/lib">
+      <fileset dir="${lib}">
+      </fileset>
+    </copy>
+    <copy todir="${installer_build}/resources/extract/thirdpartylib">
+        <fileset dir="${otherlib}">
+        </fileset>
+    </copy>
+    <copy file="${bdb}" todir="${installer_build}/resources/extract/dbjava">
+    </copy>
+    <jar destfile="installer.jar" basedir="${installer_build}"
+      manifest="${installer_base}/META-INF/MANIFEST.MF"/>
+  </target>
+
+  <target name="jars" depends="serverjar,dljar,prefgen,statsjar2,dashjar,serviceuijar"/>
+
+  <target name="serviceuijar" description="generate dashboard serviceui jar">
+    <mkdir dir="${lib}"/>
+    <jar jarfile="${lib}/blitzui.jar" basedir="${build}"
+         includes="org/dancres/jini/**,org/dancres/blitz/tools/dash/**,org/dancres/blitz/serviceui/**, org/dancres/blitz/remote/StatsAdmin.class, org/dancres/blitz/remote/BlitzAdmin.class, org/dancres/blitz/stats/**"/>
+  </target>
+
+  <target name="dashjar" description="generate dashboard jar">
+    <mkdir dir="${lib}"/>
+    <jar jarfile="${lib}/dashboard.jar" basedir="${build}"
+         includes="org/dancres/jini/**,org/dancres/blitz/tools/dash/**"/>
+      <java jar="${jini_root}/lib/preferredlistgen.jar" fork="true">
+          <arg line="-cp"/>
+          <arg path="${jini_root}/lib/jsk-platform.jar"/>
+          <arg line="-jar"/>
+          <arg path="${lib}/dashboard.jar"/>
+          <arg line="-api net/jini/-"/>
+          <arg line="-default true"/>
+          <arg line="-api com/sun/jini/admin/-"/>
+          <arg line="-api com/sun/jini/resource/-"/>
+          <arg line="-api com/sun/jini/start/-"/>
+      </java>
+  </target>
+
+  <target name="toolsjar" description="generate jar containing generic tools">
+    <mkdir dir="${lib}"/>
+    <classdepandjar jarfile="${lib}/blitz-tools.jar"
+                    files="true">
+      <classpath refid="allclasses"/>
+      <in name="org.dancres"/>
+      <in name="org.jini"/>
+      <out name="com.sun.jini"/>
+      <out name="net.jini"/>
+      <topclass name="org.dancres.jini.tools.DumpRegistry"/>
+    </classdepandjar>        
+  </target>
+
+  <target name="dljar" description="generate blitz-dl.jar">
+    <mkdir dir="${lib}"/>
+    <classdepandjar jarfile="${lib}/blitz-dl.jar"
+                    files="true" manifest="${basedir}/MANIFEST.MF">
+      <classpath refid="allclasses"/>
+      <in name="com.go"/>
+      <in name="org.dancres"/>
+      <in name="net.jini"/>
+      <in name="org.jini"/>
+      <in name="com.sun.jini"/>
+      <out name="net.jini.core"/>
+      <out name="net.jini.activation"/>
+      <out name="net.jini.config"/>
+      <out name="net.jini.constraint"/>
+      <out name="net.jini.export"/>
+      <out name="net.jini.id"/>
+      <out name="net.jini.iiop"/>
+      <out name="net.jini.io"/>
+      <out name="net.jini.jeri"/>
+      <out name="net.jini.jrmp"/>
+      <out name="net.jini.loader"/>
+      <out name="net.jini.security"/>
+      <out name="net.jini.url"/>
+      <out name="com.sun.jini.discovery"/>
+      <topclass name="org.dancres.blitz.remote.BlitzProxy"/>
+      <topclass name="org.dancres.blitz.remote.BlitzServiceImpl_Stub"/>
+      <topclass name="org.dancres.blitz.remote.LeaseImpl"/>
+      <topclass name="org.dancres.blitz.notify.SpaceNotifyUID"/>
+      <topclass name="org.dancres.blitz.remote.txn.SpaceTxnUID"/>
+      <topclass name="org.dancres.blitz.remote.txn.TxnMgrProxy"/>
+      <topclass name="org.dancres.blitz.notify.AvailabilityEventImpl"/>
+      <topclass name="org.dancres.blitz.SpaceEntryUID"/>
+      <topclass name="org.dancres.blitz.oid.UIDImpl"/>
+      <topclass name="org.dancres.blitz.remote.AdminProxy"/>
+      <topclass name="org.dancres.blitz.remote.TxnParticipantProxy"/>
+      <topclass name="org.dancres.blitz.remote.ProxyVerifier"/>
+      <topclass name="org.dancres.blitz.remote.ConstrainableTxnParticipantProxy"/>
+      <topclass name="org.dancres.blitz.remote.ConstrainableBlitzProxy"/>
+      <topclass name="org.dancres.blitz.remote.ConstrainableLeaseImpl"/>
+      <topclass name="org.dancres.blitz.remote.ConstrainableAdminProxy"/>
+      <topclass name="org.dancres.blitz.remote.debug.TimingInvocationHandler"/>
+      <topclass name="org.dancres.blitz.remote.view.EntryViewUID"/>
+    </classdepandjar>
+  </target>
+
+  <target name="prefgen">
+    <java jar="/Users/dan/jini/jini2_1/lib/preferredlistgen.jar"
+      fork="true">
+      <arg line="-cp"/>
+      <arg path="${jini_root}/lib/jsk-platform.jar:${jini_root}/lib/jsk-lib.jar:${jini_root}/lib/outrigger.jar"/>
+      <arg line="-jar"/>
+      <arg path="${lib}/blitz-dl.jar"/>
+      <arg line="-default false"/>
+      <arg line="-api org/dancres/blitz/remote/BlitzAdmin.class"/>
+      <arg line="-api org/dancres/blitz/remote/StatsAdmin.class"/>
+      <arg line="-api org/dancres/blitz/stats/*"/>
+      <arg line="-api net/jini/-"/>
+      <arg line="-api com/sun/jini/outrigger/-"/>
+      <arg line="-api com/sun/jini/admin/-"/>
+      <arg line="-api com/sun/jini/resource/-"/>
+      <arg line="-api com/sun/jini/start/-"/>
+      <arg line="-api com/sun/jini/proxy/-"/>
+    </java>
+  </target>
+
+  <target name="statsjar2">
+	    <mkdir dir="${lib}"/>
+	    <classdepandjar jarfile="${lib}/stats.jar"
+	                    files="true" manifest="${basedir}/MANIFEST.MF">
+	      <classpath refid="allclasses"/>
+	      <in name="org.dancres.blitz.stats"/>
+	      <in name="org.dancres.blitz.remote"/>
+	    <skip name="org.dancres.blitz.remote.StatsBoard"/>
+	    <topclass name="org.dancres.blitz.remote.StatsAdmin"/>
+		<topclass name="org.dancres.blitz.remote.BlitzAdmin"/>
+		<topclass name="org.dancres.blitz.stats.BlockingOpsStat"/>
+		<topclass name="org.dancres.blitz.stats.DirtyBufferStat"/>
+		<topclass name="org.dancres.blitz.stats.EventQueueStat"/>
+		<topclass name="org.dancres.blitz.stats.FieldsStat"/>
+		<topclass name="org.dancres.blitz.stats.HostStat"/>
+		<topclass name="org.dancres.blitz.stats.IOStat"/>
+		<topclass name="org.dancres.blitz.stats.InstanceCount"/>
+		<topclass name="org.dancres.blitz.stats.InstanceSwitch"/>
+		<topclass name="org.dancres.blitz.stats.MemoryStat"/>
+		<topclass name="org.dancres.blitz.stats.MissedOpsStat"/>
+		<topclass name="org.dancres.blitz.stats.OpStat"/>
+		<topclass name="org.dancres.blitz.stats.OpSwitch"/>
+		<topclass name="org.dancres.blitz.stats.SearchStat"/>
+		<topclass name="org.dancres.blitz.stats.Stat"/>
+		<topclass name="org.dancres.blitz.stats.StoreStat"/>
+		<topclass name="org.dancres.blitz.stats.Switch"/>
+		<topclass name="org.dancres.blitz.stats.SwitchListener"/>
+		<topclass name="org.dancres.blitz.stats.TaskQueueStat"/>
+		<topclass name="org.dancres.blitz.stats.ThreadStat"/>
+		<topclass name="org.dancres.blitz.stats.TxnStat"/>
+		<topclass name="org.dancres.blitz.stats.TypesStat"/>
+		<topclass name="org.dancres.blitz.stats.VersionStat"/>
+		<topclass name="org.dancres.blitz.stats.WriteEventStat"/>	
+	    </classdepandjar>
+  </target>
+	
+  <target name="serverjar"
+        description="generate blitz server .jar" >
+    <mkdir dir="${lib}"/>
+    <jar jarfile="${lib}/blitz.jar" basedir="${build}"/>
+  </target>
+
+  <target name="statsjar"
+        description="generate stats.jar for clients accessing StatsAdmin">
+    <mkdir dir="${lib}"/>
+    <jar jarfile="${lib}/stats.jar" basedir="${build}" includes="org/dancres/blitz/stats/**,org/dancres/blitz/remote/StatsAdmin.class,org/dancres/blitz/remote/BlitzAdmin.class"/>
+  </target>
+
+  <target name="testclients" depends="statsclient,helloworld,entrysizer"/>
+
+  <target name="statsclient" depends="serverjar,statsjar2"
+        description="Build a test client for the stats interface">
+    <mkdir dir="${statsbuild}"/>
+    <javac srcdir="${stats}" destdir="${statsbuild}" debug="true"
+      target="1.4"
+      source="1.4"
+      debuglevel="lines,vars,source"
+      classpath="${jini_root}/lib/jsk-platform.jar:${jini_root}/lib/jini-ext.jar:${jini_root}/lib/start.jar:${jini_root}/lib/sun-util.jar:${lib}/stats.jar"/>
+  </target>
+
+  <target name="helloworld" depends="serverjar"
+        description="Build a test client for Blitz">
+    <mkdir dir="${hellobuild}"/>
+    <javac srcdir="${hello}" destdir="${hellobuild}" debug="true"
+      target="1.4"
+      source="1.4"
+      debuglevel="lines,vars,source"
+      classpath="${jini_root}/lib/jsk-platform.jar:${jini_root}/lib/jini-ext.jar:${jini_root}/lib/start.jar:${jini_root}/lib/sun-util.jar:${lib}/stats.jar"/>
+  </target>
+
+  <target name="entrysizer" depends="serverjar"
+        description="Build a test client for Blitz">
+    <mkdir dir="${sizerbuild}"/>
+    <javac srcdir="${sizer}" destdir="${sizerbuild}" debug="true"
+      target="1.4"
+      source="1.4"
+      debuglevel="lines,vars,source"
+      classpath="${jini_root}/lib/jsk-platform.jar:${jini_root}/lib/jini-ext.jar:${jini_root}/lib/start.jar:${jini_root}/lib/sun-util.jar:${lib}/blitz.jar"/>
+  </target>
+</project>
