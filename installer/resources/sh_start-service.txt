@@ -2,4 +2,4 @@ JAVA_HOME=<JDK_HOME>
 JINI_HOME=<JINI_HOME>
 START_CONFIG=<CONFIG>
 
-$JAVA_HOME/bin/java -Djava.security.policy=policy/policy.all -jar $JINI_HOME/start.jar $START_CONFIG
+$JAVA_HOME/bin/java -Djava.rmi.server.useCodebaseOnly=false -Djava.security.policy=policy/policy.all -jar $JINI_HOME/start.jar $START_CONFIG
