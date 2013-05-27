@@ -217,9 +217,6 @@ public class InstallPanel extends javax.swing.JPanel {
         try{
             saveSettings();
             
-            if(!_installer.validateJiniHome(jiniHome.getText(), this)){
-                return;
-            }
             String strPort=httpdPort.getText();
             try{
                 int port=Integer.parseInt(strPort);

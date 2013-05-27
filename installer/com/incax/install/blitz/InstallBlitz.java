@@ -77,9 +77,6 @@ public class InstallBlitz {
 
         InstallUtil myInstaller = new InstallUtil();
 
-        if (!myInstaller.validateJiniHome(aJiniHome, null)) {
-            return;
-        }
         try {
             int port = Integer.parseInt(aPortNumber);
             if (port < 1100) {
