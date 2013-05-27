@@ -7,9 +7,6 @@ package org.dancres.blitz.tools.dash;
 *  http://www.incax.com/service-browser.htm
 */
 
-import com.sun.jini.outrigger.AdminIterator;
-import com.sun.jini.outrigger.JavaSpaceAdmin;
-
 import java.awt.BorderLayout;
 import java.awt.Frame;
 import java.awt.Rectangle;
@@ -26,11 +23,7 @@ import java.lang.reflect.Field;
 
 import java.rmi.RemoteException;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -46,15 +39,19 @@ import javax.swing.table.AbstractTableModel;
 import net.jini.core.entry.Entry;
 import net.jini.core.entry.UnusableEntryException;
 
+import net.jini.core.lease.Lease;
+import net.jini.core.lease.UnknownLeaseException;
 import net.jini.core.transaction.TransactionException;
+import net.jini.space.JavaSpace05;
+import net.jini.space.MatchSet;
 
 public class OutriggerViewer extends JPanel
 implements Runnable{
     
     /*
-    * Reference to the JavaSpaceAdmin proxy
+    * Reference to the JavaSpace05 proxy
     */
-    private JavaSpaceAdmin javaSpaceAdmin;
+    private JavaSpace05 javaspace05;
     /*
     * inner class that extends AbstractTableModel
     */
@@ -64,12 +61,7 @@ implements Runnable{
     * how often to poll the admin proxy.
     */
     private long refreshRate=5000;
-    /*
-    * paused
-    * if set by the GUI then polling is suspended
-    */
-    private boolean paused=false;
-    
+
     private final String UNUSABLE_ENTRY="<unusable entry>";
     
     //private static int maxEntries=100;
@@ -84,17 +76,14 @@ implements Runnable{
     /*
     * Construct the OutriggerView
     */
-    public OutriggerViewer(JDialog comp,JavaSpaceAdmin jsa){
-        javaSpaceAdmin=jsa;
-        
-        // System.out.println("JavaSpaceAdmin="+javaSpaceAdmin);
+    public OutriggerViewer(JDialog comp,JavaSpace05 jsa){
+        javaspace05=jsa;
         
         parent=comp;
         initUI();
     }
     /**
     *  Initialize the GUI and start the monitor thread
-    *  which polls the JavaSpaceAdmin for the entry iterator
     */
     private void initUI(){
         setLayout(new BorderLayout());
@@ -111,7 +100,7 @@ implements Runnable{
     }
     
     /*
-    * Poll the JavaSpaceAdmin proxy every <code>refreshRate</code> millis
+    * Poll the JavaSpace proxy every <code>refreshRate</code> millis
     * If we get an Exception, drop out of the loop and report it
     * The most likely cause of an Exception occuring will be down to
     * a retrieved entry not having a valid codebase set for it
@@ -169,15 +158,17 @@ implements Runnable{
             
         }
         //here we're asking for all the entries in the space
-        AdminIterator iter=javaSpaceAdmin.contents(null/*Entry template*/,null/*Transaction*/);
-        
-        List list=new ArrayList();
+        Collection myList = new LinkedList();
+        myList.add(null);
+
+        MatchSet matchSet=javaspace05.contents(myList, null, Lease.FOREVER, Long.MAX_VALUE);
+
         Map entryMap=new HashMap();
         int ueCount=0;
         int got=0;
         while(true){
             try{
-                Entry e=iter.next();
+                Entry e=matchSet.next();
                 if(e==null)/* || got>=maxEntries)*/{
                     break;
                 }
@@ -206,8 +197,12 @@ implements Runnable{
                 ueCount++;
             }
         }
-        
-        iter.close();
+
+        try {
+            matchSet.getLease().cancel();
+        } catch (UnknownLeaseException anULE) {
+            // Tried to close it, can't, never mind
+        }
         
         if(ueCount>0){
             entryMap.put(UNUSABLE_ENTRY,new Object[]{UNUSABLE_ENTRY,new Integer(ueCount),null});
@@ -307,7 +302,12 @@ implements Runnable{
             if(tmpl==null){
                 return;//unusable entry count
             }
-            final AdminIterator iter=javaSpaceAdmin.contents((Entry)tmpl,null);
+
+            //here we're asking for all the entries in the space
+            Collection myList = new LinkedList();
+            myList.add(tmpl);
+
+            final MatchSet matchSet=javaspace05.contents(myList,null, Lease.FOREVER, Long.MAX_VALUE);
             
             entriesDeleted=false;
             Frame frame=JOptionPane.getFrameForComponent(parent);
@@ -316,7 +316,7 @@ implements Runnable{
             final WindowListener wl=new WindowAdapter(){
                 public void windowClosing(WindowEvent evt){
                     try{
-                        iter.close();
+                        matchSet.getLease().cancel();
                         dlg.dispose();
                         if(entriesDeleted){
                             updateAction.actionPerformed(null);
@@ -328,7 +328,7 @@ implements Runnable{
             };
             dlg.addWindowListener(wl);
             
-            JComponent view=createEntryPanel(iter,wl);
+            JComponent view=createEntryPanel(matchSet,wl);
             
             dlg.getContentPane().add(view,BorderLayout.CENTER);
             dlg.setSize(400,300);
@@ -390,28 +390,26 @@ implements Runnable{
             fireTableDataChanged();
         }
     }
-    private JComponent createEntryPanel(final AdminIterator iter,final WindowListener wl)
+    private JComponent createEntryPanel(final MatchSet matchSet,final WindowListener wl)
         throws Exception{
         final JPanel jp=new JPanel();
         jp.setLayout( new BorderLayout() );
         
-        final EntryPropsTable model=new EntryPropsTable(iter.next());
+        final EntryPropsTable model=new EntryPropsTable(matchSet.next());
         
         JTable jt=new JTable(model);
         
         jp.add(new JScrollPane(jt),BorderLayout.CENTER);
         //add ctrls
         final JButton next=new JButton(" Next ");
-        final JButton del =new JButton("Delete");
         final JButton close =new JButton("Close ");
         final ActionListener nextAl=new ActionListener(){
             public void actionPerformed(ActionEvent evt){
                 try{
                     
-                    Object nextEntry=iter.next();
+                    Object nextEntry=matchSet.next();
                     if(nextEntry==null){
                         next.setEnabled(false);
-                        del.setEnabled(false);
                         model.clear();
                     }else{
                         model.update(nextEntry);
@@ -423,23 +421,6 @@ implements Runnable{
         };
         next.addActionListener(nextAl);
         
-        del.addActionListener( new ActionListener(){
-            public void actionPerformed(ActionEvent evt){
-                try{
-                    int ok=JOptionPane.showConfirmDialog(jp,"Are you sure you want to delete this entry?"
-                    ,"Delete Entry",
-                    JOptionPane.YES_NO_OPTION);
-                    if(ok==JOptionPane.YES_OPTION){
-                        iter.delete();
-                        entriesDeleted=true;
-                    }
-                    nextAl.actionPerformed(null);
-                    
-                }catch(Exception ex){
-                    JOptionPane.showMessageDialog(jp,ex);
-                }
-            }
-        });
         close.addActionListener( new ActionListener(){
             public void actionPerformed(ActionEvent evt){
                 wl.windowClosing(null);
@@ -447,7 +428,6 @@ implements Runnable{
         });
         JPanel ctrls=new JPanel();
         
-        ctrls.add(del);
         ctrls.add(next);
         ctrls.add(close);
         jp.add(ctrls,BorderLayout.SOUTH);

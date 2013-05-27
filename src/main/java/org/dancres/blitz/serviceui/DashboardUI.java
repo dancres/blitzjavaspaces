@@ -15,6 +15,7 @@ import net.jini.core.entry.Entry;
 import net.jini.admin.JoinAdmin;
 import net.jini.admin.Administrable;
 
+import net.jini.space.JavaSpace05;
 import org.dancres.blitz.remote.StatsAdmin;
 import org.dancres.blitz.tools.dash.DashBoardFrame;
 import org.dancres.blitz.tools.dash.StartDashBoard;
@@ -93,7 +94,7 @@ public class DashboardUI{
                 
                 String title=StartDashBoard.VER+" ["+getSpaceName(ja)+"]";
                 boolean closeOnExit=false; //don't call System.exit()
-                _frame = new DashBoardFrame(title,sa,closeOnExit);
+                _frame = new DashBoardFrame(title, (JavaSpace05) si.service, sa,closeOnExit);
    			 		
                 _frame.addWindowListener(new WindowAdapter(){
    			 			public void windowClosing(WindowEvent evt){

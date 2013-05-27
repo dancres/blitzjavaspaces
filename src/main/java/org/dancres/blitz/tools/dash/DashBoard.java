@@ -8,6 +8,7 @@ import javax.swing.JFrame;
 
 import java.awt.Rectangle;
 
+import net.jini.space.JavaSpace05;
 import org.dancres.blitz.remote.StatsAdmin;
 import org.dancres.blitz.stats.InstanceCount;
 import org.dancres.blitz.stats.MemoryStat;
@@ -220,7 +221,7 @@ public class DashBoard extends javax.swing.JPanel {
     private void instancesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_instancesButtonActionPerformed
         // Add your handling code here:
         //JOptionPane.showMessageDialog(this,"Not implemented yet!");
-        StatsFrame statsFrame=new StatsFrame(parent,"Entry Instances",StatsFrame.INSTANCES,statsAdmin);
+        StatsFrame statsFrame=new StatsFrame(parent,"Entry Instances",StatsFrame.INSTANCES,proxy);
         _openWindows.add(statsFrame);       
         statsFrame.setBounds(getNextWinBounds());
         statsFrame.setVisible(true);
@@ -269,11 +270,13 @@ public class DashBoard extends javax.swing.JPanel {
     //blitz specific stuff
     //private Object [] data;
     private StatsAdmin statsAdmin;
+    private JavaSpace05 proxy;
     private Map lookup;
     private ArrayList _openWindows=new ArrayList();
     private JFrame parent;
     
-    void init(StatsAdmin admin){
+    void init(JavaSpace05 aProxy, StatsAdmin admin){
+        proxy = aProxy;
         statsAdmin=admin;
     }
     private void updateWindows(Stat [] stats){

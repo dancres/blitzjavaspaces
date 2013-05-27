@@ -16,6 +16,7 @@ import javax.swing.UIManager;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.ImageIcon;
 
+import net.jini.space.JavaSpace05;
 import org.dancres.blitz.remote.StatsAdmin;
 import org.dancres.blitz.stats.Stat;
 
@@ -25,17 +26,19 @@ public class DashBoardFrame extends JFrame
     static final Logger theLogger =
             Logger.getLogger("org.dancres.blitz.tools.dash.DashBoardFrame");
 
-    private StatsAdmin _admin; 
+    private StatsAdmin _admin;
+    private JavaSpace05 _proxy;
     private DashBoard _dashBoard;
     private Thread _updater;
     private boolean _exitOnClose;
     
-    public DashBoardFrame(String title,StatsAdmin admin,boolean exitOnClose){
+    public DashBoardFrame(String title,JavaSpace05 proxy, StatsAdmin admin,boolean exitOnClose){
         super(title);
         
         // System.out.println("Blitz Dashboard: Developed in association with Inca X (www.incax.com)");
         
         _admin=admin;
+        _proxy=proxy;
         _exitOnClose=exitOnClose;
         setResizable(false);
 
@@ -94,7 +97,7 @@ public class DashBoardFrame extends JFrame
     private JComponent createUI(){
         
         _dashBoard=new DashBoard(this);
-        _dashBoard.init(_admin);
+        _dashBoard.init(_proxy, _admin);
         return _dashBoard; 
     
     }

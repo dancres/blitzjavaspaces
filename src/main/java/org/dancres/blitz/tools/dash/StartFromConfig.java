@@ -31,6 +31,7 @@ import net.jini.space.JavaSpace;
 import net.jini.security.ProxyPreparer;
 import net.jini.security.BasicProxyPreparer;
 
+import net.jini.space.JavaSpace05;
 import org.dancres.blitz.remote.StatsAdmin;
 
 /**
@@ -147,7 +148,7 @@ public class StartFromConfig {
                 return;
         }
 
-        JavaSpace mySpace = (JavaSpace) mySpacePrep.prepareProxy(myResult.service);
+        JavaSpace05 mySpace = (JavaSpace05) mySpacePrep.prepareProxy(myResult.service);
         if (mySpace instanceof Administrable) {
             Administrable myAdministrable = (Administrable) mySpace;
 
@@ -158,7 +159,7 @@ public class StartFromConfig {
                 StatsAdmin myStats = (StatsAdmin) myAdmin;
 
                 DashBoardFrame myFrame =
-                    new DashBoardFrame(StartDashBoard.VER, myStats, true);
+                    new DashBoardFrame(StartDashBoard.VER, mySpace, myStats, true);
 
                 myFrame.setVisible(true);
             } else {

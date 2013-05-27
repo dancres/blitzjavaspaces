@@ -1,13 +1,9 @@
 package org.dancres.blitz.tools.dash;
 
-import java.awt.Color;
-import java.awt.Component;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -19,17 +15,15 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
-import javax.swing.JTree;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.tree.DefaultMutableTreeNode;
+
+import net.jini.space.JavaSpace05;
 import org.dancres.blitz.stats.InstanceCount;
 import org.dancres.blitz.stats.MemoryStat;
 import org.dancres.blitz.stats.OpStat;
@@ -51,7 +45,7 @@ public class StatsFrame extends JDialog implements UpdateableView {
     //added for FieldsStats
     private TypeTreeView _treeTypeView=new TypeTreeView();
     //add for Outrigger views
-    private Object _adminProxy;
+    private JavaSpace05 _javaSpace05;
     private JFrame _frame;
     private JTextArea _textArea = new JTextArea();
     
@@ -62,9 +56,9 @@ public class StatsFrame extends JDialog implements UpdateableView {
     public static final int BLOCKERS = 4;
     public static final int RAW = 5;
     
-    public StatsFrame(JFrame parent,String title, int mode,Object adminProxy) {
+    public StatsFrame(JFrame parent,String title, int mode,JavaSpace05 proxy) {
         super(parent,title,false);
-        _adminProxy=adminProxy;
+        _javaSpace05 =proxy;
         init(parent,title,mode);
     }
     public StatsFrame(JFrame parent,String title, int mode) {
@@ -123,7 +117,7 @@ public class StatsFrame extends JDialog implements UpdateableView {
             tp.add("Entry table", new JScrollPane(table));
             tp.add("Type tree",_treeTypeView);
             tp.add("History", _chart);
-            tp.add("Entry browser",new OutriggerViewer(this,(com.sun.jini.outrigger.JavaSpaceAdmin)_adminProxy));
+            tp.add("Entry browser",new OutriggerViewer(this, _javaSpace05));
             
         } else if (_mode == MEMORY || _mode == TXNS || _mode == BLOCKERS) {
             tp.add("History", _chart);

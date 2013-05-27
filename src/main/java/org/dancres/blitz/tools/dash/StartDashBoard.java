@@ -12,6 +12,7 @@ import javax.swing.JOptionPane;
 import net.jini.admin.Administrable;
 import net.jini.space.JavaSpace;
 
+import net.jini.space.JavaSpace05;
 import org.dancres.blitz.remote.StatsAdmin;
 
 import org.dancres.jini.util.ServiceLocator;
@@ -59,7 +60,7 @@ public class StartDashBoard{
 
                 StatsAdmin myStatsAdmin = (StatsAdmin)admin.getAdmin();
 
-                DashBoardFrame frame=new DashBoardFrame(VER,myStatsAdmin,true/*exitOnClose*/);
+                DashBoardFrame frame=new DashBoardFrame(VER,(JavaSpace05) mySpace, myStatsAdmin,true/*exitOnClose*/);
 
                 frame.setVisible(true);
             } else {
