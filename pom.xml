@@ -10,7 +10,7 @@
 
   <properties>
     <junit.version>4.5</junit.version>
-    <river.version>2.1.255</river.version>
+    <river.version>2.2.1</river.version>
     <sleepycat.version>4.1.21</sleepycat.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
