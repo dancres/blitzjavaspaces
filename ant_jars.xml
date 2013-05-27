@@ -27,7 +27,6 @@
       <pathelement location="${jini_root}/lib/jsk-platform.jar"/>
       <pathelement location="${jini_root}/lib/jsk-lib.jar"/>
       <pathelement location="${jini_root}/lib/start.jar"/>
-      <pathelement location="${jini_root}/lib/sun-util.jar"/>
       <pathelement location="${otherlib}/serviceui-1.1.jar"/>
     	<pathelement location="${otherlib}/junit-4.5.jar"/>
       <pathelement location="${bdb}"/>
@@ -221,7 +220,7 @@
       target="1.4"
       source="1.4"
       debuglevel="lines,vars,source"
-      classpath="${jini_root}/lib/jsk-platform.jar:${jini_root}/lib/jini-ext.jar:${jini_root}/lib/start.jar:${jini_root}/lib/sun-util.jar:${lib}/stats.jar"/>
+      classpath="${jini_root}/lib/jsk-platform.jar:${jini_root}/lib/jini-ext.jar:${jini_root}/lib/start.jar:${lib}/stats.jar"/>
   </target>
 
   <target name="helloworld" depends="serverjar"
@@ -231,7 +230,7 @@
       target="1.4"
       source="1.4"
       debuglevel="lines,vars,source"
-      classpath="${jini_root}/lib/jsk-platform.jar:${jini_root}/lib/jini-ext.jar:${jini_root}/lib/start.jar:${jini_root}/lib/sun-util.jar:${lib}/stats.jar"/>
+      classpath="${jini_root}/lib/jsk-platform.jar:${jini_root}/lib/jini-ext.jar:${jini_root}/lib/start.jar:${lib}/stats.jar"/>
   </target>
 
   <target name="entrysizer" depends="serverjar"
@@ -241,6 +240,6 @@
       target="1.4"
       source="1.4"
       debuglevel="lines,vars,source"
-      classpath="${jini_root}/lib/jsk-platform.jar:${jini_root}/lib/jini-ext.jar:${jini_root}/lib/start.jar:${jini_root}/lib/sun-util.jar:${lib}/blitz.jar"/>
+      classpath="${jini_root}/lib/jsk-platform.jar:${jini_root}/lib/jini-ext.jar:${jini_root}/lib/start.jar:${lib}/blitz.jar"/>
   </target>
 </project>
