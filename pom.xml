@@ -45,18 +45,6 @@
     </dependency>
 
     <dependency>
-      <groupId>com.sun.jini</groupId>
-      <artifactId>outrigger</artifactId>
-      <version>${river.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.sun.jini</groupId>
-      <artifactId>outrigger-dl</artifactId>
-      <version>${river.version}</version>
-    </dependency>
-
-    <dependency>
         <groupId>net.jini.lookup</groupId>
         <artifactId>serviceui</artifactId>
         <version>${river.version}</version>
