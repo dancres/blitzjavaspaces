@@ -1,6 +1,6 @@
-<project name="Blitz JavaSpaces 2.0 FCS" default="init">
+<project name="Blitz JavaSpaces 2.0 FCS">
     <description>
-        Main build file for Blitz space implementation running on Db-Java
+        Packaging file for Blitz space implementation running on Db-Java
     </description>
     
   <property file="${basedir}/user.properties" />
@@ -27,8 +27,7 @@
       <pathelement location="${jini_root}/lib/jsk-platform.jar"/>
       <pathelement location="${jini_root}/lib/jsk-lib.jar"/>
       <pathelement location="${jini_root}/lib/start.jar"/>
-      <pathelement location="${otherlib}/serviceui-1.1.jar"/>
-    	<pathelement location="${otherlib}/junit-4.5.jar"/>
+      <pathelement location="${jini_root}/lib/serviceui.jar"/>
       <pathelement location="${bdb}"/>
   </path>
 
