@@ -14,10 +14,6 @@ import org.dancres.blitz.mangler.MangledEntry;
 
 import org.dancres.blitz.remote.view.EntryViewUID;
 
-/**
-   All operations associated with JavaSpaceAdmin are implemented via this
-   interface at the server-side
- */
 public interface EntryViewAdmin extends Remote {
     public JavaSpace getJavaSpaceProxy() throws RemoteException;
 

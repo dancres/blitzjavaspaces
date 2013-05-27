@@ -17,8 +17,7 @@ import org.dancres.blitz.txnlock.TxnLocks;
 import org.dancres.blitz.notify.EventQueue;
 
 /**
-   <p>This class supports both iteration using the old JavaSpaceAdmin interface
-   and the new JavaSpace05 interface.  The key differences amount to the
+   <p>This class supports iteration for the new JavaSpace05 interface.  The key differences amount to the
    the number of templates that can be passed and whether or not locks are
    held on the transaction.</p>
 

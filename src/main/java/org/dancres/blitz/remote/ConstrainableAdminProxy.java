@@ -18,8 +18,6 @@ import net.jini.core.transaction.Transaction;
 
 import net.jini.core.entry.Entry;
 
-import com.sun.jini.outrigger.JavaSpaceAdmin;
-
 import com.sun.jini.proxy.ConstrainableProxyUtil;
 
 import org.dancres.blitz.mangler.MangledEntry;
@@ -35,20 +33,13 @@ public final class ConstrainableAdminProxy extends
     AdminProxy implements RemoteMethodControl {
 
     private static final Method[] theMethodMapping = {
-        ReflectUtil.findMethod(JavaSpaceAdmin.class, "space",
-                               new Class[] {}),
         ReflectUtil.findMethod(EntryViewAdmin.class, "getJavaSpaceProxy",
                                new Class[] {}),
-        ReflectUtil.findMethod(JavaSpaceAdmin.class, "contents",
-                               new Class[] {Entry.class, Transaction.class}),
         ReflectUtil.findMethod(EntryViewAdmin.class, "newView",
                                new Class[] {MangledEntry[].class,
                                                 Transaction.class,
                                                 long.class, boolean.class,
                                                 long.class, int.class}),
-        ReflectUtil.findMethod(JavaSpaceAdmin.class, "contents",
-                               new Class[] {Entry.class, Transaction.class,
-                                                int.class}),
         ReflectUtil.findMethod(EntryViewAdmin.class, "newView",
                                new Class[] {MangledEntry[].class,
                                                 Transaction.class,

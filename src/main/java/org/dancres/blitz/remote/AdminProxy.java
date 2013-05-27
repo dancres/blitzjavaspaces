@@ -10,11 +10,6 @@ import net.jini.core.entry.Entry;
 import net.jini.core.discovery.LookupLocator;
 
 import net.jini.core.transaction.TransactionException;
-import net.jini.core.transaction.Transaction;
-
-import net.jini.core.lease.Lease;
-
-import net.jini.space.JavaSpace;
 
 import net.jini.admin.JoinAdmin;
 
@@ -24,23 +19,18 @@ import net.jini.id.ReferentUuids;
 
 import com.sun.jini.admin.DestroyAdmin;
 
-import com.sun.jini.outrigger.JavaSpaceAdmin;
-import com.sun.jini.outrigger.AdminIterator;
-
 import org.dancres.blitz.stats.Switch;
 import org.dancres.blitz.stats.Stat;
 
 import org.dancres.blitz.mangler.MangledEntry;
 import org.dancres.blitz.mangler.EntryMangler;
 
-import org.dancres.blitz.remote.view.EntryViewUID;
-
 /**
    Handles all admin-related functions for Blitz.
  */
 public class AdminProxy implements DestroyAdmin, JoinAdmin, Serializable,
                                    ReferentUuid, StatsAdmin,
-                                   BlitzAdmin, JavaSpaceAdmin {
+                                   BlitzAdmin {
     AdminServer theStub;
     Uuid theUuid;
 
@@ -235,44 +225,6 @@ public class AdminProxy implements DestroyAdmin, JoinAdmin, Serializable,
 
     public void reap() throws RemoteException {
         theStub.reap();
-    }
-
-   /************************************************************************
-     * JavaSpaceAdmin
-     ***********************************************************************/
-
-    public JavaSpace space() throws RemoteException {
-        return theStub.getJavaSpaceProxy();
-    }
-
-    public AdminIterator contents(Entry aTmpl, Transaction aTxn)
-        throws TransactionException, RemoteException {
-
-        ViewResult myResult =
-            theStub.newView(new MangledEntry[] {packEntry(aTmpl)},
-                aTxn, Lease.FOREVER, false, Long.MAX_VALUE,
-                AdminIteratorImpl.CHUNK_SIZE);
-
-        // We only want the UID from this lease
-        EntryViewUID myViewId = (EntryViewUID) myResult.getLease().getUID();
-
-        return new AdminIteratorImpl(getMangler(), myViewId, theStub,
-                myResult.getInitialBatch());
-    }
-
-    public AdminIterator contents(Entry aTmpl, Transaction aTxn, int aFetchSize)
-        throws TransactionException, RemoteException {
-
-        ViewResult myResult =
-            theStub.newView(new MangledEntry[] {packEntry(aTmpl)},
-                aTxn, Lease.FOREVER, false, Long.MAX_VALUE,
-                AdminIteratorImpl.CHUNK_SIZE);
-
-        // We only want the UID from this lease
-        EntryViewUID myViewId = (EntryViewUID) myResult.getLease().getUID();
-
-        return new AdminIteratorImpl(getMangler(), myViewId,
-                                     aFetchSize, theStub, myResult.getInitialBatch());
     }
 
     private MangledEntry packEntry(Entry anEntry) {
