@@ -35,6 +35,8 @@
     <delete dir="${installer_build}"/>
     <mkdir dir="${installer_build}"/>
     <javac srcdir="${installer_base}/com/incax/install/blitz" destdir="${installer_build}" debug="true"
+      target="1.5"
+      source="1.5"
       debuglevel="lines,vars,source"
       classpathref="allclasses"/>
     <copy todir="${installer_build}/resources">
@@ -216,8 +218,8 @@
         description="Build a test client for the stats interface">
     <mkdir dir="${statsbuild}"/>
     <javac srcdir="${stats}" destdir="${statsbuild}" debug="true"
-      target="1.4"
-      source="1.4"
+      target="1.5"
+      source="1.5"
       debuglevel="lines,vars,source"
       classpath="${jini_root}/lib/jsk-platform.jar:${jini_root}/lib/jini-ext.jar:${jini_root}/lib/start.jar:${lib}/stats.jar"/>
   </target>
@@ -226,8 +228,8 @@
         description="Build a test client for Blitz">
     <mkdir dir="${hellobuild}"/>
     <javac srcdir="${hello}" destdir="${hellobuild}" debug="true"
-      target="1.4"
-      source="1.4"
+      target="1.5"
+      source="1.5"
       debuglevel="lines,vars,source"
       classpath="${jini_root}/lib/jsk-platform.jar:${jini_root}/lib/jini-ext.jar:${jini_root}/lib/start.jar:${lib}/stats.jar"/>
   </target>
@@ -236,8 +238,8 @@
         description="Build a test client for Blitz">
     <mkdir dir="${sizerbuild}"/>
     <javac srcdir="${sizer}" destdir="${sizerbuild}" debug="true"
-      target="1.4"
-      source="1.4"
+      target="1.5"
+      source="1.5"
       debuglevel="lines,vars,source"
       classpath="${jini_root}/lib/jsk-platform.jar:${jini_root}/lib/jini-ext.jar:${jini_root}/lib/start.jar:${lib}/blitz.jar"/>
   </target>
