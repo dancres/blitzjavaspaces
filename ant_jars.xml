@@ -145,7 +145,7 @@
   </target>
 
   <target name="prefgen">
-    <java jar="/Users/dan/jini/jini2_1/lib/preferredlistgen.jar"
+    <java jar="${jini_root}/lib/preferredlistgen.jar"
       fork="true">
       <arg line="-cp"/>
       <arg path="${jini_root}/lib/jsk-platform.jar:${jini_root}/lib/jsk-lib.jar:${jini_root}/lib/outrigger.jar"/>
